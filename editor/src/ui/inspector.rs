@@ -3,6 +3,9 @@ use crate::session::TransformTool;
 use ankhimate_document::commands::key_cmds::{BoneProperty, TimelineAddr};
 use eframe::egui;
 
+#[cfg(test)]
+mod image_tests;
+
 // Axis accent colors — same palette as Blender/Unity
 const X_COLOR: egui::Color32 = egui::Color32::from_rgb(210, 70, 60);
 const Y_COLOR: egui::Color32 = egui::Color32::from_rgb(80, 185, 80);
@@ -13,6 +16,10 @@ const LABEL_W: f32 = 88.0;
 const ACCENT_W: f32 = 3.0;
 const ROW_GAP: f32 = 5.0;
 const KEY_AREA_W: f32 = 62.0;
+
+#[cfg(test)]
+mod key_control_tests;
+mod key_controls;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum TransformView {
@@ -261,7 +268,11 @@ pub fn ui(ui: &mut egui::Ui, state: &mut AppState) {
     let mut changed = false;
     // Key affordances only mean something against a clip (T-210).
     let animating = state.session.is_animating();
-    let pending = state.session.pending_pose.contains(&edit_bone_id);
+    let sampled = state
+        .session
+        .pending_pose
+        .contains(&edit_bone_id)
+        .then(|| key_controls::sampled_pose(state));
     let mut dot_action: Option<(
         BoneProperty,
         Option<ankhimate_core::animation::Axis>,
@@ -271,19 +282,12 @@ pub fn ui(ui: &mut egui::Ui, state: &mut AppState) {
     let key_state = |state: &AppState,
                      property: BoneProperty,
                      axis: Option<ankhimate_core::animation::Axis>| {
-        if pending {
-            // An uncommitted pose applies to every channel the user moved; the
-            // dot flags the bone, and keying commits what actually changed.
-            return crate::edit_router::KeyState::Modified;
-        }
-        crate::edit_router::key_state(
-            &state.doc,
-            &state.session,
-            &TimelineAddr::Bone {
-                bone: edit_bone_id,
-                property,
-                axis,
-            },
+        key_controls::bone_state(
+            state,
+            sampled.as_ref().unwrap_or(&state.pose),
+            edit_bone_id,
+            property,
+            axis,
         )
     };
 
@@ -2018,6 +2022,9 @@ enum DotAction {
     Key,
     /// Alt-click — remove the key that is here.
     Unkey,
+    RevertSetup,
+    RevertAnimated,
+    ResetDefault,
 }
 
 /// A key-state dot for one property row.
@@ -2032,6 +2039,13 @@ enum DotAction {
 ///
 /// Only shown in Animate mode: in Setup there is nothing to key against.
 fn key_dot(ui: &mut egui::Ui, keyed: crate::edit_router::KeyState) -> DotAction {
+    key_dot_response(ui, keyed).0
+}
+
+fn key_dot_response(
+    ui: &mut egui::Ui,
+    keyed: crate::edit_router::KeyState,
+) -> (DotAction, egui::Response) {
     use crate::edit_router::KeyState;
 
     let size = egui::vec2(14.0, 14.0);
@@ -2067,6 +2081,8 @@ fn key_dot(ui: &mut egui::Ui, keyed: crate::edit_router::KeyState) -> DotAction 
             .circle_stroke(center, radius + 2.0, egui::Stroke::new(1.0, live));
     }
 
+    response
+        .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "Animation key"));
     let response = response.on_hover_text(match keyed {
         KeyState::Keyed(_) => "Keyed here — click to update, Alt-click to remove",
         KeyState::Modified => "Unkeyed edit — click to key it at the playhead",
@@ -2075,11 +2091,66 @@ fn key_dot(ui: &mut egui::Ui, keyed: crate::edit_router::KeyState) -> DotAction 
 
     if response.clicked() {
         if ui.input(|i| i.modifiers.alt) {
-            return DotAction::Unkey;
+            return (DotAction::Unkey, response);
         }
-        return DotAction::Key;
+        return (DotAction::Key, response);
     }
-    DotAction::None
+    (DotAction::None, response)
+}
+
+/// Setup resets are explicit property actions; Animate retains the four dots.
+fn property_dot(
+    ui: &mut egui::Ui,
+    keyed: crate::edit_router::KeyState,
+    animating: bool,
+) -> DotAction {
+    property_dot_with_hint(
+        ui,
+        keyed,
+        animating,
+        "Reset only this local property: position 0, rotation/shear 0°, scale 1",
+    )
+}
+
+fn property_dot_with_hint(
+    ui: &mut egui::Ui,
+    keyed: crate::edit_router::KeyState,
+    animating: bool,
+    default_hint: &str,
+) -> DotAction {
+    let (mut action, response) = if animating {
+        key_dot_response(ui, keyed)
+    } else {
+        let response = ui.small_button("↺").on_hover_text(default_hint);
+        (
+            if response.clicked() {
+                DotAction::ResetDefault
+            } else {
+                DotAction::None
+            },
+            response,
+        )
+    };
+    response.context_menu(|ui| {
+        let choices: &[(&str, DotAction)] = if animating {
+            &[
+                ("Revert to setup value", DotAction::RevertSetup),
+                ("Revert to animated value", DotAction::RevertAnimated),
+            ]
+        } else {
+            &[("Reset to default", DotAction::ResetDefault)]
+        };
+        for &(label, choice) in choices {
+            if ui.button(label).clicked() {
+                action = choice;
+                ui.close();
+            }
+        }
+        if animating {
+            ui.weak("Setup is local. Animated discards only the pending property.");
+        }
+    });
+    action
 }
 
 /// A 3×3 pivot picker: nine dots inside a frame standing in for the image.
@@ -2182,33 +2253,59 @@ fn pivot_grid(ui: &mut egui::Ui, current: glam::Vec2) -> Option<glam::Vec2> {
     clicked
 }
 
-/// Lay out a property row with its key dot on the right.
-///
-/// The dot is allocated first so the row shrinks to fit; the row widgets size
-/// themselves from `available_width`, and they would otherwise eat the space.
-/// In Setup mode there is no dot and the row keeps the full width.
+/// Reserve the controls before laying out numeric fields. The fields place
+/// widgets in their own rectangles; inheriting a horizontal cursor can otherwise
+/// grow the row past the inspector's clipping rectangle and hide its key dot.
+fn keyed_fields(
+    ui: &mut egui::Ui,
+    body: impl FnOnce(&mut egui::Ui) -> bool,
+    controls: impl FnOnce(&mut egui::Ui),
+) -> bool {
+    ui.horizontal(|ui| {
+        let (rect, _) = ui.allocate_exact_size(
+            egui::vec2(ui.available_width(), FIELD_H),
+            egui::Sense::hover(),
+        );
+        let split = rect.right() - KEY_AREA_W;
+        let mut keys = ui.new_child(
+            egui::UiBuilder::new()
+                .id_salt("keys")
+                .max_rect(egui::Rect::from_min_max(
+                    egui::pos2(split, rect.top()),
+                    rect.max,
+                ))
+                .layout(egui::Layout::left_to_right(egui::Align::Center)),
+        );
+        controls(&mut keys);
+        let mut fields = ui.new_child(
+            egui::UiBuilder::new()
+                .id_salt("fields")
+                .max_rect(egui::Rect::from_min_max(
+                    rect.min,
+                    egui::pos2(
+                        (split - ui.spacing().item_spacing.x).max(rect.left()),
+                        rect.bottom(),
+                    ),
+                ))
+                .layout(egui::Layout::top_down(egui::Align::Min)),
+        );
+        body(&mut fields)
+    })
+    .inner
+}
+
+/// Animate shows a key dot; Setup shows an explicit property reset.
 fn keyed_row(
     ui: &mut egui::Ui,
     animating: bool,
     keyed: crate::edit_router::KeyState,
     body: impl FnOnce(&mut egui::Ui) -> bool,
 ) -> (bool, DotAction) {
-    if !animating {
-        return (body(ui), DotAction::None);
-    }
-
-    let mut changed = false;
     let mut action = DotAction::None;
-    ui.horizontal(|ui| {
-        let width = (ui.available_width() - KEY_AREA_W).max(60.0);
-        ui.allocate_ui(egui::vec2(width, FIELD_H), |ui| {
-            changed = body(ui);
+    let changed = keyed_fields(ui, body, |ui| {
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            action = property_dot(ui, keyed, animating);
         });
-        ui.allocate_ui_with_layout(
-            egui::vec2(KEY_AREA_W, FIELD_H),
-            egui::Layout::right_to_left(egui::Align::Center),
-            |ui| action = key_dot(ui, keyed),
-        );
     });
     (changed, action)
 }
@@ -2219,21 +2316,12 @@ fn keyed_xy_row(
     keyed: [crate::edit_router::KeyState; 2],
     body: impl FnOnce(&mut egui::Ui) -> bool,
 ) -> (bool, [DotAction; 2]) {
-    if !animating {
-        return (body(ui), [DotAction::None; 2]);
-    }
-
-    let mut changed = false;
     let mut actions = [DotAction::None; 2];
-    ui.horizontal(|ui| {
-        let width = (ui.available_width() - KEY_AREA_W).max(60.0);
-        ui.allocate_ui(egui::vec2(width, FIELD_H), |ui| {
-            changed = body(ui);
-        });
+    let changed = keyed_fields(ui, body, |ui| {
         ui.spacing_mut().item_spacing.x = 1.0;
         for (index, (label, color)) in [("X", X_COLOR), ("Y", Y_COLOR)].into_iter().enumerate() {
             ui.label(egui::RichText::new(label).size(8.5).color(color));
-            actions[index] = key_dot(ui, keyed[index]);
+            actions[index] = property_dot(ui, keyed[index], animating);
         }
     });
     (changed, actions)
@@ -2282,59 +2370,98 @@ fn apply_dot_action(
     axis: Option<ankhimate_core::animation::Axis>,
     action: DotAction,
 ) {
-    use ankhimate_core::animation::Interp;
-    use ankhimate_document::commands::key_cmds::{AddKey, DeleteKeys, KeyRef};
-
-    let Some(anim) = ui_state.session.active_animation else {
-        return;
-    };
-    // Each inspector dot owns exactly the track beside it.
-    for axis in std::iter::once(axis) {
-        let addr = TimelineAddr::Bone {
-            bone,
-            property,
-            axis,
-        };
-        match action {
-            DotAction::None => {}
-            DotAction::Key => {
-                // The value the viewport is showing, including an uncommitted
-                // pose — clicking the dot is how you commit exactly that.
-                let Some(value) = crate::edit_router::bone_key_value(
-                    &ui_state.doc,
-                    &ui_state.pose,
-                    bone,
-                    property,
-                    axis,
-                ) else {
-                    continue;
-                };
-                ui_state.dispatch(Box::new(AddKey::new(
-                    anim,
-                    addr,
-                    ui_state.session.playhead,
-                    value,
-                    Interp::Linear,
-                )));
-            }
-            DotAction::Unkey => {
-                if let crate::edit_router::KeyState::Keyed(index) =
-                    crate::edit_router::key_state(&ui_state.doc, &ui_state.session, &addr)
-                {
-                    ui_state.dispatch(Box::new(DeleteKeys::new(
-                        anim,
-                        vec![KeyRef { addr, index }],
-                    )));
-                }
-            }
-        }
-    }
-    if matches!(action, DotAction::Key) {
-        ui_state.session.clear_previews();
-    }
+    key_controls::bone_action(ui_state, bone, property, axis, action);
 }
 
 // ── Attachment inspector (T-307): where the art sits inside its slot ────────
+
+/// Assign an existing library image to this entry in the active skin only.
+fn attachment_image_picker(
+    ui: &mut egui::Ui,
+    state: &mut AppState,
+    owner: ankhimate_core::ids::SkinId,
+    slot: ankhimate_core::ids::SlotId,
+    name: &str,
+) -> bool {
+    use ankhimate_core::attachment::Attachment;
+    use ankhimate_document::commands::attachment_cmds::SetRegionImage;
+    let active = state.session.active_skin;
+    let Some(skin) = state.doc.skeleton.skins.get(active) else {
+        return false;
+    };
+    let active_name = skin.name.clone();
+    let attachment = state
+        .doc
+        .skeleton
+        .skins
+        .get(owner)
+        .and_then(|s| s.get(slot, name));
+    let Some(Attachment::Region(region)) = attachment else {
+        ui.label("Image assignment supports regions only; mesh UVs are not remapped.");
+        return false;
+    };
+    if region.sequence.is_some() {
+        ui.label("Image assignment is unavailable for image sequences.");
+        return false;
+    }
+    let current = region.texture.clone();
+    ui.add_space(8.0);
+    section_header(ui, crate::ui::icons::ATTACHMENT, "Skin image");
+    info_row(ui, "Edit skin", &active_name);
+    if owner != active {
+        ui.label(
+            "Inherited from default. Choosing an image creates an override in this skin only.",
+        );
+    }
+    if state.doc.assets.by_name(&current).is_none() {
+        ui.colored_label(
+            ui.visuals().error_fg_color,
+            format!("Image '{current}' is missing from the asset library"),
+        );
+    }
+    let mut images: Vec<_> = state
+        .doc
+        .assets
+        .images
+        .values()
+        .map(|a| a.name.clone())
+        .collect();
+    images.sort();
+    let mut chosen = current.clone();
+    ui.add_enabled_ui(state.session.can_edit_structure(), |ui| {
+        egui::ComboBox::from_id_salt(("attachment_image", active, slot, name))
+            .selected_text(&chosen)
+            .show_ui(ui, |ui| {
+                for image in images { ui.selectable_value(&mut chosen, image.clone(), image); }
+            }).response.on_hover_text(
+                "Choose an image from Assets for the active skin only. Keeps the attachment size, pivot and UV crop; never replaces shared pixels.");
+    });
+    if ui
+        .add_enabled(
+            state.session.can_edit_structure(),
+            egui::Button::new("Import image to library…"),
+        )
+        .on_hover_text("Import an image without creating a slot, then choose it above")
+        .clicked()
+        && let Some(path) = rfd::FileDialog::new()
+            .add_filter("Images", &["png", "jpg", "jpeg", "webp"])
+            .pick_file()
+    {
+        crate::ui::canvas::add_image_file(state, &path);
+    }
+    if !state.session.can_edit_structure() {
+        ui.label("Switch to Setup (Tab) to assign an image.");
+    }
+    if chosen != current {
+        match SetRegionImage::new(&state.doc, active, slot, name, &chosen) {
+            Ok(command) => {
+                return state.dispatch(Box::new(command));
+            }
+            Err(reason) => state.session.set_status(reason),
+        }
+    }
+    false
+}
 
 /// Edit the resolved attachment's own transform.
 ///
@@ -2502,6 +2629,11 @@ fn attachment_inspector(
     };
 
     let setup = state.session.can_edit_structure();
+    if attachment_image_picker(ui, state, skin, slot_id, &name) {
+        // An inherited region may now belong to the active skin. Re-read its
+        // owner next frame before offering any further attachment edits.
+        return;
+    }
 
     // Mesh attachments get their own small section: their geometry is edited on
     // the canvas (T-401), not through transform fields.
@@ -3056,8 +3188,7 @@ fn slot_inspector(ui: &mut egui::Ui, state: &mut AppState, slot_id: ankhimate_co
 
     // Color picker (keyable). egui works in sRGB Color32.
     let animating = state.session.is_animating();
-    let color_addr = TimelineAddr::SlotColor { slot: slot_id };
-    let color_keyed = crate::edit_router::key_state(&state.doc, &state.session, &color_addr);
+    let color_keyed = key_controls::color_state(state, slot_id);
     let mut new_color: Option<[f32; 4]> = None;
     let mut color_dot = DotAction::None;
     ui.horizontal(|ui| {
@@ -3076,46 +3207,13 @@ fn slot_inspector(ui: &mut egui::Ui, state: &mut AppState, slot_id: ankhimate_co
                 rgba.a() as f32 / 255.0,
             ]);
         }
-        if animating {
-            color_dot = key_dot(ui, color_keyed);
-        }
+        color_dot =
+            property_dot_with_hint(ui, color_keyed, animating, "Reset colour to white, alpha 1");
     });
     if let Some(color) = new_color {
         state.commit_slot_color(slot_id, color);
     }
-    match color_dot {
-        DotAction::Key => {
-            if let Some(anim) = state.session.active_animation {
-                // Keys the colour the viewport is showing, so the dot means the
-                // same thing here as it does on a transform row.
-                state.dispatch(Box::new(
-                    ankhimate_document::commands::key_cmds::AddKey::new(
-                        anim,
-                        color_addr.clone(),
-                        state.session.playhead,
-                        ankhimate_document::commands::key_cmds::KeyValue::Color(current),
-                        ankhimate_core::animation::Interp::Linear,
-                    ),
-                ));
-            }
-        }
-        DotAction::Unkey => {
-            if let (Some(anim), crate::edit_router::KeyState::Keyed(index)) =
-                (state.session.active_animation, color_keyed)
-            {
-                state.dispatch(Box::new(
-                    ankhimate_document::commands::key_cmds::DeleteKeys::new(
-                        anim,
-                        vec![ankhimate_document::commands::key_cmds::KeyRef {
-                            addr: color_addr,
-                            index,
-                        }],
-                    ),
-                ));
-            }
-        }
-        DotAction::None => {}
-    }
+    key_controls::color_action(state, slot_id, color_dot);
 
     // ── Presentation (T-505) ──────────────────────────────────────────────
     // How the slot composites, and whether it draws at all.

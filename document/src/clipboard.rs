@@ -13,6 +13,9 @@ use ankhimate_core::math::Transform;
 use ankhimate_core::skeleton::Bone;
 use ankhimate_core::slot::Slot;
 
+pub mod keys;
+pub use keys::KeyClip;
+
 /// One bone in a copied subtree.
 #[derive(Debug, Clone)]
 pub struct ClipBone {
@@ -130,6 +133,7 @@ pub enum Clipboard {
     Empty,
     Bones(BoneClip),
     Pose(PoseClip),
+    Keys(KeyClip),
 }
 
 impl Clipboard {
@@ -149,6 +153,7 @@ impl Clipboard {
                 1 => "a pose (1 bone)".into(),
                 n => format!("a pose ({n} bones)"),
             },
+            Clipboard::Keys(clip) => format!("{} selected key(s)", clip.keys.len()),
         }
     }
 }

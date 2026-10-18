@@ -26,6 +26,13 @@ use eframe::egui;
 /// would be wrong to find it in a teammate's file.
 #[derive(Debug, Default)]
 pub struct ExportUiState {
+    pub video: bool,
+    pub video_settings: crate::ui::video::State,
+    pub ffmpeg_path: String,
+    pub review: Option<Box<crate::export_preflight::Review>>,
+    pub last_preflight: Option<String>,
+    pub png: crate::ui::png_sequence::PngUiState,
+    pub rendered: bool,
     pub preset: usize,
     pub template: usize,
     pub show_context: bool,
@@ -59,7 +66,71 @@ struct CachedPreview {
     context: serde_json::Value,
 }
 
-pub fn ui(ui: &mut egui::Ui, state: &mut AppState, plugins: &crate::plugins::Plugins) {
+pub fn ui(
+    ui: &mut egui::Ui,
+    state: &mut AppState,
+    plugins: &crate::plugins::Plugins,
+    theme: &crate::theme::Theme,
+) {
+    crate::export_preflight::show(ui.ctx(), state, theme);
+    if let Some(receipt) = &state.session.export.last_preflight
+        && ui.small_button("Copy last preflight receipt").clicked()
+    {
+        ui.ctx().copy_text(receipt.clone());
+    }
+    ui.horizontal(|ui| {
+        if ui
+            .selectable_label(state.session.export.video, "Video")
+            .clicked()
+        {
+            state.session.export.video = true;
+        }
+        if ui
+            .selectable_label(
+                !state.session.export.video && !state.session.export.rendered,
+                "Data / atlas",
+            )
+            .clicked()
+        {
+            state.session.export.video = false;
+            state.session.export.rendered = false;
+        }
+        if ui
+            .selectable_label(
+                !state.session.export.video
+                    && state.session.export.rendered
+                    && !state.session.export.png.spritesheet,
+                "Image sequence",
+            )
+            .clicked()
+        {
+            state.session.export.video = false;
+            state.session.export.rendered = true;
+            state.session.export.png.spritesheet = false;
+        }
+        if ui
+            .selectable_label(
+                !state.session.export.video
+                    && state.session.export.rendered
+                    && state.session.export.png.spritesheet,
+                "Spritesheet",
+            )
+            .clicked()
+        {
+            state.session.export.video = false;
+            state.session.export.rendered = true;
+            state.session.export.png.spritesheet = true;
+        }
+    });
+    ui.separator();
+    if state.session.export.video {
+        crate::ui::video::ui(ui, state, theme);
+        return;
+    }
+    if state.session.export.rendered {
+        crate::ui::png_sequence::ui(ui, state);
+        return;
+    }
     let presets_list = state.doc.presets();
 
     ui.label(egui::RichText::new("Export").strong());
@@ -126,10 +197,11 @@ pub fn ui(ui: &mut egui::Ui, state: &mut AppState, plugins: &crate::plugins::Plu
                 [button_width, crate::ui::CONTROL_HEIGHT],
                 egui::Button::new(format!("{}  Export…", crate::ui::icons::DOWNLOAD)),
             )
-            .on_hover_text("Render every template and write the file set")
+            .on_hover_text("Prepare the real file set and review diagnostics before publishing")
             .clicked()
         {
             run_export(state, plugins, &presets_list);
+            columns[2].ctx().request_repaint();
         }
     });
 
@@ -540,54 +612,76 @@ fn run_export(state: &mut AppState, plugins: &crate::plugins::Plugins, presets_l
     }
 
     let schema = ankhimate_formats::convert::to_schema(&state.doc.as_project_ref());
-    match run::export(&schema, &state.doc.assets, preset, &dir) {
-        Ok(plan) => {
-            state.session.export.last_export = Some(format!(
-                "Wrote {} file(s) and {} image(s) to {}",
-                plan.files.len(),
-                plan.binaries.len(),
-                dir.display()
-            ));
-        }
-        Err(e) => state.session.export.error = Some(e.to_string()),
-    }
+    run_data_export(state, preset, &dir, &schema);
 }
 
-/// Run a plugin exporter and write what it produced.
-///
-/// The document is moved into the exporter and moved back, because
-/// `JsExporter::plan` takes ownership: `Document` is not `Clone` — a rig with
-/// its images in it is not something to copy per export — and an exporter has no
-/// business editing, so it gets the document and hands it straight back.
+fn run_data_export(
+    state: &mut AppState,
+    preset: &Preset,
+    dir: &std::path::Path,
+    schema: &ankhimate_formats::schema::Project,
+) {
+    state.session.export.review = Some(Box::new(crate::export_preflight::Review::data(
+        state,
+        preset,
+        dir.to_path_buf(),
+        schema.clone(),
+    )));
+}
+
+/// Review the plugin's existing plan on a snapshot, preserving the live document.
 fn run_plugin_export(
     state: &mut AppState,
     exporter: &ankhimate_plugins::exporter::JsExporter,
     dir: &std::path::Path,
 ) {
-    let doc = std::mem::take(&mut state.doc);
-    let outcome = exporter.plan(doc);
+    let plan = exporter
+        .plan(state.doc.clone())
+        .map(|(plan, _)| plan)
+        .map_err(|(error, _)| error.to_string());
+    let project = ankhimate_formats::convert::to_schema(&state.doc.as_project_ref());
+    state.session.export.review = Some(Box::new(crate::export_preflight::Review::from_plan(
+        state,
+        dir.to_path_buf(),
+        project,
+        ankhimate_export::preflight::Target::Custom,
+        plan,
+    )));
+}
 
-    match outcome {
-        Ok((plan, doc)) => {
-            state.doc = doc;
-            match run::write(&plan, dir) {
-                Ok(()) => {
-                    state.session.export.last_export = Some(format!(
-                        "Wrote {} file(s) and {} image(s) to {}",
-                        plan.files.len(),
-                        plan.binaries.len(),
-                        dir.display()
-                    ));
-                }
-                Err(e) => state.session.export.error = Some(e.to_string()),
-            }
-        }
-        Err((e, doc)) => {
-            // The document comes back on this path too, which is why `plan`
-            // returns it there: losing a user's whole rig to a plugin's typo
-            // would be the worst bug in the program.
-            state.doc = doc;
-            state.session.export.error = Some(e.to_string());
-        }
+#[cfg(test)]
+mod preflight_regressions {
+    use super::*;
+
+    #[test]
+    fn choosing_an_export_destination_does_not_write_before_review() {
+        let mut state = AppState::default();
+        let schema = ankhimate_formats::convert::to_schema(&state.doc.as_project_ref());
+        let dir = tempfile::tempdir().unwrap();
+        let output = dir.path().join("not-approved");
+        run_data_export(&mut state, &presets::default_preset(), &output, &schema);
+        assert!(
+            !output.exists(),
+            "review must precede any directory or output creation"
+        );
+    }
+}
+#[cfg(test)]
+mod video_entry_regression {
+    #[test]
+    fn export_panel_offers_mp4_without_requiring_ffmpeg() {
+        let ctx = eframe::egui::Context::default();
+        let mut state = crate::app_state::AppState::default();
+        let output = ctx.run_ui(eframe::egui::RawInput::default(), |root| {
+            eframe::egui::CentralPanel::default().show_inside(root, |ui| {
+                super::ui(
+                    ui,
+                    &mut state,
+                    &crate::plugins::Plugins::default(),
+                    &crate::theme::Theme::default(),
+                );
+            });
+        });
+        assert!(output.shapes.iter().any(|s| matches!(&s.shape, eframe::egui::epaint::Shape::Text(t) if t.galley.text() == "Video")), "MP4 export is missing from the Export panel");
     }
 }

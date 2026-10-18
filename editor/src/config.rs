@@ -27,6 +27,9 @@ const MAX_RECENT: usize = 12;
 /// one field is the bug; this keeps there being one.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
+    /// External executable only; empty means PATH lookup when exporting video.
+    #[serde(default)]
+    pub ffmpeg_path: String,
     /// Most-recently-opened first.
     #[serde(default)]
     pub recent_files: Vec<PathBuf>,
@@ -89,6 +92,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
+            ffmpeg_path: String::new(),
             recent_files: Vec::new(),
             skip_startup: false,
             theme_name: None,
@@ -237,22 +241,26 @@ impl Config {
     /// Best-effort write. A failure is logged, never shown: the user did not ask
     /// to save a config, so they should not be interrupted by it failing.
     pub fn save(&self) {
-        let Some(path) = Self::path() else {
-            return;
-        };
-        if let Some(dir) = path.parent()
-            && let Err(e) = std::fs::create_dir_all(dir)
+        // Headless lifecycle tests must never overwrite the user's preferences.
+        #[cfg(not(test))]
         {
-            log::warn!("could not create config dir: {e}");
-            return;
-        }
-        match serde_json::to_string_pretty(self) {
-            Ok(text) => {
-                if let Err(e) = std::fs::write(&path, text) {
-                    log::warn!("could not write config: {e}");
-                }
+            let Some(path) = Self::path() else {
+                return;
+            };
+            if let Some(dir) = path.parent()
+                && let Err(e) = std::fs::create_dir_all(dir)
+            {
+                log::warn!("could not create config dir: {e}");
+                return;
             }
-            Err(e) => log::warn!("could not serialize config: {e}"),
+            match serde_json::to_string_pretty(self) {
+                Ok(text) => {
+                    if let Err(e) = std::fs::write(&path, text) {
+                        log::warn!("could not write config: {e}");
+                    }
+                }
+                Err(e) => log::warn!("could not serialize config: {e}"),
+            }
         }
     }
 
@@ -292,6 +300,7 @@ pub fn sample_projects() -> Vec<PathBuf> {
     {
         roots.push(dir.join("samples"));
     }
+    #[cfg(debug_assertions)]
     roots.push(PathBuf::from(concat!(
         env!("CARGO_MANIFEST_DIR"),
         "/../samples"

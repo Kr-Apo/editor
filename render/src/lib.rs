@@ -17,6 +17,11 @@ use image::{ImageEncoder, RgbaImage, codecs::png::PngEncoder};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 
+pub mod encoding;
+pub mod framing;
+pub mod sequence;
+pub mod spritesheet;
+
 const DEFAULT_PADDING: f32 = 0.08;
 const LABEL_HEIGHT: u32 = 13;
 
@@ -885,7 +890,14 @@ impl Canvas {
                     edge(points[2], points[0], point) / area,
                     edge(points[0], points[1], point) / area,
                 ];
-                if weights.iter().any(|weight| *weight < -1e-5) {
+                // Half-open edges: adjacent triangles must cover a shared edge
+                // exactly once, including for transparent or mirrored art.
+                if weights.iter().enumerate().any(|(i, weight)| {
+                    let (a, b) = (points[(i + 1) % 3], points[(i + 2) % 3]);
+                    let direction = if area > 0.0 { b - a } else { a - b };
+                    let included = direction.y < 0.0 || (direction.y == 0.0 && direction.x > 0.0);
+                    *weight < 0.0 || (*weight == 0.0 && !included)
+                }) {
                     continue;
                 }
                 let uv = vertices
@@ -915,8 +927,15 @@ impl Canvas {
         let mut output = [0.0; 4];
         match mode {
             BlendMode::Normal => {
+                // PNG stores straight alpha. Including destination alpha also
+                // preserves the existing result on opaque preview backgrounds.
+                let alpha = sa + destination[3] * (1.0 - sa);
                 for i in 0..3 {
-                    output[i] = source[i] * sa + destination[i] * (1.0 - sa);
+                    output[i] = if alpha > 0.0 {
+                        (source[i] * sa + destination[i] * destination[3] * (1.0 - sa)) / alpha
+                    } else {
+                        0.0
+                    };
                 }
             }
             BlendMode::Additive => {
@@ -1036,14 +1055,24 @@ fn sample(image: &RgbaImage, uv: Vec2) -> [f32; 4] {
     let tx = position.x - x0 as f32;
     let ty = position.y - y0 as f32;
     let pixel = |x, y| {
-        image
+        let mut pixel = image
             .get_pixel(x, y)
             .0
-            .map(|channel| channel as f32 / 255.0)
+            .map(|channel| channel as f32 / 255.0);
+        for channel in 0..3 {
+            pixel[channel] *= pixel[3];
+        }
+        pixel
     };
     let top = mix_pixel(pixel(x0, y0), pixel(x1, y0), tx);
     let bottom = mix_pixel(pixel(x0, y1), pixel(x1, y1), tx);
-    mix_pixel(top, bottom, ty)
+    let mut result = mix_pixel(top, bottom, ty);
+    if result[3] > 0.0 {
+        for channel in 0..3 {
+            result[channel] /= result[3];
+        }
+    }
+    result
 }
 fn mix_pixel(a: [f32; 4], b: [f32; 4], amount: f32) -> [f32; 4] {
     std::array::from_fn(|channel| a[channel] + (b[channel] - a[channel]) * amount)
@@ -1115,6 +1144,335 @@ fn glyph(c: char) -> [u8; 5] {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::sequence::{Sequence, SequenceRequest};
+
+    #[test]
+    fn sequence_is_exclusive_deterministic_and_has_one_camera() {
+        let doc = rig();
+        let request = SequenceRequest {
+            animation: "move".into(),
+            fps: 60,
+            width: 64,
+            height: 64,
+        };
+        let sequence = Sequence::prepare(&doc, &request, |_, _| true).unwrap();
+        assert_eq!(sequence.frame_count(), 60);
+        assert_eq!(sequence.time(59).unwrap(), 59.0 / 60.0);
+        assert!(sequence.render(60).is_err());
+        let again = Sequence::prepare(&doc, &request, |_, _| true).unwrap();
+        for index in [0, 15, 30, 45, 59] {
+            let png = sequence.render(index).unwrap();
+            assert_eq!(png.bytes, again.render(index).unwrap().bytes);
+            let image = image::load_from_memory(&png.bytes).unwrap().to_rgba8();
+            assert_eq!(image.get_pixel(0, 0).0, [0; 4]);
+            assert!(image.pixels().any(|p| p.0[3] > 0));
+            let camera = sequence.camera();
+            let reference = render_frame(
+                &doc,
+                &FrameRequest {
+                    animation: Some("move".into()),
+                    time: index as f32 / 60.0,
+                    width: 64,
+                    height: 64,
+                    background: [0; 4],
+                    camera: Camera {
+                        center: Some(camera.center.into()),
+                        zoom: Some(camera.zoom),
+                        ..Default::default()
+                    },
+                    focus: Some(Focus {
+                        mode: FocusMode::ArtOnly,
+                        ..Default::default()
+                    }),
+                },
+            )
+            .unwrap();
+            assert_eq!(
+                png.bytes, reference.bytes,
+                "frame {index} uses the same pose, draw pipeline and camera"
+            );
+        }
+        // A moving child's extent must fit without changing the stationary root's pixels.
+        let camera = sequence.camera();
+        let auto_first = render_frame(
+            &doc,
+            &FrameRequest {
+                animation: Some("move".into()),
+                width: 64,
+                height: 64,
+                focus: Some(Focus {
+                    mode: FocusMode::ArtOnly,
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        assert_ne!(auto_first.bytes, sequence.render(0).unwrap().bytes);
+        assert!(camera.center.y > 0.0);
+    }
+
+    #[test]
+    fn sequence_rejects_invalid_requests_physics_and_can_cancel_preparation() {
+        let mut doc = rig();
+        let valid = SequenceRequest {
+            animation: "move".into(),
+            fps: 60,
+            width: 64,
+            height: 64,
+        };
+        for request in [
+            SequenceRequest {
+                fps: 0,
+                ..valid.clone()
+            },
+            SequenceRequest {
+                fps: 241,
+                ..valid.clone()
+            },
+            SequenceRequest {
+                width: 0,
+                ..valid.clone()
+            },
+            SequenceRequest {
+                height: 8193,
+                ..valid.clone()
+            },
+            SequenceRequest {
+                animation: "missing".into(),
+                ..valid.clone()
+            },
+        ] {
+            assert!(Sequence::prepare(&doc, &request, |_, _| true).is_err());
+        }
+        assert!(Sequence::prepare(&doc, &valid, |done, _| done < 2).is_err());
+        let id = doc.animations.keys().next().unwrap();
+        doc.animations[id].duration = 0.0;
+        assert!(Sequence::prepare(&doc, &valid, |_, _| true).is_err());
+        doc.animations[id].duration = f32::NAN;
+        assert!(Sequence::prepare(&doc, &valid, |_, _| true).is_err());
+        doc.animations[id].duration = 1.0;
+        let bone = doc.skeleton.update_order[0];
+        doc.skeleton
+            .add_constraint(ankhimate_core::constraints::Constraint::Physics(
+                ankhimate_core::constraints::PhysicsConstraint::sway("sway", bone),
+            ));
+        assert!(
+            Sequence::prepare(&doc, &valid, |_, _| true)
+                .err()
+                .unwrap()
+                .to_string()
+                .contains("physics")
+        );
+    }
+
+    #[test]
+    fn positive_duration_without_keys_is_a_valid_static_sequence() {
+        let mut doc = rig();
+        let id = doc.animations.keys().next().unwrap();
+        doc.animations[id].timelines.clear();
+        doc.animations[id].looping = false;
+        doc.animations[id].duration = 0.11;
+        let request = SequenceRequest {
+            animation: "move".into(),
+            fps: 30,
+            width: 32,
+            height: 32,
+        };
+        let sequence = Sequence::prepare(&doc, &request, |_, _| true).unwrap();
+        assert_eq!(sequence.frame_count(), 4);
+        assert!(sequence.time(3).unwrap() < 0.11);
+        assert_eq!(
+            sequence.render(0).unwrap().bytes,
+            sequence.render(3).unwrap().bytes
+        );
+    }
+
+    #[test]
+    fn sequence_evaluates_attachment_draw_order_and_color_timelines() {
+        let mut doc = rig();
+        let slots = doc.skeleton.draw_order.clone();
+        let child = doc.skeleton.slots[slots[1]].bone;
+        doc.skeleton.bones[child].local_transform.position = Vec2::ZERO;
+        let id = doc.animations.keys().next().unwrap();
+        doc.animations[id].timelines = vec![
+            Timeline::DrawOrder {
+                keys: vec![
+                    Key::linear(0.0, vec![]),
+                    Key::linear(0.25, vec![(slots[0], 1)]),
+                ],
+            },
+            Timeline::SlotColor {
+                slot: slots[0],
+                keys: vec![Key::linear(0.0, [1.0, 0.0, 0.0, 0.5])],
+            },
+            Timeline::SlotAttachment {
+                slot: slots[0],
+                keys: vec![
+                    Key::linear(0.0, Some("root_region".into())),
+                    Key::linear(0.5, None),
+                ],
+            },
+        ];
+        let request = SequenceRequest {
+            animation: "move".into(),
+            fps: 4,
+            width: 64,
+            height: 64,
+        };
+        let sequence = Sequence::prepare(&doc, &request, |_, _| true).unwrap();
+        let center = |index| {
+            image::load_from_memory(&sequence.render(index).unwrap().bytes)
+                .unwrap()
+                .to_rgba8()
+                .get_pixel(32, 32)
+                .0
+        };
+        let first = center(0);
+        let above = center(1);
+        let hidden = center(2);
+        assert!(first[1] > first[0], "green child starts above red root");
+        assert!(
+            above[0] > first[0] && above[1] < first[1],
+            "half-alpha red moves above green"
+        );
+        assert!(
+            hidden.iter().zip(first).all(|(a, b)| a.abs_diff(b) <= 1),
+            "attachment removal reveals green again (one byte rounding tolerance)"
+        );
+    }
+    #[test]
+    fn transparent_png_uses_straight_alpha_without_dark_fringes() {
+        let mut canvas = Canvas::new(1, 1, [0; 4]);
+        canvas.blend(0, 0, [1.0, 0.0, 0.0, 0.5], BlendMode::Normal);
+        assert_eq!(canvas.image.get_pixel(0, 0).0, [255, 0, 0, 128]);
+        canvas.blend(0, 0, [0.0, 0.0, 1.0, 0.5], BlendMode::Normal);
+        let pixel = canvas.image.get_pixel(0, 0).0;
+        assert!(pixel[0].abs_diff(85) <= 1 && pixel[2].abs_diff(170) <= 1);
+        assert!(pixel[3].abs_diff(192) <= 1);
+    }
+
+    fn dark_pixel(texel: [u8; 4], light: [f32; 4], dark: [f32; 4]) -> [u8; 4] {
+        let points = [Vec2::ZERO, Vec2::new(0.0, 4.0), Vec2::new(4.0, 0.0)];
+        let vertices = points.map(|world| Vertex {
+            world,
+            uv: Vec2::ZERO,
+            color: light,
+            dark,
+        });
+        let texture = Texture {
+            image: RgbaImage::from_pixel(1, 1, image::Rgba(texel)),
+        };
+        let mut canvas = Canvas::new(4, 4, [0; 4]);
+        canvas.textured_triangle(
+            Viewport::new(0, 0, 4, 4),
+            points,
+            [&vertices[0], &vertices[1], &vertices[2]],
+            &texture,
+            BlendMode::Normal,
+        );
+        canvas.image.get_pixel(0, 0).0
+    }
+
+    #[test]
+    fn static_dark_alpha_scales_shadow_rgb_without_changing_output_alpha() {
+        // Texel=(0,128/255,1,128/255), light=(.5,.25,.75,.5).
+        // Independent hand-calculated byte references for dark intensity 0/.5/1.
+        for (intensity, expected) in [
+            (0.0, [0, 32, 191, 64]),
+            (0.5, [26, 57, 191, 64]),
+            (1.0, [51, 83, 191, 64]),
+        ] {
+            let actual = dark_pixel(
+                [0, 128, 255, 128],
+                [0.5, 0.25, 0.75, 0.5],
+                [0.2, 0.4, 0.6, intensity],
+            );
+            assert!(actual.iter().zip(expected).all(|(a, b)| a.abs_diff(b) <= 1));
+        }
+        assert_eq!(
+            dark_pixel([128; 4], [1.0; 4], [1.0; 4]),
+            [255, 255, 255, 128]
+        );
+        assert_eq!(
+            dark_pixel([0, 0, 0, 255], [1.0; 4], [0.0; 4]),
+            [0, 0, 0, 255]
+        );
+    }
+
+    #[test]
+    fn dark_tint_cannot_make_transparent_texture_or_light_alpha_opaque() {
+        assert_eq!(dark_pixel([100, 150, 200, 0], [1.0; 4], [1.0; 4]), [0; 4]);
+        assert_eq!(
+            dark_pixel([100, 150, 200, 255], [1.0, 1.0, 1.0, 0.0], [1.0; 4]),
+            [0; 4]
+        );
+    }
+
+    #[test]
+    fn light_animation_does_not_fabricate_a_dark_timeline() {
+        let mut doc = rig();
+        let slot = doc.skeleton.draw_order[0];
+        let dark = [0.2, 0.4, 0.6, 0.5];
+        doc.skeleton.slots[slot].dark_color = Some(dark);
+        let animation = doc.animations.values_mut().next().unwrap();
+        animation.timelines.push(Timeline::SlotColor {
+            slot,
+            keys: vec![Key::linear(0.0, [1.0; 4]), Key::linear(1.0, [0.0; 4])],
+        });
+        let mut pose = Pose::default();
+        for time in [0.0, 0.25, 0.5, 0.75] {
+            evaluate(&doc.skeleton, &[(animation, time, 1.0)], &mut pose);
+            assert_eq!(pose.slot_dark_colors[slot], dark);
+            assert_eq!(pose.slot_colors[slot], [1.0 - time; 4]);
+        }
+    }
+
+    #[test]
+    fn transparent_quad_has_no_double_blended_diagonal_for_either_winding() {
+        for reverse in [false, true] {
+            let points = [
+                Vec2::new(0.0, 0.0),
+                Vec2::new(0.0, 4.0),
+                Vec2::new(4.0, 4.0),
+                Vec2::new(4.0, 0.0),
+            ];
+            let vertices = points.map(|world| Vertex {
+                world,
+                uv: Vec2::ZERO,
+                color: [1.0, 0.0, 0.0, 0.5],
+                dark: [0.0; 4],
+            });
+            let texture = Texture {
+                image: RgbaImage::from_pixel(1, 1, image::Rgba([255; 4])),
+            };
+            let mut canvas = Canvas::new(4, 4, [0; 4]);
+            for mut triangle in [[0, 1, 2], [0, 2, 3]] {
+                if reverse {
+                    triangle.swap(1, 2);
+                }
+                canvas.textured_triangle(
+                    Viewport::new(0, 0, 4, 4),
+                    triangle.map(|i| points[i]),
+                    triangle.map(|i| &vertices[i]),
+                    &texture,
+                    BlendMode::Normal,
+                );
+            }
+            assert!(
+                canvas.image.pixels().all(|p| p.0 == [255, 0, 0, 128]),
+                "each pixel must be covered once: {:?}",
+                canvas.image
+            );
+        }
+    }
+
+    #[test]
+    fn transparent_texture_filtering_does_not_introduce_a_dark_fringe() {
+        let mut image = RgbaImage::from_pixel(2, 1, image::Rgba([0; 4]));
+        image.put_pixel(0, 0, image::Rgba([255, 0, 0, 255]));
+        assert_eq!(sample(&image, Vec2::new(0.5, 0.0)), [1.0, 0.0, 0.0, 0.5]);
+    }
     use ankhimate_core::{
         animation::{Animation, Axis, Key, Timeline},
         assets::ImageAsset,

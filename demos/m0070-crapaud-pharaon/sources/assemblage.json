@@ -1,0 +1,315 @@
+{
+  "purpose": "Graphic source preparation only; no Ankhimate project or animation generated",
+  "canvas": [
+    1200,
+    1400
+  ],
+  "sourceSheet": [
+    1122,
+    1402
+  ],
+  "parts": [
+    {
+      "name": "tete",
+      "sourceBox": [
+        0,
+        45,
+        328,
+        261
+      ],
+      "placement": [
+        600,
+        500,
+        485,
+        290
+      ]
+    },
+    {
+      "name": "machoire",
+      "sourceBox": [
+        329,
+        75,
+        627,
+        264
+      ],
+      "placement": [
+        600,
+        598,
+        365,
+        195
+      ]
+    },
+    {
+      "name": "oeil_g",
+      "sourceBox": [
+        646,
+        65,
+        846,
+        250
+      ],
+      "placement": [
+        463,
+        443,
+        121,
+        118
+      ]
+    },
+    {
+      "name": "oeil_d",
+      "sourceBox": [
+        892,
+        62,
+        1100,
+        250
+      ],
+      "placement": [
+        737,
+        443,
+        121,
+        118
+      ]
+    },
+    {
+      "name": "pupille_g",
+      "sourceBox": [
+        80,
+        296,
+        223,
+        455
+      ],
+      "placement": [
+        473,
+        445,
+        55,
+        69
+      ]
+    },
+    {
+      "name": "pupille_d",
+      "sourceBox": [
+        368,
+        294,
+        512,
+        455
+      ],
+      "placement": [
+        727,
+        445,
+        55,
+        69
+      ]
+    },
+    {
+      "name": "paupiere_g",
+      "sourceBox": [
+        601,
+        296,
+        826,
+        455
+      ],
+      "placement": [
+        463,
+        443,
+        130,
+        89
+      ]
+    },
+    {
+      "name": "paupiere_d",
+      "sourceBox": [
+        889,
+        296,
+        1122,
+        455
+      ],
+      "placement": [
+        737,
+        443,
+        130,
+        89
+      ]
+    },
+    {
+      "name": "corps",
+      "sourceBox": [
+        0,
+        474,
+        292,
+        765
+      ],
+      "placement": [
+        600,
+        865,
+        370,
+        470
+      ]
+    },
+    {
+      "name": "cape",
+      "sourceBox": [
+        292,
+        473,
+        620,
+        765
+      ],
+      "placement": [
+        600,
+        855,
+        620,
+        660
+      ]
+    },
+    {
+      "name": "collier",
+      "sourceBox": [
+        582,
+        486,
+        890,
+        753
+      ],
+      "placement": [
+        600,
+        785,
+        405,
+        300
+      ]
+    },
+    {
+      "name": "pagne",
+      "sourceBox": [
+        871,
+        490,
+        1122,
+        765
+      ],
+      "placement": [
+        600,
+        1080,
+        245,
+        270
+      ]
+    },
+    {
+      "name": "bras_g",
+      "sourceBox": [
+        22,
+        771,
+        252,
+        1021
+      ],
+      "placement": [
+        373,
+        905,
+        190,
+        340
+      ]
+    },
+    {
+      "name": "main_g",
+      "sourceBox": [
+        293,
+        832,
+        534,
+        1028
+      ],
+      "placement": [
+        290,
+        1095,
+        170,
+        140
+      ]
+    },
+    {
+      "name": "bras_d",
+      "sourceBox": [
+        623,
+        771,
+        850,
+        1021
+      ],
+      "placement": [
+        827,
+        905,
+        190,
+        340
+      ]
+    },
+    {
+      "name": "main_d",
+      "sourceBox": [
+        881,
+        832,
+        1122,
+        1028
+      ],
+      "placement": [
+        910,
+        1095,
+        170,
+        140
+      ]
+    },
+    {
+      "name": "jambe_g",
+      "sourceBox": [
+        21,
+        1050,
+        276,
+        1369
+      ],
+      "placement": [
+        445,
+        1130,
+        210,
+        300
+      ]
+    },
+    {
+      "name": "jambe_d",
+      "sourceBox": [
+        331,
+        1050,
+        561,
+        1369
+      ],
+      "placement": [
+        755,
+        1130,
+        210,
+        300
+      ]
+    },
+    {
+      "name": "coiffe",
+      "sourceBox": [
+        549,
+        1026,
+        949,
+        1379
+      ],
+      "placement": [
+        600,
+        475,
+        690,
+        610
+      ]
+    },
+    {
+      "name": "sceptre",
+      "sourceBox": [
+        972,
+        1016,
+        1093,
+        1370
+      ],
+      "placement": [
+        997,
+        875,
+        130,
+        570
+      ]
+    }
+  ],
+  "psdRecords": 65,
+  "psdSHA256": "1dc4f887d10bd979e26e21f09c4c1fb0ed7cacf061bccc62a3cb029f7587b6fa"
+}

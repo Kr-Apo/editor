@@ -18,13 +18,13 @@
       "name": "skeleton",
       "output_path": "skeleton.json",
       "per": "once",
-      "body": "{\n  \"name\": \"{{project.name}}\",\n  \"fps\": {{project.fps}},\n  \"bones\": [\n{{#each skeleton.bones}}    {\"name\":\"{{name}}\",\"parent\":\"{{parent}}\",\"x\":{{round x 3}},\"y\":{{round y 3}},\"rotation\":{{round rotation 3}},\"length\":{{round length 3}}}{{#unless @last}},{{/unless}}\n{{/each}}  ],\n  \"slots\": [\n{{#each skeleton.slots}}    {\"name\":\"{{name}}\",\"bone\":\"{{bone}}\",\"attachment\":{{#if attachment}}\"{{attachment}}\"{{else}}null{{/if}}}{{#unless @last}},{{/unless}}\n{{/each}}  ],\n  \"animations\": [\n{{#each animations}}    {\"name\":\"{{name}}\",\"duration\":{{round duration 3}},\"looping\":{{looping}}}{{#unless @last}},{{/unless}}\n{{/each}}  ],\n  \"regions\": [\n{{#if atlas}}{{#each atlas.regions}}    {\"name\":\"{{name}}\",\"page\":{{page}},\"x\":{{x}},\"y\":{{y}},\"w\":{{width}},\"h\":{{height}},\"offsetX\":{{offset_x}},\"offsetY\":{{offset_y}},\"originalW\":{{original_width}},\"originalH\":{{original_height}}}{{#unless @last}},{{/unless}}\n{{/each}}{{/if}}  ]\n}\n"
+      "body": "{\n  \"name\": {{json project.name}},\n  \"fps\": {{project.fps}},\n  \"bones\": [\n{{#each skeleton.bones}}    {\"name\":{{json name}},\"parent\":{{json parent}},\"x\":{{round x 3}},\"y\":{{round y 3}},\"rotation\":{{round rotation 3}},\"length\":{{round length 3}}}{{#unless @last}},{{/unless}}\n{{/each}}  ],\n  \"slots\": [\n{{#each skeleton.slots}}    {\"name\":{{json name}},\"bone\":{{json bone}},\"attachment\":{{#if attachment}}{{json attachment}}{{else}}null{{/if}}}{{#unless @last}},{{/unless}}\n{{/each}}  ],\n  \"animations\": [\n{{#each animations}}    {\"name\":{{json name}},\"duration\":{{round duration 3}},\"looping\":{{looping}}}{{#unless @last}},{{/unless}}\n{{/each}}  ],\n  \"regions\": [\n{{#if atlas}}{{#each atlas.regions}}    {\"name\":{{json name}},\"page\":{{page}},\"x\":{{x}},\"y\":{{y}},\"w\":{{width}},\"h\":{{height}},\"offsetX\":{{offset_x}},\"offsetY\":{{offset_y}},\"originalW\":{{original_width}},\"originalH\":{{original_height}}}{{#unless @last}},{{/unless}}\n{{/each}}{{/if}}  ]\n}\n"
     },
     {
       "name": "animation",
       "output_path": "animations/{{animation.name}}.json",
       "per": "animation",
-      "body": "{\n  \"animation\": \"{{animation.name}}\",\n  \"duration\": {{round animation.duration 3}},\n  \"looping\": {{animation.looping}},\n  \"bones\": {{json animation.bones}},\n  \"events\": {{json animation.events}}\n}\n"
+      "body": "{\n  \"animation\": {{json animation.name}},\n  \"duration\": {{round animation.duration 3}},\n  \"looping\": {{animation.looping}},\n  \"bones\": {{json animation.bones}},\n  \"events\": {{json animation.events}}\n}\n"
     }
   ],
   "copy_images": false

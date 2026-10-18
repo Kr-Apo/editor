@@ -1,0 +1,128 @@
+{
+  "pass": true,
+  "errors": [],
+  "warnings": [],
+  "missing": [],
+  "cases": [
+    {
+      "time": 0,
+      "maxWorldDelta": 0.0000355224609478455,
+      "visiblePixels": 93831,
+      "alphaSum": 23154182,
+      "meshes": 17,
+      "glError": 0
+    },
+    {
+      "time": 0.25,
+      "maxWorldDelta": 0.00003719322137385461,
+      "visiblePixels": 95337,
+      "alphaSum": 23447450,
+      "meshes": 17,
+      "glError": 0
+    },
+    {
+      "time": 0.5,
+      "maxWorldDelta": 0.000030181108407134616,
+      "visiblePixels": 95617,
+      "alphaSum": 23502359,
+      "meshes": 17,
+      "glError": 0
+    },
+    {
+      "time": 0.75,
+      "maxWorldDelta": 0.000029748010078378684,
+      "visiblePixels": 95695,
+      "alphaSum": 23536394,
+      "meshes": 17,
+      "glError": 0
+    },
+    {
+      "time": 1,
+      "maxWorldDelta": 0.000039711721527169175,
+      "visiblePixels": 95747,
+      "alphaSum": 23546163,
+      "meshes": 17,
+      "glError": 0
+    },
+    {
+      "time": 1.2999999523162842,
+      "maxWorldDelta": 0.00003671504460101005,
+      "visiblePixels": 95781,
+      "alphaSum": 23546566,
+      "meshes": 17,
+      "glError": 0
+    },
+    {
+      "time": 1.399999976158142,
+      "maxWorldDelta": 0.00004105218192052007,
+      "visiblePixels": 95672,
+      "alphaSum": 23511685,
+      "meshes": 17,
+      "glError": 0
+    },
+    {
+      "time": 1.5333333015441895,
+      "maxWorldDelta": 0.000030909561139935704,
+      "visiblePixels": 93811,
+      "alphaSum": 23150002,
+      "meshes": 17,
+      "glError": 0
+    },
+    {
+      "time": 1.6666666269302368,
+      "maxWorldDelta": 0.000039513198089480284,
+      "visiblePixels": 94480,
+      "alphaSum": 23266718,
+      "meshes": 17,
+      "glError": 0
+    },
+    {
+      "time": 1.9333332777023315,
+      "maxWorldDelta": 0.00003671504460101005,
+      "visiblePixels": 93812,
+      "alphaSum": 23154510,
+      "meshes": 17,
+      "glError": 0
+    },
+    {
+      "time": 2.5,
+      "maxWorldDelta": 0.00003671504460101005,
+      "visiblePixels": 93812,
+      "alphaSum": 23154510,
+      "meshes": 17,
+      "glError": 0
+    },
+    {
+      "time": 2.990000009536743,
+      "maxWorldDelta": 0.00003671504460101005,
+      "visiblePixels": 93812,
+      "alphaSum": 23154510,
+      "meshes": 17,
+      "glError": 0
+    }
+  ],
+  "browser": "155.0.8059.84",
+  "recordingSeconds": 6.5,
+  "soak": {
+    "wallMs": 180026,
+    "before": {
+      "ready": true,
+      "frames": 1538,
+      "loops": 2,
+      "errors": [],
+      "missing": [],
+      "meshes": 17,
+      "time": 0
+    },
+    "after": {
+      "ready": true,
+      "frames": 27461,
+      "loops": 62,
+      "errors": [],
+      "missing": [],
+      "meshes": 17,
+      "time": 0.031099999997941552
+    }
+  },
+  "gpu": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3090 (0x00002204) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+}

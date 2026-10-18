@@ -17,19 +17,13 @@ pub struct ImportPsd {
     /// Replace the document outright, rather than merging under a new bone.
     replace: bool,
     name: String,
-    /// The whole prior document, captured on first apply.
+    /// The inactive document, exchanged on undo/redo like ReplaceDocument.
     ///
     /// Coarse on purpose. A merge touches bones, slots, skins, assets and the
     /// draw order at once, and reconstructing the inverse of all of that is far
-    /// more code — and far more places to be subtly wrong — than keeping a copy
-    /// of a structure that is a few hundred kilobytes at worst.
-    before: Option<Box<Snapshot>>,
-}
-
-struct Snapshot {
-    skeleton: ankhimate_core::skeleton::Skeleton,
-    assets: ankhimate_core::assets::AssetDb,
-    psd_layer_paths: HashMap<String, String>,
+    /// more code — and far more places to be subtly wrong — than retaining one
+    /// owned document copy, including pixels and the original entity IDs.
+    other: Option<Box<Document>>,
 }
 
 impl ImportPsd {
@@ -38,29 +32,29 @@ impl ImportPsd {
             imported: Some(imported),
             replace,
             name: name.into(),
-            before: None,
+            other: None,
         }
     }
 }
 
 impl EditCommand for ImportPsd {
     fn apply(&mut self, doc: &mut Document) {
-        let Some(imported) = self.imported.take() else {
-            return; // Re-apply after undo is handled by `revert` restoring state.
-        };
-        if self.before.is_none() {
-            self.before = Some(Box::new(Snapshot {
-                skeleton: doc.skeleton.clone(),
-                assets: doc.assets.clone(),
-                psd_layer_paths: doc.psd_layer_paths.clone(),
-            }));
+        if let Some(other) = self.other.as_mut() {
+            std::mem::swap(doc, other);
+            return;
         }
+        let Some(imported) = self.imported.take() else {
+            return;
+        };
+        self.other = Some(Box::new(doc.clone()));
 
         if self.replace {
             doc.skeleton = imported.skeleton;
             doc.assets = imported.assets;
             doc.psd_layer_paths = imported.layer_paths;
-            self.imported = None;
+            // A PSD has no animation clips. Keeping the previous rig's keys
+            // would point at unrelated (or missing) bones in this skeleton.
+            doc.animations.clear();
             return;
         }
 
@@ -99,8 +93,10 @@ impl EditCommand for ImportPsd {
             bone_map.insert(*id, new);
         }
 
+        let mut asset_names = HashMap::new();
         for asset in imported.assets.images.values() {
-            doc.assets.add(asset.clone());
+            let id = doc.assets.add(asset.clone());
+            asset_names.insert(asset.name.clone(), doc.assets.images[id].name.clone());
         }
 
         let mut slot_map = HashMap::new();
@@ -148,6 +144,7 @@ impl EditCommand for ImportPsd {
                     continue;
                 };
                 let mut attachment = attachment.clone();
+                remap_assets(&mut attachment, &asset_names);
                 if let Attachment::Mesh(mesh) = &mut attachment {
                     mesh.weights.iter_mut().flatten().for_each(|w| {
                         if let Some(&mapped) = bone_map.get(&w.bone) {
@@ -166,20 +163,17 @@ impl EditCommand for ImportPsd {
         }
 
         for (asset_name, layer_path) in imported.layer_paths {
-            doc.psd_layer_paths.insert(asset_name, layer_path);
+            let target = asset_names.get(&asset_name).cloned().unwrap_or(asset_name);
+            doc.psd_layer_paths.insert(target, layer_path);
         }
 
         doc.skeleton.rebuild_update_order();
-        self.imported = None;
     }
 
     fn revert(&mut self, doc: &mut Document) {
-        let Some(before) = self.before.take() else {
-            return;
-        };
-        doc.skeleton = before.skeleton;
-        doc.assets = before.assets;
-        doc.psd_layer_paths = before.psd_layer_paths;
+        if let Some(other) = self.other.as_mut() {
+            std::mem::swap(doc, other);
+        }
     }
 
     fn label(&self) -> &str {
@@ -192,6 +186,24 @@ impl EditCommand for ImportPsd {
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
+    }
+}
+
+/// AssetDb uniquifies names on insertion; references must follow that rename.
+fn remap_assets(attachment: &mut Attachment, names: &HashMap<String, String>) {
+    let (texture, sequence) = match attachment {
+        Attachment::Region(region) => (&mut region.texture, &mut region.sequence),
+        Attachment::Mesh(mesh) => (&mut mesh.texture, &mut mesh.sequence),
+        _ => return,
+    };
+    let remap = |name: &mut String| {
+        if let Some(target) = names.get(name) {
+            name.clone_from(target);
+        }
+    };
+    remap(texture);
+    if let Some(sequence) = sequence {
+        sequence.frames.iter_mut().for_each(remap);
     }
 }
 

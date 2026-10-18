@@ -1,0 +1,29 @@
+{
+  "alpha": "straight",
+  "animation": "frappe_sol",
+  "background": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "camera": {
+    "center": [
+      35.05657958984375,
+      -16.10442352294922
+    ],
+    "zoom": 0.9918287992477417
+  },
+  "duration": 3.0,
+  "filename_pattern": "frame_%06d.png",
+  "first_frame": 0,
+  "fps": 30,
+  "frame_count": 90,
+  "height": 512,
+  "looping": true,
+  "physics": "unsupported; projects with physics constraints refused",
+  "png_sequence_version": 1,
+  "sampling": "i / fps; end exclusive",
+  "skin": "default",
+  "width": 512
+}

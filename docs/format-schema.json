@@ -1,0 +1,1568 @@
+{
+  "schema_version": 1,
+  "container_version": 1,
+  "schema_code_sha256": "301d1a3a6cda6c85e284177359c81600437fcff97082da01d6416e4510f2085e",
+  "types": {
+    "Project": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "version": {
+          "type": "u32",
+          "attributes": []
+        },
+        "name": {
+          "type": "String",
+          "attributes": []
+        },
+        "fps": {
+          "type": "u32",
+          "attributes": []
+        },
+        "assets": {
+          "type": "Vec<Asset>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "bones": {
+          "type": "Vec<Bone>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "slots": {
+          "type": "Vec<Slot>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "draw_order": {
+          "type": "Vec<String>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "skins": {
+          "type": "Vec<Skin>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "default_skin": {
+          "type": "String",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "constraints": {
+          "type": "Vec<Constraint>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "constraint_order": {
+          "type": "Vec<String>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "animations": {
+          "type": "Vec<Animation>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "groups": {
+          "type": "Vec<Group>",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"Vec::is_empty\")]"
+          ]
+        },
+        "psd_layer_paths": {
+          "type": "std::collections::BTreeMap<String, String>",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"std::collections::BTreeMap::is_empty\")]"
+          ]
+        },
+        "export_presets": {
+          "type": "Vec<serde_json::Value>",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"Vec::is_empty\")]"
+          ]
+        },
+        "extra": {
+          "type": "Extra",
+          "attributes": [
+            "#[serde(flatten)]",
+            "#[serde(default)]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "Group": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "name": {
+          "type": "String",
+          "attributes": []
+        },
+        "color": {
+          "type": "[f32; 4]",
+          "attributes": [
+            "#[serde(default = \"group_color_default\")]"
+          ]
+        },
+        "members": {
+          "type": "Vec<String>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "parent": {
+          "type": "String",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"String::is_empty\")]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "Asset": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "name": {
+          "type": "String",
+          "attributes": []
+        },
+        "file": {
+          "type": "String",
+          "attributes": []
+        },
+        "width": {
+          "type": "u32",
+          "attributes": []
+        },
+        "height": {
+          "type": "u32",
+          "attributes": []
+        },
+        "source_path": {
+          "type": "Option<String>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "extra": {
+          "type": "Extra",
+          "attributes": [
+            "#[serde(flatten)]",
+            "#[serde(default)]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "Bone": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "name": {
+          "type": "String",
+          "attributes": []
+        },
+        "parent": {
+          "type": "String",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "length": {
+          "type": "f32",
+          "attributes": []
+        },
+        "tx": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "ty": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "rotation": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "sx": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default = \"one\")]"
+          ]
+        },
+        "sy": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default = \"one\")]"
+          ]
+        },
+        "shear_x": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "shear_y": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "inherit_rotation": {
+          "type": "bool",
+          "attributes": [
+            "#[serde(default = \"yes\")]"
+          ]
+        },
+        "inherit_scale": {
+          "type": "bool",
+          "attributes": [
+            "#[serde(default = \"yes\")]"
+          ]
+        },
+        "inherit_reflect": {
+          "type": "bool",
+          "attributes": [
+            "#[serde(default = \"yes\")]"
+          ]
+        },
+        "color": {
+          "type": "Option<[f32; 4]>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "extra": {
+          "type": "Extra",
+          "attributes": [
+            "#[serde(flatten)]",
+            "#[serde(default)]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "Slot": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "name": {
+          "type": "String",
+          "attributes": []
+        },
+        "bone": {
+          "type": "String",
+          "attributes": []
+        },
+        "attachment": {
+          "type": "Option<String>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "color": {
+          "type": "[f32; 4]",
+          "attributes": [
+            "#[serde(default = \"white\")]"
+          ]
+        },
+        "dark_color": {
+          "type": "Option<[f32; 4]>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "blend_mode": {
+          "type": "String",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "extra": {
+          "type": "Extra",
+          "attributes": [
+            "#[serde(flatten)]",
+            "#[serde(default)]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "Skin": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "name": {
+          "type": "String",
+          "attributes": []
+        },
+        "entries": {
+          "type": "Vec<SkinEntry>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "bones": {
+          "type": "Vec<String>",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"Vec::is_empty\")]"
+          ]
+        },
+        "constraints": {
+          "type": "Vec<String>",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"Vec::is_empty\")]"
+          ]
+        },
+        "extra": {
+          "type": "Extra",
+          "attributes": [
+            "#[serde(flatten)]",
+            "#[serde(default)]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "SkinEntry": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "slot": {
+          "type": "String",
+          "attributes": []
+        },
+        "name": {
+          "type": "String",
+          "attributes": []
+        },
+        "attachment": {
+          "type": "Attachment",
+          "attributes": []
+        }
+      },
+      "variants": {}
+    },
+    "Attachment": {
+      "kind": "enum",
+      "attributes": [
+        "#[serde(tag = \"type\", rename_all = \"lowercase\")]"
+      ],
+      "fields": {},
+      "variants": {
+        "Region": {
+          "attributes": [],
+          "fields": {},
+          "payload": "Region"
+        },
+        "Mesh": {
+          "attributes": [],
+          "fields": {},
+          "payload": "Mesh"
+        },
+        "Clipping": {
+          "attributes": [],
+          "fields": {},
+          "payload": "Clipping"
+        },
+        "Path": {
+          "attributes": [],
+          "fields": {},
+          "payload": "Path"
+        },
+        "BoundingBox": {
+          "attributes": [],
+          "fields": {},
+          "payload": "BoundingBox"
+        },
+        "Point": {
+          "attributes": [],
+          "fields": {},
+          "payload": "Point"
+        }
+      }
+    },
+    "BoundingBox": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "vertices": {
+          "type": "Vec<f32>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "weights": {
+          "type": "Vec<Vec<(String, f32)>>",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"Vec::is_empty\")]"
+          ]
+        },
+        "extra": {
+          "type": "Extra",
+          "attributes": [
+            "#[serde(flatten)]",
+            "#[serde(default)]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "Point": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "x": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "y": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "rotation": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "extra": {
+          "type": "Extra",
+          "attributes": [
+            "#[serde(flatten)]",
+            "#[serde(default)]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "Sequence": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "frames": {
+          "type": "Vec<String>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "fps": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "mode": {
+          "type": "String",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "setup_index": {
+          "type": "u32",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "LinkedMesh": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "skin": {
+          "type": "Option<String>",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"Option::is_none\")]"
+          ]
+        },
+        "slot": {
+          "type": "String",
+          "attributes": []
+        },
+        "attachment": {
+          "type": "String",
+          "attributes": []
+        },
+        "inherit_deform": {
+          "type": "bool",
+          "attributes": [
+            "#[serde(default = \"yes\")]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "Path": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "vertices": {
+          "type": "Vec<f32>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "closed": {
+          "type": "bool",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "constant_speed": {
+          "type": "bool",
+          "attributes": [
+            "#[serde(default = \"yes\")]"
+          ]
+        },
+        "extra": {
+          "type": "Extra",
+          "attributes": [
+            "#[serde(flatten)]",
+            "#[serde(default)]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "Clipping": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "vertices": {
+          "type": "Vec<f32>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "end_slot": {
+          "type": "Option<String>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "extra": {
+          "type": "Extra",
+          "attributes": [
+            "#[serde(flatten)]",
+            "#[serde(default)]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "Region": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "texture": {
+          "type": "String",
+          "attributes": []
+        },
+        "offset_x": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "offset_y": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "rotation": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "scale_x": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default = \"one\")]"
+          ]
+        },
+        "scale_y": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default = \"one\")]"
+          ]
+        },
+        "width": {
+          "type": "f32",
+          "attributes": []
+        },
+        "height": {
+          "type": "f32",
+          "attributes": []
+        },
+        "uv": {
+          "type": "[f32; 4]",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "pivot_x": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default = \"half\")]"
+          ]
+        },
+        "pivot_y": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default = \"half\")]"
+          ]
+        },
+        "sequence": {
+          "type": "Option<Sequence>",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"Option::is_none\")]"
+          ]
+        },
+        "extra": {
+          "type": "Extra",
+          "attributes": [
+            "#[serde(flatten)]",
+            "#[serde(default)]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "Mesh": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "texture": {
+          "type": "String",
+          "attributes": []
+        },
+        "vertices": {
+          "type": "Vec<f32>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "uvs": {
+          "type": "Vec<f32>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "triangles": {
+          "type": "Vec<u32>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "edges": {
+          "type": "Vec<u32>",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"Vec::is_empty\")]"
+          ]
+        },
+        "weights": {
+          "type": "Vec<Vec<(String, f32)>>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "linked": {
+          "type": "Option<LinkedMesh>",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"Option::is_none\")]"
+          ]
+        },
+        "sequence": {
+          "type": "Option<Sequence>",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"Option::is_none\")]"
+          ]
+        },
+        "extra": {
+          "type": "Extra",
+          "attributes": [
+            "#[serde(flatten)]",
+            "#[serde(default)]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "Constraint": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "name": {
+          "type": "String",
+          "attributes": []
+        },
+        "kind": {
+          "type": "String",
+          "attributes": [
+            "#[serde(rename = \"type\")]"
+          ]
+        },
+        "target": {
+          "type": "String",
+          "attributes": []
+        },
+        "bones": {
+          "type": "Vec<String>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "bend_direction": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default = \"one\")]"
+          ]
+        },
+        "mix": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default = \"one\")]"
+          ]
+        },
+        "softness": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "stretch": {
+          "type": "bool",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "stretch_limit": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default = \"stretch_limit_default\")]"
+          ]
+        },
+        "stiffness": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "transform_mix": {
+          "type": "Option<TransformMix>",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"Option::is_none\")]"
+          ]
+        },
+        "offsets": {
+          "type": "Option<[f32; 7]>",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"Option::is_none\")]"
+          ]
+        },
+        "local": {
+          "type": "bool",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"std::ops::Not::not\")]"
+          ]
+        },
+        "relative": {
+          "type": "bool",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"std::ops::Not::not\")]"
+          ]
+        },
+        "physics": {
+          "type": "Option<[f32; 4]>",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"Option::is_none\")]"
+          ]
+        },
+        "forces": {
+          "type": "Option<[f32; 4]>",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"Option::is_none\")]"
+          ]
+        },
+        "channels": {
+          "type": "Option<[bool; 2]>",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"Option::is_none\")]"
+          ]
+        },
+        "slot": {
+          "type": "Option<String>",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"Option::is_none\")]"
+          ]
+        },
+        "path": {
+          "type": "Option<[f32; 4]>",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"Option::is_none\")]"
+          ]
+        },
+        "extra": {
+          "type": "Extra",
+          "attributes": [
+            "#[serde(flatten)]",
+            "#[serde(default)]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "Animation": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "name": {
+          "type": "String",
+          "attributes": []
+        },
+        "duration": {
+          "type": "f32",
+          "attributes": []
+        },
+        "looping": {
+          "type": "bool",
+          "attributes": [
+            "#[serde(default = \"yes\")]"
+          ]
+        },
+        "timelines": {
+          "type": "Vec<Timeline>",
+          "attributes": [
+            "#[serde(default)]"
+          ]
+        },
+        "events": {
+          "type": "Vec<Event>",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"Vec::is_empty\")]"
+          ]
+        },
+        "markers": {
+          "type": "Vec<Marker>",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"Vec::is_empty\")]"
+          ]
+        },
+        "bone_offsets": {
+          "type": "Vec<BoneOffset>",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"Vec::is_empty\")]"
+          ]
+        },
+        "extra": {
+          "type": "Extra",
+          "attributes": [
+            "#[serde(flatten)]",
+            "#[serde(default)]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "BoneOffset": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "bone": {
+          "type": "String",
+          "attributes": []
+        },
+        "offset": {
+          "type": "f32",
+          "attributes": []
+        }
+      },
+      "variants": {}
+    },
+    "Marker": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "time": {
+          "type": "f32",
+          "attributes": []
+        },
+        "name": {
+          "type": "String",
+          "attributes": []
+        },
+        "color": {
+          "type": "[f32; 4]",
+          "attributes": [
+            "#[serde(default = \"marker_color_default\")]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "Event": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "time": {
+          "type": "f32",
+          "attributes": []
+        },
+        "name": {
+          "type": "String",
+          "attributes": []
+        },
+        "int_value": {
+          "type": "i32",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"is_zero_i32\")]"
+          ]
+        },
+        "float_value": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"is_zero_f32\")]"
+          ]
+        },
+        "string_value": {
+          "type": "String",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"String::is_empty\")]"
+          ]
+        },
+        "audio": {
+          "type": "String",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"String::is_empty\")]"
+          ]
+        },
+        "volume": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default = \"one\", skip_serializing_if = \"is_one_f32\")]"
+          ]
+        },
+        "balance": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"is_zero_f32\")]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "Timeline": {
+      "kind": "enum",
+      "attributes": [
+        "#[serde(tag = \"kind\", rename_all = \"snake_case\")]"
+      ],
+      "fields": {},
+      "variants": {
+        "BoneTranslate": {
+          "attributes": [],
+          "fields": {
+            "bone": {
+              "type": "String",
+              "attributes": []
+            },
+            "axis": {
+              "type": "Axis",
+              "attributes": [
+                "#[serde(default)]"
+              ]
+            },
+            "keys": {
+              "type": "Vec<ScalarKey>",
+              "attributes": []
+            },
+            "extra": {
+              "type": "Extra",
+              "attributes": [
+                "#[serde(flatten)]",
+                "#[serde(default)]"
+              ]
+            }
+          }
+        },
+        "BoneRotate": {
+          "attributes": [],
+          "fields": {
+            "bone": {
+              "type": "String",
+              "attributes": []
+            },
+            "keys": {
+              "type": "Vec<ScalarKey>",
+              "attributes": []
+            }
+          }
+        },
+        "BoneScale": {
+          "attributes": [],
+          "fields": {
+            "bone": {
+              "type": "String",
+              "attributes": []
+            },
+            "axis": {
+              "type": "Axis",
+              "attributes": [
+                "#[serde(default)]"
+              ]
+            },
+            "keys": {
+              "type": "Vec<ScalarKey>",
+              "attributes": []
+            },
+            "extra": {
+              "type": "Extra",
+              "attributes": [
+                "#[serde(flatten)]",
+                "#[serde(default)]"
+              ]
+            }
+          }
+        },
+        "BoneShear": {
+          "attributes": [],
+          "fields": {
+            "bone": {
+              "type": "String",
+              "attributes": []
+            },
+            "axis": {
+              "type": "Axis",
+              "attributes": [
+                "#[serde(default)]"
+              ]
+            },
+            "keys": {
+              "type": "Vec<ScalarKey>",
+              "attributes": []
+            },
+            "extra": {
+              "type": "Extra",
+              "attributes": [
+                "#[serde(flatten)]",
+                "#[serde(default)]"
+              ]
+            }
+          }
+        },
+        "SlotColor": {
+          "attributes": [],
+          "fields": {
+            "slot": {
+              "type": "String",
+              "attributes": []
+            },
+            "keys": {
+              "type": "Vec<ColorKey>",
+              "attributes": []
+            }
+          }
+        },
+        "SlotVisible": {
+          "attributes": [],
+          "fields": {
+            "slot": {
+              "type": "String",
+              "attributes": []
+            },
+            "keys": {
+              "type": "Vec<VisibleKey>",
+              "attributes": []
+            }
+          }
+        },
+        "SlotAttachment": {
+          "attributes": [],
+          "fields": {
+            "slot": {
+              "type": "String",
+              "attributes": []
+            },
+            "keys": {
+              "type": "Vec<AttachmentKey>",
+              "attributes": []
+            }
+          }
+        },
+        "DrawOrder": {
+          "attributes": [],
+          "fields": {
+            "keys": {
+              "type": "Vec<DrawOrderKey>",
+              "attributes": []
+            }
+          }
+        },
+        "IkMix": {
+          "attributes": [],
+          "fields": {
+            "constraint": {
+              "type": "String",
+              "attributes": []
+            },
+            "keys": {
+              "type": "Vec<ScalarKey>",
+              "attributes": []
+            }
+          }
+        },
+        "IkBendDirection": {
+          "attributes": [],
+          "fields": {
+            "constraint": {
+              "type": "String",
+              "attributes": []
+            },
+            "keys": {
+              "type": "Vec<ScalarKey>",
+              "attributes": []
+            }
+          }
+        },
+        "IkSoftness": {
+          "attributes": [],
+          "fields": {
+            "constraint": {
+              "type": "String",
+              "attributes": []
+            },
+            "keys": {
+              "type": "Vec<ScalarKey>",
+              "attributes": []
+            }
+          }
+        },
+        "TransformConstraintMix": {
+          "attributes": [],
+          "fields": {
+            "constraint": {
+              "type": "String",
+              "attributes": []
+            },
+            "keys": {
+              "type": "Vec<MixKey>",
+              "attributes": []
+            }
+          }
+        },
+        "Deform": {
+          "attributes": [],
+          "fields": {
+            "slot": {
+              "type": "String",
+              "attributes": []
+            },
+            "attachment": {
+              "type": "String",
+              "attributes": []
+            },
+            "keys": {
+              "type": "Vec<DeformKey>",
+              "attributes": []
+            }
+          }
+        }
+      }
+    },
+    "Interp": {
+      "kind": "enum",
+      "attributes": [
+        "#[serde(tag = \"curve\", rename_all = \"lowercase\")]"
+      ],
+      "fields": {},
+      "variants": {
+        "Linear": {
+          "attributes": [
+            "#[default]"
+          ],
+          "fields": {}
+        },
+        "Stepped": {
+          "attributes": [],
+          "fields": {}
+        },
+        "Bezier": {
+          "attributes": [],
+          "fields": {
+            "handles": {
+              "type": "[f32; 4]",
+              "attributes": []
+            }
+          }
+        }
+      }
+    },
+    "ScalarKey": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "time": {
+          "type": "f32",
+          "attributes": []
+        },
+        "value": {
+          "type": "f32",
+          "attributes": []
+        },
+        "interp": {
+          "type": "Interp",
+          "attributes": [
+            "#[serde(default, flatten)]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "Vec2Key": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "time": {
+          "type": "f32",
+          "attributes": []
+        },
+        "x": {
+          "type": "f32",
+          "attributes": []
+        },
+        "y": {
+          "type": "f32",
+          "attributes": []
+        },
+        "interp": {
+          "type": "Interp",
+          "attributes": [
+            "#[serde(default, flatten)]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "ColorKey": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "time": {
+          "type": "f32",
+          "attributes": []
+        },
+        "value": {
+          "type": "[f32; 4]",
+          "attributes": []
+        },
+        "interp": {
+          "type": "Interp",
+          "attributes": [
+            "#[serde(default, flatten)]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "Axis": {
+      "kind": "enum",
+      "attributes": [
+        "#[serde(rename_all = \"lowercase\")]"
+      ],
+      "fields": {},
+      "variants": {
+        "X": {
+          "attributes": [
+            "#[default]"
+          ],
+          "fields": {}
+        },
+        "Y": {
+          "attributes": [],
+          "fields": {}
+        }
+      }
+    },
+    "TransformMix": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "rotate": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"is_zero\")]"
+          ]
+        },
+        "translate_x": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"is_zero\")]"
+          ]
+        },
+        "translate_y": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"is_zero\")]"
+          ]
+        },
+        "scale_x": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"is_zero\")]"
+          ]
+        },
+        "scale_y": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"is_zero\")]"
+          ]
+        },
+        "shear_x": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"is_zero\")]"
+          ]
+        },
+        "shear_y": {
+          "type": "f32",
+          "attributes": [
+            "#[serde(default, skip_serializing_if = \"is_zero\")]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "MixKey": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "time": {
+          "type": "f32",
+          "attributes": []
+        },
+        "value": {
+          "type": "TransformMix",
+          "attributes": [
+            "#[serde(flatten)]"
+          ]
+        },
+        "interp": {
+          "type": "Interp",
+          "attributes": [
+            "#[serde(default, flatten)]"
+          ]
+        },
+        "extra": {
+          "type": "Extra",
+          "attributes": [
+            "#[serde(flatten)]",
+            "#[serde(default)]"
+          ]
+        }
+      },
+      "variants": {}
+    },
+    "VisibleKey": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "time": {
+          "type": "f32",
+          "attributes": []
+        },
+        "value": {
+          "type": "bool",
+          "attributes": []
+        }
+      },
+      "variants": {}
+    },
+    "AttachmentKey": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "time": {
+          "type": "f32",
+          "attributes": []
+        },
+        "value": {
+          "type": "Option<String>",
+          "attributes": []
+        }
+      },
+      "variants": {}
+    },
+    "DrawOrderKey": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "time": {
+          "type": "f32",
+          "attributes": []
+        },
+        "offsets": {
+          "type": "Vec<(String, i32)>",
+          "attributes": []
+        }
+      },
+      "variants": {}
+    },
+    "DeformKey": {
+      "kind": "struct",
+      "attributes": [],
+      "fields": {
+        "time": {
+          "type": "f32",
+          "attributes": []
+        },
+        "offsets": {
+          "type": "Vec<f32>",
+          "attributes": []
+        },
+        "interp": {
+          "type": "Interp",
+          "attributes": [
+            "#[serde(default, flatten)]"
+          ]
+        }
+      },
+      "variants": {}
+    }
+  },
+  "compact_fields": [
+    "version",
+    "name",
+    "fps",
+    "assets",
+    "bones",
+    "slots",
+    "draw_order",
+    "skins",
+    "default_skin",
+    "constraints",
+    "constraint_order",
+    "animations",
+    "groups",
+    "psd_layer_paths",
+    "export_presets",
+    "attachment",
+    "audio",
+    "balance",
+    "bend_direction",
+    "blend_mode",
+    "bone",
+    "bone_offsets",
+    "channels",
+    "closed",
+    "color",
+    "constant_speed",
+    "dark_color",
+    "duration",
+    "edges",
+    "end_slot",
+    "entries",
+    "events",
+    "file",
+    "float_value",
+    "forces",
+    "frames",
+    "handles",
+    "height",
+    "inherit_deform",
+    "inherit_reflect",
+    "inherit_rotation",
+    "inherit_scale",
+    "int_value",
+    "interp",
+    "kind",
+    "keys",
+    "length",
+    "linked",
+    "local",
+    "looping",
+    "markers",
+    "members",
+    "mix",
+    "mode",
+    "offset",
+    "offset_x",
+    "offset_y",
+    "offsets",
+    "parent",
+    "path",
+    "physics",
+    "pivot_x",
+    "pivot_y",
+    "relative",
+    "rotate",
+    "rotation",
+    "scale_x",
+    "scale_y",
+    "sequence",
+    "setup_index",
+    "shear_x",
+    "shear_y",
+    "skin",
+    "slot",
+    "softness",
+    "source_path",
+    "stiffness",
+    "stretch",
+    "stretch_limit",
+    "string_value",
+    "sx",
+    "sy",
+    "target",
+    "texture",
+    "time",
+    "timelines",
+    "transform_mix",
+    "translate_x",
+    "translate_y",
+    "triangles",
+    "tx",
+    "ty",
+    "type",
+    "uv",
+    "uvs",
+    "value",
+    "vertices",
+    "volume",
+    "weights",
+    "width",
+    "x",
+    "y",
+    "axis",
+    "constraint",
+    "curve"
+  ],
+  "native_contract_sources": {
+    "export/src/context.rs": "78f091e018603a10f3c4d7e89c11094a9d07683f37fa927eee3ea7c6089926a1",
+    "export/src/presets/ankhimate_runtime.json": "04574cf3f611891762f334c8fa154cdcb57daa402951e205a30df0313f3a4c72"
+  }
+}

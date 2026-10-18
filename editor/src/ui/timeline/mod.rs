@@ -107,6 +107,7 @@ impl Default for ViewState {
 pub struct Style<'a> {
     pub theme: &'a crate::theme::Theme,
     pub text: f32,
+    pub operators: &'a crate::registry::Registry,
 }
 
 /// The dopesheet pane.
@@ -115,9 +116,11 @@ pub fn dopesheet(
     state: &mut AppState,
     theme: &crate::theme::Theme,
     fonts: &crate::config::FontSettings,
+    operators: &crate::registry::Registry,
 ) {
     let style = Style {
         theme,
+        operators,
         text: fonts.for_area(crate::config::Area::Timeline),
     };
     panel(ui, state, SheetMode::Dopesheet, style)
@@ -133,9 +136,11 @@ pub fn graph_view(
     state: &mut AppState,
     theme: &crate::theme::Theme,
     fonts: &crate::config::FontSettings,
+    operators: &crate::registry::Registry,
 ) {
     let style = Style {
         theme,
+        operators,
         text: fonts.for_area(crate::config::Area::Timeline),
     };
     panel(ui, state, SheetMode::Graph, style)

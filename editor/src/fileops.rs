@@ -8,7 +8,7 @@
 //! moves the whole `Document` across.
 
 use crate::app_state::AppState;
-use ankhimate_document::doc::{Document, DocumentMeta};
+use ankhimate_document::doc::Document;
 use std::path::{Path, PathBuf};
 
 const EXT: &str = "ankh";
@@ -63,7 +63,8 @@ pub fn save_as(state: &AppState) -> FileOutcome {
     let name = path
         .file_name()
         .and_then(|name| name.to_str())
-        .unwrap_or("");
+        .unwrap_or("")
+        .to_ascii_lowercase();
     if !name.ends_with(".ankh")
         && !name.ends_with(".ankh.json")
         && !name.ends_with(".ankh.min.json")
@@ -86,20 +87,8 @@ pub fn open(state: &mut AppState) -> FileOutcome {
 pub fn open_path(state: &mut AppState, path: &Path) -> FileOutcome {
     match ankhimate_formats::load(path) {
         Ok((loaded, _images)) => {
-            let report = loaded.report;
-            state.replace_document(Document {
-                skeleton: loaded.skeleton,
-                animations: loaded.animations,
-                assets: loaded.assets,
-                meta: DocumentMeta {
-                    name: loaded.name,
-                    fps: loaded.fps,
-                },
-                // Layer provenance is per-import, not per-file: opening a
-                // project cannot know which PSD its images came from.
-                psd_layer_paths: Default::default(),
-                export_presets: loaded.export_presets,
-            });
+            let report = loaded.report.clone();
+            state.replace_document(Document::from_loaded(loaded));
             // A dangling reference is not a failed open — the project is usable
             // minus that one thing — but the user should hear about it.
             if !report.is_clean() {
@@ -188,19 +177,8 @@ pub(crate) fn adopt(
     loaded: ankhimate_formats::Loaded,
     path: &Path,
 ) -> FileOutcome {
-    let report = loaded.report;
-    state.replace_document(Document {
-        skeleton: loaded.skeleton,
-        animations: loaded.animations,
-        assets: loaded.assets,
-        meta: DocumentMeta {
-            name: loaded.name,
-            fps: loaded.fps,
-        },
-        // Layer provenance is per-import, not per-file.
-        psd_layer_paths: Default::default(),
-        export_presets: loaded.export_presets,
-    });
+    let report = loaded.report.clone();
+    state.replace_document(Document::from_loaded(loaded));
     FileOutcome::Imported {
         path: path.to_path_buf(),
         report,
@@ -232,6 +210,24 @@ mod tests {
             inherit: Default::default(),
             color: Bone::default_color(),
         }
+    }
+
+    #[test]
+    fn opening_a_saved_project_preserves_psd_provenance() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("provenance.ankh");
+        let mut state = AppState::default();
+        state
+            .doc
+            .psd_layer_paths
+            .insert("arm".into(), "rig/arm".into());
+        assert!(matches!(write_to(&state, &path), FileOutcome::Saved(_)));
+        let mut opened = AppState::default();
+        assert!(matches!(
+            open_path(&mut opened, &path),
+            FileOutcome::Opened(_)
+        ));
+        assert_eq!(opened.doc.psd_layer_paths, state.doc.psd_layer_paths);
     }
 
     fn community_plugins() -> crate::plugins::Plugins {

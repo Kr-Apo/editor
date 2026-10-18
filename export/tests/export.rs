@@ -1874,3 +1874,245 @@ fn a_preset_survives_a_json_round_trip() {
     let back = Preset::from_json(&text).expect("a written preset parses");
     assert_eq!(preset, back);
 }
+
+// M001a: exercise the native template, not just the public context.
+fn axes_project() -> Project {
+    serde_json::from_str(include_str!("fixtures/runtime_axes.ankh.json")).unwrap()
+}
+
+fn render_native_axes() -> serde_json::Value {
+    let project = axes_project();
+    let context = Context::build(&project, None, ExportInfo::default());
+    let preset = presets::default_preset();
+    let output = ankhimate_export::template::Engine::new()
+        .render(
+            "native axes",
+            &preset.templates[0].body,
+            &context.to_value(),
+        )
+        .unwrap();
+    serde_json::from_str(&output).unwrap()
+}
+
+#[test]
+fn native_runtime_keeps_each_scalar_axis_without_a_sibling() {
+    let exported = render_native_axes();
+    assert_eq!(exported["format_version"], 2);
+    for channel in [
+        "translate_x",
+        "translate_y",
+        "scale_x",
+        "scale_y",
+        "shear_x",
+        "shear_y",
+    ] {
+        let track = &exported["animations"][channel]["bones"][0];
+        assert_eq!(
+            track[channel].as_array().map(Vec::len),
+            Some(2),
+            "lost {channel}"
+        );
+        for paired in ["translate", "scale", "shear"] {
+            assert!(
+                track.get(paired).is_none(),
+                "v2 must not use lossy paired keys"
+            );
+        }
+    }
+}
+
+#[test]
+fn native_runtime_keeps_independent_times_and_outgoing_bezier_curves() {
+    let exported = render_native_axes();
+    let track = &exported["animations"]["independent_bezier"]["bones"][0];
+    for property in ["translate", "scale", "shear"] {
+        let x = &track[format!("{property}_x")];
+        let y = &track[format!("{property}_y")];
+        for (keys, expected_times) in [(x, [0.0, 0.8, 1.6]), (y, [0.15, 1.0, 1.8])] {
+            let keys = keys.as_array().expect("native scalar track exists");
+            assert_eq!(keys.len(), expected_times.len());
+            for (key, expected) in keys.iter().zip(expected_times) {
+                assert!((key["time"].as_f64().unwrap() - expected).abs() < 1e-6);
+            }
+        }
+        assert_eq!(x[0]["curve"]["type"], "bezier");
+        assert_eq!(y[0]["curve"]["type"], "bezier");
+        assert!((x[0]["curve"]["handles"][1].as_f64().unwrap() + 0.3).abs() < 1e-6);
+        assert!((y[0]["curve"]["handles"][1].as_f64().unwrap() - 0.9).abs() < 1e-6);
+        assert_eq!(x[1]["curve"], "stepped");
+    }
+    let step = &exported["animations"]["independent_step"]["bones"][0];
+    assert_eq!(step["translate_y"][0]["curve"], "stepped");
+    assert_eq!(step["translate_x"][0]["curve"], "linear");
+}
+
+#[test]
+fn native_runtime_bakes_track_offsets_exactly_once() {
+    let exported = render_native_axes();
+    let positive = &exported["animations"]["offset_positive"]["bones"][0];
+    assert_eq!(positive["translate_x"][0]["time"], 0.25);
+    assert_eq!(positive["translate_x"][1]["time"], 1.25);
+    assert!(
+        positive.get("offset").is_none(),
+        "times already include the offset"
+    );
+    let negative = &exported["animations"]["offset_negative"]["bones"][0];
+    assert!((negative["shear_y"][0]["time"].as_f64().unwrap() + 0.2).abs() < 1e-6);
+}
+
+// Every named reference is renamed together, so these are real source projects.
+fn strings_project(suffix: &str) -> Project {
+    fn rename(value: &mut serde_json::Value, suffix: &str) {
+        match value {
+            serde_json::Value::String(s)
+                if [
+                    "walker",
+                    "root",
+                    "spine",
+                    "head",
+                    "torso",
+                    "shirt",
+                    "cape",
+                    "default",
+                    "walk",
+                    "idle",
+                    "arm-ik",
+                    "head-follow",
+                    "footstep",
+                ]
+                .contains(&s.as_str()) =>
+            {
+                s.push_str(suffix)
+            }
+            serde_json::Value::Array(values) => values.iter_mut().for_each(|v| rename(v, suffix)),
+            serde_json::Value::Object(values) => {
+                values.values_mut().for_each(|v| rename(v, suffix))
+            }
+            _ => {}
+        }
+    }
+    let mut source = serde_json::to_value(fixture()).unwrap();
+    rename(&mut source, suffix);
+    let mut project: Project = serde_json::from_value(source).unwrap();
+    project.animations[0].events[0].string_value = suffix.into();
+    project.animations[0].events[0].audio = suffix.into();
+    project
+}
+
+#[test]
+fn native_json_round_trips_all_names_and_event_strings() {
+    let controls: String = (0..=31).map(char::from).collect();
+    for suffix in [
+        "\"quoted\"",
+        "\\back\\slash",
+        "\n\r\t\u{0}\u{1}\u{1f}",
+        " é漢字🦴\u{2028}\u{2029} &<>'/:*?",
+        "__proto__",
+        controls.as_str(),
+    ] {
+        let project = strings_project(suffix);
+        let context = Context::build(&project, None, ExportInfo::default());
+        let output = ankhimate_export::template::Engine::new()
+            .render(
+                "native strings",
+                &presets::default_preset().templates[0].body,
+                &context.to_value(),
+            )
+            .unwrap();
+        let json: serde_json::Value =
+            serde_json::from_str(&output).expect("native export must remain valid JSON");
+        let dir = tempfile::tempdir().unwrap();
+        let plan = run::Plan {
+            files: vec![ankhimate_export::template::RenderedFile {
+                path: "skeleton.json".into(),
+                contents: output,
+            }],
+            binaries: vec![],
+        };
+        run::write(&plan, dir.path()).unwrap();
+        let disk: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(dir.path().join("skeleton.json")).unwrap())
+                .unwrap();
+        assert_eq!(disk, json, "staging changed the JSON strings");
+        assert_eq!(json["name"], project.name);
+        for (out, bone) in json["bones"].as_array().unwrap().iter().zip(&project.bones) {
+            assert_eq!(out["name"], bone.name);
+        }
+        assert_eq!(json["slots"][0]["name"], project.slots[0].name);
+        assert_eq!(json["slots"][0]["bone"], project.slots[0].bone);
+        assert_eq!(
+            json["slots"][0]["attachment"],
+            project.slots[0].attachment.as_deref().unwrap()
+        );
+        assert_eq!(json["defaultSkin"], project.default_skin);
+        assert_eq!(json["skins"][0]["name"], project.skins[0].name);
+        assert_eq!(
+            json["skins"][0]["attachments"][0]["slot"],
+            project.skins[0].entries[0].slot
+        );
+        assert_eq!(
+            json["skins"][0]["attachments"][0]["name"],
+            project.skins[0].entries[0].name
+        );
+        let clip = &json["animations"][&project.animations[0].name];
+        assert!(clip.is_object(), "animation key was changed");
+        assert_eq!(
+            clip["events"],
+            context.to_value()["animations"][0]["events"]
+        );
+        assert_eq!(clip["events"][0]["string"], suffix);
+        assert_eq!(clip["events"][0]["audio"], suffix);
+        assert_eq!(
+            json["constraints"],
+            context.to_value()["skeleton"]["constraints"]
+        );
+        assert_eq!(json["format_version"], 2);
+    }
+}
+
+#[test]
+fn all_shipped_json_template_bodies_use_json_string_serialization() {
+    let suffix = "\"\\\n é漢字🦴 &<>";
+    let project = strings_project(suffix);
+    let mut image_db = AssetDb::new();
+    image_db.add(ImageAsset::new(
+        format!("torso{suffix}"),
+        image_bytes(32),
+        32,
+        32,
+    ));
+    image_db.add(ImageAsset::new(
+        format!("head{suffix}"),
+        image_bytes(24),
+        24,
+        24,
+    ));
+    for preset in presets::builtin() {
+        let atlas = ankhimate_export::atlas::bake(&image_db, &preset.atlas.settings).unwrap();
+        let context = Context::build(&project, Some(&atlas), ExportInfo::default());
+        for template in &preset.templates {
+            let values = match template.per {
+                Cadence::Once => vec![context.to_value()],
+                Cadence::Animation => (0..context.animations.len())
+                    .map(|i| context.with_animation(i))
+                    .collect(),
+            };
+            for value in values {
+                let output = ankhimate_export::template::Engine::new()
+                    .render(&template.name, &template.body, &value)
+                    .unwrap();
+                let json: serde_json::Value = serde_json::from_str(&output)
+                    .unwrap_or_else(|e| panic!("{} / {}: {e}", preset.name, template.name));
+                if let Some(name) = json.get("name") {
+                    assert_eq!(name, &serde_json::Value::String(project.name.clone()));
+                }
+                if let Some(frames) = json.get("frames") {
+                    assert!(frames.get(format!("torso{suffix}")).is_some());
+                }
+                if template.per == Cadence::Animation {
+                    assert_eq!(json["animation"], value["animation"]["name"]);
+                }
+            }
+        }
+    }
+}

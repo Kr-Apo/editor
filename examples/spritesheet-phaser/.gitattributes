@@ -1,0 +1,3 @@
+# Preserve exported metadata and reference checksums on Windows checkouts too.
+# Accept CRLF in platform-authored JSON without treating CR as trailing spaces.
+assets/** -text whitespace=cr-at-eol

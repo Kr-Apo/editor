@@ -4,6 +4,18 @@ use crate::ui::{AppBehavior, Tab};
 use eframe::egui;
 use egui_tiles::{Linear, LinearDir, Tiles, Tree};
 
+#[cfg(test)]
+#[path = "app_lifecycle_tests.rs"]
+mod lifecycle_tests;
+
+#[cfg(test)]
+#[path = "app_shortcut_tests.rs"]
+mod shortcut_tests;
+
+#[cfg(test)]
+#[path = "app_psd_workflow_tests.rs"]
+mod psd_workflow_tests;
+
 pub struct AnkhimateApp {
     tree: Tree<Tab>,
     theme: theme::Theme,
@@ -51,9 +63,21 @@ pub struct AnkhimateApp {
     /// An autosave newer than its project, found at startup and not yet
     /// answered. `Some` means the recovery prompt is up.
     recovery: Option<crate::autosave::Recovery>,
+    recovery_revision: u64,
+    recovery_document: Option<serde_json::Value>,
     /// A reader running away from the UI thread. Importers can parse large
     /// atlases and execute plugin JavaScript; neither may stall egui's frame.
     file_load: Option<FileLoad>,
+    /// Document identity/content at preview handoff; a late confirmation may
+    /// never import into a newer document or undo a background open.
+    psd_base: Option<(u64, Option<serde_json::Value>)>,
+    /// Content save point; revision is a cache invalidation counter, not dirty.
+    saved_document: Option<serde_json::Value>,
+    /// Cancel suspends this request; only another explicit request can resume
+    /// or supersede it. A modal never destroys the document by being dismissed.
+    pending_file_action: Option<FileAction>,
+    confirm_unsaved: bool,
+    close_allowed: bool,
 }
 
 #[cfg(test)]
@@ -94,14 +118,56 @@ mod background_file_tests {
         assert_eq!(app.state.doc.meta.name, "loaded");
         assert_eq!(app.current_path.as_deref(), Some(path.as_path()));
     }
+
+    #[test]
+    fn new_cannot_silently_discard_an_edited_document() {
+        let mut app = AnkhimateApp::default();
+        app.state.doc.meta.name = "unsaved work".into();
+        app.run_file_action(FileAction::New);
+        assert_eq!(app.state.doc.meta.name, "unsaved work");
+    }
+
+    #[test]
+    fn a_background_open_cannot_replace_a_newer_document() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("old-request.ankh");
+        let mut source = AppState::default();
+        source.doc.meta.name = "old request".into();
+        crate::fileops::write_to(&source, &path);
+        let mut app = AnkhimateApp::default();
+        app.start_open(path);
+        let mut newer = ankhimate_document::doc::Document::new();
+        newer.meta.name = "newer document".into();
+        app.state.replace_document(newer);
+        for _ in 0..200 {
+            app.poll_file_load();
+            if app.file_load.is_none() {
+                break;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(5));
+        }
+        assert!(app.file_load.is_none());
+        assert_eq!(app.state.doc.meta.name, "newer document");
+        assert!(app.current_path.is_none());
+    }
 }
 
 struct FileLoad {
     label: String,
     receiver: std::sync::mpsc::Receiver<BackgroundLoad>,
+    revision: u64,
+    document: Option<serde_json::Value>,
+}
+
+fn document_snapshot(state: &AppState) -> Option<serde_json::Value> {
+    serde_json::to_value(ankhimate_formats::convert::to_schema(
+        &state.doc.as_project_ref(),
+    ))
+    .ok()
 }
 
 enum BackgroundLoad {
+    PsdPreview(Result<Box<crate::ui::psd_import::PendingPsd>, String>),
     Opened(
         std::path::PathBuf,
         Result<ankhimate_formats::Loaded, String>,
@@ -235,25 +301,7 @@ impl AnkhimateApp {
             ..Default::default()
         };
 
-        if let Some(path) = open {
-            match crate::fileops::open_path(&mut app.state, &path) {
-                crate::fileops::FileOutcome::Opened(path) => {
-                    app.status = Some(format!("Opened {}", path.display()));
-                    app.config.touch_recent(&path);
-                    app.current_path = Some(path);
-                    // A file was asked for by name; the startup window would
-                    // only be in the way.
-                    app.show_startup = false;
-                }
-                crate::fileops::FileOutcome::Error(e) => app.status = Some(e),
-                _ => {}
-            }
-        }
-
-        // Offer recovery *after* the open, so the check compares against the
-        // project that actually loaded. Offered, not applied — see the module
-        // note: only the user knows whether the last session ended badly.
-        app.recovery = crate::autosave::check(app.current_path.as_deref());
+        app.open_initial(open);
 
         app
     }
@@ -452,6 +500,8 @@ impl AnkhimateApp {
 
 impl Default for AnkhimateApp {
     fn default() -> Self {
+        let state = AppState::default();
+        let saved_document = document_snapshot(&state);
         Self {
             // No plugins in the default app: `Default` is for tests, which
             // should not read whatever happens to be in the developer's config
@@ -461,7 +511,11 @@ impl Default for AnkhimateApp {
             tree: Self::default_layout(),
             theme: theme::Theme::default(),
             available_themes: vec![theme::Theme::default()],
-            state: AppState::default(),
+            state,
+            saved_document,
+            pending_file_action: None,
+            confirm_unsaved: false,
+            close_allowed: false,
             current_path: None,
             status: None,
             import_report: None,
@@ -476,7 +530,10 @@ impl Default for AnkhimateApp {
             operators: crate::registry::Registry::with_builtins(),
             autosave: crate::autosave::Autosave::default(),
             recovery: None,
+            recovery_revision: 0,
+            recovery_document: None,
             file_load: None,
+            psd_base: None,
         }
     }
 }
@@ -577,7 +634,27 @@ impl eframe::App for AnkhimateApp {
         self.theme.apply(ctx);
         crate::ui::motion::configure(ctx, self.config.reduced_motion);
 
+        self.handle_close_request(ctx);
+        self.state
+            .session
+            .export
+            .ffmpeg_path
+            .clone_from(&self.config.ffmpeg_path);
+        self.state.session.export.png.poll();
+        if self.close_allowed && self.state.session.export.png.is_running() {
+            // Let the worker finish cancellation/rollback before normal exit.
+            self.state.session.export.png.cancel();
+            ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
+            ctx.request_repaint_after(std::time::Duration::from_millis(50));
+            return;
+        }
+        if self.close_allowed {
+            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            return;
+        }
+
         self.poll_file_load();
+        self.handle_psd_drop(ctx);
 
         if let Some(result) = self.marketplace.poll() {
             match result {
@@ -602,45 +679,11 @@ impl eframe::App for AnkhimateApp {
         // same operator.
         let mut trigger_undo = false;
         let mut trigger_redo = false;
-        let mut file_action: Option<FileAction> = None;
+        let mut file_action = self.file_shortcut(ctx);
         // An operator a menu entry asked for. Deferred rather than run in place
         // because drawing the menu borrows `self` immutably and `run_operator`
         // needs it mutably.
         let mut menu_operator: Option<&str> = None;
-        if ctx.input(|i| i.modifiers.ctrl) {
-            // File shortcuts: Ctrl+N/O/S, Ctrl+Shift+S. Still inline because a
-            // file action is not an operator — it opens a native dialog and can
-            // fail with a message, which `OpResult` has no room for. Folding
-            // these in belongs with the format registry.
-            if ctx.input(|i| i.key_pressed(egui::Key::N)) {
-                file_action = Some(FileAction::New);
-            }
-            if ctx.input(|i| i.key_pressed(egui::Key::O)) {
-                file_action = Some(FileAction::Open);
-            }
-            if ctx.input(|i| i.key_pressed(egui::Key::S)) {
-                file_action = Some(if ctx.input(|i| i.modifiers.shift) {
-                    FileAction::SaveAs
-                } else {
-                    FileAction::Save
-                });
-            }
-            // Clipboard (T-209) moved to the keymap: Ctrl+C/V/D and their
-            // Shift variants are ordinary bindings now.
-        }
-
-        // ── Autosave (T-701) ─────────────────────────────────────────────
-        // Driven off the frame clock, and only when the revision has moved. The
-        // write is silent unless it fails: the user did not ask for it, so it
-        // must not take over the status line they are reading.
-        self.autosave.interval_secs = self.config.autosave_secs;
-        let dt = ctx.input(|i| i.stable_dt);
-        if self.autosave.tick(dt, self.state.revision) {
-            let path = self.current_path.clone();
-            if let Some(written) = self.autosave.write(&self.state, path.as_deref()) {
-                log::debug!("autosaved to {}", written.display());
-            }
-        }
 
         // ── Keymap (T-701) ───────────────────────────────────────────────
         // One table pass replaces what used to be twenty-odd `key_pressed`
@@ -651,8 +694,10 @@ impl eframe::App for AnkhimateApp {
         // the key you press to *become* a binding must not also fire whatever it
         // is bound to today. Rebinding undo to Ctrl+U would otherwise undo on
         // the way past.
-        let capturing = crate::ui::settings::capturing(ctx);
-        let fired: Vec<String> = if capturing {
+        let capturing = crate::ui::settings::capturing(ctx)
+            || self.state.session.pending_psd.is_some()
+            || self.state.session.export.review.is_some();
+        let fired: Vec<String> = if capturing || self.confirm_unsaved || self.recovery.is_some() {
             Vec::new()
         } else {
             ctx.input(|i| {
@@ -671,7 +716,7 @@ impl eframe::App for AnkhimateApp {
         // ── Playback shortcuts (T-202) ───────────────────────────────────
         // Suppressed while a text field has focus so typing a name does not
         // scrub the timeline.
-        if !typing {
+        if !typing && !capturing && !self.confirm_unsaved && self.recovery.is_none() {
             // Shift+H isolates the viewport to the selection, or leaves
             // isolation when there is nothing selected or it is already on
             // (T-903). Still inline: it toggles two session fields and writes a
@@ -907,7 +952,7 @@ impl eframe::App for AnkhimateApp {
                                     menu_operator = Some("app.settings");
                                 }
                                 if ui.button("Quit").clicked() {
-                                    ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                                    file_action = Some(FileAction::Close);
                                 }
                             });
                             ui.menu_button("Edit", |ui| {
@@ -1279,7 +1324,7 @@ at startup.",
                         // Close is the destructive one, so it is the only button
                         // that colours on hover — the others stay quiet.
                         if window_button(ui, crate::ui::icons::CLOSE, "Close", true) {
-                            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                            file_action = Some(FileAction::Close);
                         }
                         if window_button(ui, crate::ui::icons::FIT, "Maximise", false) {
                             let max = ctx.input(|i| i.viewport().maximized.unwrap_or(false));
@@ -1344,6 +1389,13 @@ at startup.",
             // The workspace does not run at all this frame — no tool rail, no
             // tiles, no panes. Anything queued above still resolves below.
             self.resolve_frame(file_action, trigger_undo, trigger_redo, menu_operator);
+            self.show_psd_preview(ctx);
+            if self.file_load.is_some() {
+                ctx.request_repaint_after(std::time::Duration::from_millis(50));
+            }
+            self.show_recovery_prompt(ctx);
+            self.show_unsaved_confirmation(ctx);
+            self.poll_autosave(ctx, std::time::Instant::now());
             return;
         }
 
@@ -1408,6 +1460,7 @@ at startup.",
             .show(ctx, |ui| {
                 let mut behavior = AppBehavior {
                     state: &mut self.state,
+                    operators: &self.operators,
                     plugins: &self.plugins,
                     theme: &self.theme,
                     grid: &self.config.grid,
@@ -1437,7 +1490,7 @@ at startup.",
 
         // ── Spritesheet slicer (T-305) ───────────────────────────────────
         crate::ui::atlas::ui(ctx, &mut self.state, &self.theme);
-        crate::ui::psd_import::ui(ctx, &mut self.state, &self.theme);
+        self.show_psd_preview(ctx);
 
         if let Some(load) = &self.file_load {
             let phase = ((ctx.input(|input| input.time) * 0.7) % 1.0) as f32;
@@ -1586,73 +1639,7 @@ at startup.",
         // ── Settings (T-701) ─────────────────────────────────────────────
         // Applied live, so the theme is re-applied every frame it is open. Doing
         // it unconditionally would fight anything else that touches the style.
-        // ── Crash recovery (T-701) ───────────────────────────────────────
-        // An autosave newer than its project. Offered rather than applied: only
-        // the user knows whether the last session ended badly, and opening a
-        // different file than the one they double-clicked is not a favour.
-        if let Some(recovery) = self.recovery.clone() {
-            let chrome = self.theme.clone();
-            let mut restore = false;
-            let mut dismiss = false;
-            let dialog = crate::ui::dialog::Dialog::new("recovery", "Recover unsaved work?")
-                .width(460.0)
-                .show(ctx, &chrome, |ui| {
-                    ui.label(match &recovery.project {
-                        Some(project) => format!(
-                            "An autosave of {} is newer than the file itself — the last \
-                             session may have ended before saving.",
-                            project
-                                .file_name()
-                                .and_then(|n| n.to_str())
-                                .unwrap_or("this project")
-                        ),
-                        None => "An autosave of an unsaved document was left behind.".to_string(),
-                    });
-                    ui.add_space(6.0);
-                    ui.label(
-                        egui::RichText::new(recovery.autosave.display().to_string())
-                            .weak()
-                            .small(),
-                    );
-                    ui.add_space(10.0);
-                    ui.horizontal(|ui| {
-                        if ui.button("Recover").clicked() {
-                            restore = true;
-                        }
-                        if ui
-                            .button("Ignore")
-                            .on_hover_text(
-                                "Keeps the autosave file — it is only offered once per launch",
-                            )
-                            .clicked()
-                        {
-                            dismiss = true;
-                        }
-                    });
-                });
-
-            if restore {
-                match crate::fileops::open_path(&mut self.state, &recovery.autosave) {
-                    crate::fileops::FileOutcome::Opened(_) => {
-                        // `current_path` stays on the *project*, not the
-                        // autosave: the next Save must write the real file, not
-                        // a `.ankh.autosave` the user would then have to notice
-                        // and rename.
-                        self.current_path = recovery.project.clone();
-                        self.autosave.reset();
-                        self.status = Some("Recovered from autosave — save to keep it".to_string());
-                        self.show_startup = false;
-                    }
-                    crate::fileops::FileOutcome::Error(e) => {
-                        self.status = Some(format!("Could not recover: {e}"))
-                    }
-                    _ => {}
-                }
-            }
-            if restore || dismiss || dialog.closed {
-                self.recovery = None;
-            }
-        }
+        self.show_recovery_prompt(ctx);
 
         if self.show_settings {
             let mut open = true;
@@ -1788,6 +1775,13 @@ at startup.",
         self.draw_torn_off_windows(ctx, &compact_tabs);
 
         self.resolve_frame(file_action, trigger_undo, trigger_redo, menu_operator);
+        if self.file_load.is_some() {
+            ctx.request_repaint_after(std::time::Duration::from_millis(50));
+        }
+        self.show_unsaved_confirmation(ctx);
+        // Arm after edits, settings and file actions resolved in this frame so
+        // even the final interaction before an idle period has a wakeup.
+        self.poll_autosave(ctx, std::time::Instant::now());
     }
 
     fn ui(&mut self, _ui: &mut egui::Ui, _frame: &mut eframe::Frame) {}
@@ -1806,9 +1800,10 @@ enum PoseAction {
 
 /// A File-menu / shortcut request, resolved after the frame's UI is built so the
 /// native dialog does not run mid-layout.
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 enum FileAction {
     New,
+    Close,
     Open,
     /// Open a known path — the startup window's recent files and samples.
     OpenPath(std::path::PathBuf),
@@ -1818,6 +1813,15 @@ enum FileAction {
     /// importer's id rather than a variant per format: the set is open, and a
     /// plugin's importer has to reach this without a new enum arm.
     Import(String),
+    PreviewPsd(std::path::PathBuf),
+    ApplyPsd,
+}
+
+#[derive(Clone, Copy)]
+enum UnsavedChoice {
+    Save,
+    Discard,
+    Cancel,
 }
 
 /// What an import could not carry across, held while the report is shown.
@@ -1836,6 +1840,149 @@ struct ImportReport {
 }
 
 impl AnkhimateApp {
+    fn show_psd_preview(&mut self, ctx: &egui::Context) {
+        if self.confirm_unsaved || self.recovery.is_some() {
+            return;
+        }
+        match crate::ui::psd_import::ui(ctx, &mut self.state, &self.theme) {
+            crate::ui::psd_import::PreviewChoice::Import => {
+                self.run_file_action(FileAction::ApplyPsd)
+            }
+            crate::ui::psd_import::PreviewChoice::Cancel => {
+                self.state.session.pending_psd = None;
+                self.psd_base = None;
+            }
+            crate::ui::psd_import::PreviewChoice::None => {}
+        }
+    }
+
+    fn handle_psd_drop(&mut self, ctx: &egui::Context) {
+        let files = ctx.input(|i| i.raw.dropped_files.clone());
+        let request = crate::ui::psd_import::dropped_path(&files);
+        if matches!(request, Ok(None)) {
+            return;
+        }
+        // One PSD is a transaction. Mixed or multiple drops must not partially
+        // import ordinary images while the user is deciding PSD options.
+        ctx.input_mut(|i| i.raw.dropped_files.clear());
+        match request {
+            Ok(Some(path)) => self.run_file_action(FileAction::PreviewPsd(path)),
+            Err(error) => self.status = Some(error.into()),
+            Ok(None) => unreachable!("non-PSD drops returned above"),
+        }
+    }
+
+    fn start_psd_preview(&mut self, path: std::path::PathBuf) {
+        if self.state.session.pending_psd.is_some() {
+            self.status = Some("Finish or cancel the current PSD preview first.".into());
+            return;
+        }
+        if !self.state.session.can_edit_structure() {
+            self.status = Some("Switch to Setup mode to import a PSD (Tab)".into());
+            return;
+        }
+        let (sender, receiver) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            let result = crate::ui::psd_import::PendingPsd::read(&path).map(Box::new);
+            let _ = sender.send(BackgroundLoad::PsdPreview(result));
+        });
+        self.file_load = Some(FileLoad {
+            revision: self.state.revision,
+            document: document_snapshot(&self.state),
+            label: "Reading PSD preview…".into(),
+            receiver,
+        });
+    }
+
+    fn apply_psd_preview(&mut self) {
+        if self.psd_base.as_ref() != Some(&(self.state.revision, document_snapshot(&self.state))) {
+            self.state.session.pending_psd = None;
+            self.psd_base = None;
+            self.status = Some("PSD import cancelled: the document changed after preview. Import again to continue.".into());
+            return;
+        }
+        if self
+            .state
+            .session
+            .pending_psd
+            .as_ref()
+            .is_some_and(|p| p.reimport)
+            && let Some(path) = &self.current_path
+            && let Err(error) = ankhimate_formats::reimport_guard::verify_source(path)
+        {
+            self.status = Some(error);
+            return;
+        }
+        let Some(pending) = self.state.session.pending_psd.take() else {
+            return;
+        };
+        match crate::ui::psd_import::run_import(&mut self.state, &pending) {
+            Ok(message) => {
+                self.file_load = None;
+                self.psd_base = None;
+                self.show_startup = false;
+                self.import_report = None;
+                self.status = Some(message);
+                self.state.session.status = None;
+                if pending.replace && !pending.reimport {
+                    self.current_path = None;
+                    self.saved_document = None;
+                    self.autosave.reset();
+                }
+            }
+            Err(error) => {
+                self.status = Some(error);
+                self.state.session.pending_psd = Some(pending);
+            }
+        }
+    }
+
+    /// File actions stay deferred until after layout, including native dialogs.
+    fn file_shortcut(&self, ctx: &egui::Context) -> Option<FileAction> {
+        if self.confirm_unsaved
+            || self.recovery.is_some()
+            || self.state.session.pending_psd.is_some()
+            || self.state.session.export.review.is_some()
+            || crate::ui::settings::capturing(ctx)
+        {
+            return None;
+        }
+        ctx.input_mut(|input| {
+            let mut action = None;
+            input.events.retain(|event| {
+                let egui::Event::Key {
+                    key,
+                    pressed: true,
+                    modifiers,
+                    repeat,
+                    ..
+                } = event
+                else {
+                    return true;
+                };
+                // The modifier state at key-down is authoritative. Ctrl can
+                // already be released when this reactive frame is processed.
+                if !modifiers.ctrl || modifiers.alt || modifiers.mac_cmd {
+                    return true;
+                }
+                let candidate = match key {
+                    egui::Key::N => FileAction::New,
+                    egui::Key::O => FileAction::Open,
+                    egui::Key::S if modifiers.shift => FileAction::SaveAs,
+                    egui::Key::S => FileAction::Save,
+                    _ => return true,
+                };
+                if !repeat && action.is_none() {
+                    action = Some(candidate);
+                }
+                // Consume handled keys before the keymap and text widgets:
+                // one Save chord cannot also be interpreted as bare Scale.
+                false
+            });
+            action
+        })
+    }
+
     /// Everything a frame defers until its UI is built.
     ///
     /// Undo, redo and file actions all mutate state that the layout borrowed, or
@@ -1850,6 +1997,16 @@ impl AnkhimateApp {
         trigger_redo: bool,
         menu_operator: Option<&str>,
     ) {
+        if self.confirm_unsaved || self.recovery.is_some() {
+            return;
+        }
+        let requested_psd = self
+            .state
+            .session
+            .request_psd_import
+            .take()
+            .map(FileAction::PreviewPsd);
+        let file_action = file_action.or(requested_psd);
         // Through the registry rather than `AppState` directly, so the keyboard,
         // the Edit menu and the toolbar — all three of which set these flags —
         // resolve to the same operator, and a plugin shadowing `edit.undo`
@@ -1912,6 +2069,7 @@ impl AnkhimateApp {
                                     let mut close_requests = Vec::new();
                                     let mut behavior = AppBehavior {
                                         state: &mut self.state,
+                                        operators: &self.operators,
                                         plugins: &self.plugins,
                                         theme: &self.theme,
                                         grid: &self.config.grid,
@@ -2049,11 +2207,266 @@ impl AnkhimateApp {
     }
 
     fn run_file_action(&mut self, action: FileAction) {
-        use crate::fileops::{self, FileOutcome};
+        if self.confirm_unsaved || (self.recovery.is_some() && action != FileAction::Close) {
+            return;
+        }
+        let destructive = matches!(
+            action,
+            FileAction::New | FileAction::Close | FileAction::Open | FileAction::OpenPath(_)
+        ) || matches!(&action, FileAction::Import(id) if id != "import.psd")
+            || (action == FileAction::ApplyPsd
+                && self
+                    .state
+                    .session
+                    .pending_psd
+                    .as_ref()
+                    .is_some_and(|pending| pending.replace && !pending.reimport));
+        if destructive && self.is_dirty() {
+            self.pending_file_action = Some(action);
+            self.confirm_unsaved = true;
+            return;
+        }
+        if destructive {
+            self.pending_file_action = None;
+        }
+        self.execute_file_action(action);
+    }
+
+    fn open_initial(&mut self, open: Option<std::path::PathBuf>) {
+        if let Some(path) = open.as_ref() {
+            let outcome = crate::fileops::open_path(&mut self.state, path);
+            let valid = matches!(outcome, crate::fileops::FileOutcome::Opened(_));
+            self.finish_file_outcome(outcome);
+            if valid {
+                self.show_startup = false;
+            }
+            self.offer_recovery(Some(path), valid);
+        } else {
+            self.offer_recovery(None, false);
+        }
+    }
+
+    fn offer_recovery(&mut self, project: Option<&std::path::Path>, valid: bool) {
+        self.recovery = crate::autosave::check_after_open(project, valid);
+        self.recovery_revision = self.state.revision;
+        self.recovery_document = document_snapshot(&self.state);
+    }
+
+    fn should_autosave(&self) -> bool {
+        self.recovery.is_none() && self.is_dirty()
+    }
+
+    fn poll_autosave(&mut self, ctx: &egui::Context, now: std::time::Instant) {
+        use crate::autosave::Schedule;
+        self.autosave.interval_secs = self.config.autosave_secs;
+        let eligible = self.should_autosave();
+        let mut schedule = self.autosave.schedule(now, &self.state, eligible);
+        if schedule == Schedule::Due {
+            let path = self.current_path.clone();
+            if let Some(written) = self.autosave.write(&self.state, path.as_deref()) {
+                log::debug!("autosaved to {}", written.display());
+            } else if let Some(error) = &self.autosave.last_error {
+                self.status = Some(format!("Recovery copy failed: {error}"));
+            }
+            schedule = self.autosave.schedule(now, &self.state, eligible);
+        }
+        if let Schedule::Wait(delay) = schedule {
+            // Bound platform wait arithmetic for hand-edited configurations.
+            ctx.request_repaint_after(delay.min(std::time::Duration::from_secs(86400)));
+        }
+    }
+
+    fn ignore_recovery(&mut self) {
+        self.recovery = None;
+    }
+
+    fn recover_project(&mut self) {
+        let Some(recovery) = self.recovery.clone() else {
+            return;
+        };
+        if self.recovery_revision != self.state.revision
+            || self.recovery_document != document_snapshot(&self.state)
+        {
+            self.status = Some("Recovery cancelled: the current document changed. Ignore this offer and reopen to try again.".into());
+            return;
+        }
+        let origin = recovery
+            .asset_origin
+            .as_deref()
+            .unwrap_or(&recovery.autosave);
+        match ankhimate_formats::load_with_assets(&recovery.autosave, origin) {
+            Ok((loaded, _)) => {
+                let unresolved = loaded
+                    .report
+                    .dangling
+                    .iter()
+                    .map(|(kind, name)| format!("{kind} '{name}'"))
+                    .collect::<Vec<_>>();
+                self.file_load = None;
+                self.state
+                    .replace_document(ankhimate_document::Document::from_loaded(loaded));
+                self.current_path = recovery.project;
+                self.saved_document = None;
+                self.autosave.reset();
+                self.recovery = None;
+                self.status = Some(if unresolved.is_empty() {
+                    "Recovered from a recovery copy — save to keep it".into()
+                } else {
+                    format!(
+                        "Recovered with unresolved: {} — save to keep it",
+                        unresolved.join(", ")
+                    )
+                });
+                self.show_startup = false;
+            }
+            Err(error) => self.status = Some(format!("Could not recover: {error}")),
+        }
+    }
+
+    fn show_recovery_prompt(&mut self, ctx: &egui::Context) {
+        if self.confirm_unsaved {
+            return;
+        }
+        let Some(recovery) = self.recovery.clone() else {
+            return;
+        };
+        let chrome = self.theme.clone();
+        let mut restore = false;
+        let mut dismiss = false;
+        let dialog = crate::ui::dialog::Dialog::new("recovery", "Recover unsaved work?")
+            .width(460.0).show(ctx, &chrome, |ui| {
+                ui.label("A recovery copy was left by a previous or interrupted session. Recover loads it without overwriting your project.");
+                ui.label(egui::RichText::new(recovery.autosave.display().to_string()).weak().small());
+                if let Some(status) = &self.status { ui.label(egui::RichText::new(status).weak()); }
+                ui.add_space(10.0);
+                ui.horizontal(|ui| {
+                    restore = ui.button("Recover").clicked();
+                    dismiss = ui.button("Ignore").on_hover_text("Keeps the recovery file").clicked();
+                });
+            });
+        if restore {
+            self.recover_project();
+        } else if dismiss || dialog.closed {
+            self.ignore_recovery();
+        }
+    }
+
+    fn is_dirty(&self) -> bool {
+        let current = document_snapshot(&self.state);
+        self.saved_document.is_none() || current.is_none() || current != self.saved_document
+    }
+
+    fn mark_saved(&mut self) {
+        self.saved_document = document_snapshot(&self.state);
+    }
+
+    fn save_project_to(&mut self, path: &std::path::Path) {
+        let outcome = crate::fileops::write_to(&self.state, path);
+        self.finish_file_outcome(outcome);
+    }
+
+    fn confirm_file_action(&mut self, choice: UnsavedChoice, save_path: Option<&std::path::Path>) {
+        if !self.confirm_unsaved {
+            return;
+        }
+        match choice {
+            UnsavedChoice::Cancel => {
+                self.confirm_unsaved = false;
+                return;
+            }
+            UnsavedChoice::Save => {
+                let outcome = if let Some(path) = save_path {
+                    crate::fileops::write_to(&self.state, path)
+                } else {
+                    crate::fileops::save(&self.state, &self.current_path)
+                };
+                self.finish_pending_save(outcome);
+                return;
+            }
+            UnsavedChoice::Discard => {}
+        }
+        self.confirm_unsaved = false;
+        if let Some(action) = self.pending_file_action.take() {
+            self.execute_file_action(action);
+        }
+    }
+
+    fn finish_pending_save(&mut self, outcome: crate::fileops::FileOutcome) {
+        let saved = matches!(outcome, crate::fileops::FileOutcome::Saved(_));
+        self.finish_file_outcome(outcome);
+        if saved {
+            self.confirm_unsaved = false;
+            if let Some(action) = self.pending_file_action.take() {
+                self.execute_file_action(action);
+            }
+        }
+    }
+
+    fn handle_close_request(&mut self, ctx: &egui::Context) {
+        if ctx.input(|i| i.viewport().close_requested()) && !self.close_allowed {
+            ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
+            self.run_file_action(FileAction::Close);
+        }
+    }
+
+    fn show_unsaved_confirmation(&mut self, ctx: &egui::Context) {
+        if self.confirm_unsaved {
+            let chrome = self.theme.clone();
+            let dialog = crate::ui::dialog::Dialog::new(
+                "unsaved_changes",
+                "Save changes before continuing?",
+            )
+            .width(460.0)
+            .show(ctx, &chrome, |ui| {
+                ui.label(format!("{} has unsaved changes.", self.state.doc.meta.name));
+                ui.label("Save keeps your changes. Discard continues without saving.");
+                if let Some(status) = &self.status {
+                    ui.label(egui::RichText::new(status).weak());
+                }
+                ui.add_space(8.0);
+                ui.horizontal(|ui| {
+                    if ui.button("Save").clicked() {
+                        Some(UnsavedChoice::Save)
+                    } else if ui.button("Discard").clicked() {
+                        Some(UnsavedChoice::Discard)
+                    } else if ui.button("Cancel").clicked() {
+                        Some(UnsavedChoice::Cancel)
+                    } else {
+                        None
+                    }
+                })
+                .inner
+            });
+            if let Some(choice) = dialog.inner {
+                self.confirm_file_action(choice, None);
+            } else if dialog.closed {
+                self.confirm_file_action(UnsavedChoice::Cancel, None);
+            }
+        }
+        if self.close_allowed {
+            if self.state.session.export.png.is_running() {
+                self.state.session.export.png.cancel();
+                ctx.request_repaint();
+            } else {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            }
+        }
+    }
+
+    fn execute_file_action(&mut self, action: FileAction) {
+        use crate::fileops;
         let outcome = match action {
+            FileAction::Close => {
+                self.file_load = None;
+                self.close_allowed = true;
+                return;
+            }
             FileAction::New => {
+                self.file_load = None;
+                self.psd_base = None;
                 fileops::new_document(&mut self.state);
                 self.current_path = None;
+                self.mark_saved();
                 self.autosave.reset();
                 self.status = Some("New document".to_string());
                 return;
@@ -2072,8 +2485,22 @@ impl AnkhimateApp {
                 self.start_open(path);
                 return;
             }
-            FileAction::Save => fileops::save(&self.state, &self.current_path),
+            FileAction::Save => {
+                if let Some(path) = self.current_path.clone() {
+                    self.save_project_to(&path);
+                    return;
+                }
+                fileops::save(&self.state, &self.current_path)
+            }
             FileAction::SaveAs => fileops::save_as(&self.state),
+            FileAction::PreviewPsd(path) => {
+                self.start_psd_preview(path);
+                return;
+            }
+            FileAction::ApplyPsd => {
+                self.apply_psd_preview();
+                return;
+            }
             FileAction::Import(id) => {
                 let importers = fileops::importers_with(&self.plugins);
                 let Some(importer) = importers.get(&id) else {
@@ -2093,62 +2520,10 @@ impl AnkhimateApp {
                 return;
             }
         };
-        match outcome {
-            FileOutcome::Saved(path) => {
-                self.status = Some(format!("Saved {}", path.display()));
-                // The real save supersedes any autosave, so drop it. Keyed on
-                // the path we were editing *before* this, not the new one: a
-                // Save As leaves the old project's autosave behind otherwise,
-                // and it would be offered on the next launch as if the session
-                // had crashed.
-                self.autosave.discard(self.current_path.as_deref());
-                if self.current_path.as_deref() != Some(path.as_path()) {
-                    self.autosave.discard(Some(&path));
-                }
-                self.autosave.reset();
-                // Save-As gives a project a new home; the recents list should
-                // point at where it actually lives now.
-                self.config.touch_recent(&path);
-                self.current_path = Some(path);
-            }
-            FileOutcome::Opened(path) => {
-                self.status = Some(format!("Opened {}", path.display()));
-                self.config.touch_recent(&path);
-                self.current_path = Some(path);
-                // A different document shares nothing with the last one; keeping
-                // its saved revision would make the first tick believe this one
-                // was already written.
-                self.autosave.reset();
-            }
-            FileOutcome::Imported { path, report } => {
-                let name = path
-                    .file_name()
-                    .and_then(|s| s.to_str())
-                    .unwrap_or("rig")
-                    .to_string();
-                self.status = Some(format!("Imported {name}"));
-                // Deliberately *not* `current_path` and not a recent file: the
-                // document is now an unsaved `.ankh`, and pointing Save at the
-                // source `.json` would write our format over their skeleton.
-                self.current_path = None;
-                if !report.is_clean() {
-                    self.import_report = Some(ImportReport {
-                        file: name,
-                        dangling: report.dangling,
-                        lossy: report.lossy,
-                    });
-                }
-            }
-            FileOutcome::Cancelled => {}
-            FileOutcome::Error(msg) => self.status = Some(msg),
-        }
+        self.finish_file_outcome(outcome);
     }
 
     fn start_open(&mut self, path: std::path::PathBuf) {
-        if self.file_load.is_some() {
-            self.status = Some("A file is already loading".into());
-            return;
-        }
         let (sender, receiver) = std::sync::mpsc::channel();
         let worker_path = path.clone();
         std::thread::spawn(move || {
@@ -2158,6 +2533,8 @@ impl AnkhimateApp {
             let _ = sender.send(BackgroundLoad::Opened(worker_path, result));
         });
         self.file_load = Some(FileLoad {
+            revision: self.state.revision,
+            document: document_snapshot(&self.state),
             label: format!(
                 "Opening {}…",
                 path.file_name().and_then(|n| n.to_str()).unwrap_or("file")
@@ -2173,8 +2550,8 @@ impl AnkhimateApp {
         importers: ankhimate_formats::Importers,
         label: String,
     ) {
-        if self.file_load.is_some() {
-            self.status = Some("A file is already loading".into());
+        if id == "import.psd" {
+            self.start_psd_preview(path);
             return;
         }
         let (sender, receiver) = std::sync::mpsc::channel();
@@ -2188,12 +2565,17 @@ impl AnkhimateApp {
             let _ = sender.send(BackgroundLoad::Imported(worker_path, result));
         });
         self.file_load = Some(FileLoad {
+            revision: self.state.revision,
+            document: document_snapshot(&self.state),
             label: format!("Importing {label}…"),
             receiver,
         });
     }
 
     fn poll_file_load(&mut self) {
+        if self.confirm_unsaved || self.recovery.is_some() {
+            return;
+        }
         let result = match self.file_load.as_ref().map(|load| load.receiver.try_recv()) {
             Some(Ok(result)) => result,
             Some(Err(std::sync::mpsc::TryRecvError::Disconnected)) => {
@@ -2203,8 +2585,33 @@ impl AnkhimateApp {
             }
             Some(Err(std::sync::mpsc::TryRecvError::Empty)) | None => return,
         };
-        self.file_load = None;
+        let load = self.file_load.take().unwrap();
+        if load.revision != self.state.revision || load.document != document_snapshot(&self.state) {
+            self.status = Some("Load cancelled: the current document changed while reading. Open again to continue.".into());
+            return;
+        }
+        if let BackgroundLoad::PsdPreview(result) = result {
+            match result {
+                Ok(mut pending) => {
+                    pending.preservation_error = self.current_path.as_ref().and_then(|path| {
+                        ankhimate_formats::reimport_guard::verify_source(path).err()
+                    });
+                    self.psd_base = Some((load.revision, load.document));
+                    self.state.session.pending_psd = Some(*pending);
+                    self.status = Some(
+                        "PSD preview ready — review the import options before confirming.".into(),
+                    );
+                }
+                Err(error) => self.status = Some(error),
+            }
+            return;
+        }
+        let recovery_project = match &result {
+            BackgroundLoad::Opened(path, result) => Some((path.clone(), result.is_ok())),
+            _ => None,
+        };
         let outcome = match result {
+            BackgroundLoad::PsdPreview(_) => unreachable!("handled above"),
             BackgroundLoad::Opened(path, Ok(loaded)) => {
                 // Native open and foreign import share the same atomic handoff:
                 // the old document remains usable until the worker is done.
@@ -2236,18 +2643,37 @@ impl AnkhimateApp {
             }
         };
         self.finish_file_outcome(outcome);
+        if let Some((path, valid)) = recovery_project {
+            self.offer_recovery(Some(&path), valid);
+        }
     }
 
     fn finish_file_outcome(&mut self, outcome: crate::fileops::FileOutcome) {
         use crate::fileops::FileOutcome;
         match outcome {
+            FileOutcome::Saved(path) => {
+                if self.current_path.as_deref() != Some(path.as_path()) {
+                    self.file_load = None;
+                }
+                self.status = Some(format!("Saved {}", path.display()));
+                self.config.touch_recent(&path);
+                self.current_path = Some(path);
+                self.mark_saved();
+                // Keep recovery copies; timestamps suppress superseded copies.
+                // Save As must not delete the old project's recovery namespace.
+                self.autosave.reset();
+            }
             FileOutcome::Opened(path) => {
+                self.psd_base = None;
+                self.show_startup = false;
                 self.status = Some(format!("Opened {}", path.display()));
                 self.config.touch_recent(&path);
                 self.current_path = Some(path);
+                self.mark_saved();
                 self.autosave.reset();
             }
             FileOutcome::Imported { path, report } => {
+                self.show_startup = false;
                 let name = path
                     .file_name()
                     .and_then(|s| s.to_str())
@@ -2255,6 +2681,8 @@ impl AnkhimateApp {
                     .to_string();
                 self.status = Some(format!("Imported {name}"));
                 self.current_path = None;
+                self.saved_document = None;
+                self.autosave.reset();
                 if !report.is_clean() {
                     self.import_report = Some(ImportReport {
                         file: name,
@@ -2264,7 +2692,7 @@ impl AnkhimateApp {
                 }
             }
             FileOutcome::Error(message) => self.status = Some(message),
-            FileOutcome::Saved(_) | FileOutcome::Cancelled => {}
+            FileOutcome::Cancelled => {}
         }
     }
 }
@@ -2413,3 +2841,7 @@ mod mode_visibility_tests {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "paste_tests/menu_tests.rs"]
+mod pose_paste_menu_tests;

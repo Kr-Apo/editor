@@ -40,6 +40,7 @@ pub mod meshgen;
 pub mod ops;
 pub mod part_ops;
 pub mod psd_mesh;
+pub mod psd_reimport;
 pub mod read;
 pub mod rebind;
 pub mod rig_ops;

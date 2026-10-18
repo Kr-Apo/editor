@@ -1,0 +1,33 @@
+{
+  "webgl": {
+    "completed": 21,
+    "passed": 21,
+    "failures": 0,
+    "infrastructureItems": 0
+  },
+  "darkTint": {
+    "completed": 32,
+    "passed": 32,
+    "failures": 0,
+    "infrastructureItems": 0
+  },
+  "skinsFirstAttempt": {
+    "completed": 129,
+    "passed": 129,
+    "failures": 0,
+    "infrastructureItems": 0,
+    "note": "Timeout navigateur de 30 s avant résultat du cas mesh-multi-dark/default sample 1 ; 129 cas terminés positifs. Rejeu intégral 153/153 positif, premier log conservé."
+  },
+  "skinsRetry": {
+    "completed": 153,
+    "passed": 153,
+    "failures": 0,
+    "infrastructureItems": 0
+  },
+  "clipping": {
+    "completed": 74,
+    "passed": 74,
+    "failures": 0,
+    "infrastructureItems": 0
+  }
+}

@@ -404,10 +404,144 @@ impl EditCommand for AddKey {
 
 /// A key identified by the timeline it lives on and its position in that
 /// timeline's key list.
+///
+/// Copying resolves this transient reference immediately into an owned KeyClip.
 #[derive(Debug, Clone, PartialEq)]
 pub struct KeyRef {
     pub addr: TimelineAddr,
     pub index: usize,
+}
+
+/// A validated clipboard block. Uses the same sorted, exact-time replacement
+/// helper as AddKey, but retains complete typed keys, including interpolation
+/// on stepped/discrete tracks. One command restores timelines AND clip duration.
+pub struct PasteKeys {
+    mirrored_offsets: bool,
+    anim: AnimationId,
+    keys: Vec<(TimelineAddr, Key<crate::clipboard::keys::KeyData>)>,
+    before: Option<(Vec<Timeline>, f32)>,
+}
+
+impl PasteKeys {
+    /// Same mapping and transaction as normal paste, with an explicitly selected
+    /// destination required and a bone-only offset transform on the owned copy.
+    pub fn new_mirrored_offsets(
+        doc: &Document,
+        anim: AnimationId,
+        clip: &crate::clipboard::KeyClip,
+        time: f32,
+        destinations: &[TimelineAddr],
+    ) -> Result<Self, String> {
+        if destinations.is_empty() {
+            return Err("Select explicit destination bone key rows for mirrored offsets".into());
+        }
+        let mut command = Self::new(doc, anim, &clip.mirrored_offsets()?, time, destinations)?;
+        command.mirrored_offsets = true;
+        Ok(command)
+    }
+    pub fn new(
+        doc: &Document,
+        anim: AnimationId,
+        clip: &crate::clipboard::KeyClip,
+        time: f32,
+        destinations: &[TimelineAddr],
+    ) -> Result<Self, String> {
+        Ok(Self {
+            anim,
+            keys: clip.resolve(doc, anim, time, destinations)?,
+            mirrored_offsets: false,
+            before: None,
+        })
+    }
+}
+
+impl EditCommand for PasteKeys {
+    fn apply(&mut self, doc: &mut Document) {
+        use crate::clipboard::keys::{KeyData, NamedTrack};
+        // Construction and dispatch normally happen together. Still refuse a
+        // now-missing target before mutating anything if a caller delayed dispatch.
+        if !doc.animations.contains_key(self.anim)
+            || self
+                .keys
+                .iter()
+                .any(|(addr, _)| NamedTrack::capture(doc, addr).is_err())
+        {
+            return;
+        }
+        let Some(anim) = doc.animations.get_mut(self.anim) else {
+            return;
+        };
+        if self.before.is_none() {
+            self.before = Some((anim.timelines.clone(), anim.duration));
+        }
+        for (addr, key) in &self.keys {
+            let idx = timeline_index(anim, addr);
+            macro_rules! put {
+                ($keys:expr,$value:expr) => {{
+                    insert_key(
+                        $keys,
+                        Key {
+                            time: key.time,
+                            value: $value,
+                            interp: key.interp,
+                        },
+                    );
+                }};
+            }
+            match (&mut anim.timelines[idx], &key.value) {
+                (
+                    Timeline::BoneTranslate { keys, .. }
+                    | Timeline::BoneRotate { keys, .. }
+                    | Timeline::BoneScale { keys, .. }
+                    | Timeline::BoneShear { keys, .. },
+                    KeyData::Scalar(value),
+                ) => put!(keys, *value),
+                (Timeline::SlotColor { keys, .. }, KeyData::Color(value)) => put!(keys, *value),
+                (Timeline::SlotAttachment { keys, .. }, KeyData::Attachment(value)) => {
+                    put!(keys, value.clone())
+                }
+                (Timeline::SlotVisible { keys, .. }, KeyData::Visible(value)) => put!(keys, *value),
+                _ => unreachable!("PasteKeys::new validated every track/value pair"),
+            }
+        }
+        anim.duration = anim.duration.max(anim.content_duration());
+    }
+
+    fn revert(&mut self, doc: &mut Document) {
+        if let (Some(anim), Some((timelines, duration))) =
+            (doc.animations.get_mut(self.anim), &self.before)
+        {
+            anim.timelines = timelines.clone();
+            anim.duration = *duration;
+        }
+    }
+    fn label(&self) -> &str {
+        if self.mirrored_offsets {
+            "Paste Keys Mirrored (Offsets)"
+        } else {
+            "Paste selected keys"
+        }
+    }
+    fn requires_mode(&self) -> Option<crate::WorkMode> {
+        Some(crate::WorkMode::Animate)
+    }
+    fn apply_remap(&mut self, remap: &super::IdRemap) {
+        for (addr, _) in &mut self.keys {
+            if let TimelineAddr::Bone { bone, .. } = addr {
+                *bone = remap.bone(*bone);
+            }
+        }
+        if let Some((timelines, _)) = &mut self.before {
+            for t in timelines {
+                if let Some(bone) = t.bone() {
+                    t.set_bone(remap.bone(bone));
+                }
+            }
+        }
+    }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 /// A mutable view of a key's time and interp, the two fields generic edits touch.
@@ -853,6 +987,7 @@ pub struct AddDeformKey {
     time: f32,
     offsets: Vec<glam::Vec2>,
     before: Option<Vec<Timeline>>,
+    drag_id: Option<u64>,
 }
 
 impl AddDeformKey {
@@ -870,7 +1005,15 @@ impl AddDeformKey {
             time,
             offsets,
             before: None,
+            drag_id: None,
         }
+    }
+
+    /// Only updates from this canvas gesture may coalesce with this key.
+    /// Non-interactive callers retain the existing same-frame merge behavior.
+    pub fn with_drag_id(mut self, id: u64) -> Self {
+        self.drag_id = Some(id);
+        self
     }
 }
 
@@ -926,6 +1069,7 @@ impl EditCommand for AddDeformKey {
             // A vertex drag re-keys the same frame every mouse-move.
             Some(other)
                 if other.anim == self.anim
+                    && other.drag_id == self.drag_id
                     && other.slot == self.slot
                     && other.attachment == self.attachment
                     && (other.time - self.time).abs() < 1e-4 =>

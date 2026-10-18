@@ -39,6 +39,7 @@ pub mod group_cmds;
 pub mod key_cmds;
 pub mod marker_cmds;
 pub mod mesh_cmds;
+pub mod pose_cmds;
 pub mod psd_cmds;
 pub mod skin_cmds;
 pub mod slot_cmds;
@@ -340,6 +341,15 @@ impl History {
 
     pub fn can_redo(&self) -> bool {
         !self.redo.is_empty()
+    }
+
+    /// Read-only inspection for editor-side session housekeeping around an edit.
+    pub fn undo_command(&self) -> Option<&dyn EditCommand> {
+        self.undo.last().map(|command| command.as_ref())
+    }
+
+    pub fn redo_command(&self) -> Option<&dyn EditCommand> {
+        self.redo.last().map(|command| command.as_ref())
     }
 
     /// Label of the next undo step, for the Edit menu.

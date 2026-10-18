@@ -216,6 +216,8 @@ pub struct Session {
     pub vertex_box_start: Option<glam::Vec2>,
     /// Vertex being dragged, if any.
     pub dragging_vertex: Option<usize>,
+    /// Stable offsets and coordinate conversions for the current FFD gesture.
+    pub deform_drag: Option<crate::ui::canvas::tools::mesh_edit::DeformDrag>,
     /// The mesh vertex under the cursor, by index into setup_vertices (T-913).
     ///
     /// The renderer worked this out for its own highlight and threw it away each
@@ -260,6 +262,8 @@ pub struct Session {
     /// Bones whose preview transform is an unkeyed edit waiting for `K`
     /// (Animate mode with auto-key off). Empty otherwise.
     pub pending_pose: Vec<BoneId>,
+    /// Absolute slot colours posed with auto-key off; never document data.
+    pub pending_slot_colors: SecondaryMap<SlotId, [f32; 4]>,
     /// Bones the user has locked against viewport edits and auto-key (T-206).
     /// Absent or `false` means editable.
     pub locked_bones: SecondaryMap<BoneId, bool>,
@@ -408,6 +412,8 @@ pub struct Session {
     pub atlas_drag: Option<crate::ui::atlas::AtlasDrag>,
     /// A PSD staged for import (T-302).
     pub pending_psd: Option<crate::ui::psd_import::PendingPsd>,
+    /// Assets picker requests the same guarded preview as File and OS drops.
+    pub request_psd_import: Option<std::path::PathBuf>,
     /// Seconds for the next physics step, set by the frame loop and consumed by
     /// `refresh_pose` (T-503). `None` means "still frame": evaluate the rest
     /// pose, so scrubbing stays reproducible.
@@ -457,6 +463,7 @@ impl Session {
             mesh_edit: false,
             selected_vertices: Vec::new(),
             dragging_vertex: None,
+            deform_drag: None,
             hovered_vertex: None,
             bone_box_start: None,
             bone_box_base: Vec::new(),
@@ -479,6 +486,7 @@ impl Session {
             onion_skin: OnionSkinSettings::default(),
             auto_key: true,
             pending_pose: Vec::new(),
+            pending_slot_colors: SecondaryMap::new(),
             locked_bones: SecondaryMap::new(),
             active_skin,
             layered_skins: Vec::new(),
@@ -510,6 +518,7 @@ impl Session {
             silhouettes: std::collections::HashMap::new(),
             atlas_drag: None,
             pending_psd: None,
+            request_psd_import: None,
             physics_dt: None,
             simulate_in_setup: false,
             dragging_event: None,
@@ -541,7 +550,7 @@ impl Session {
 
     /// Are there posed-but-unkeyed edits waiting for `K`?
     pub fn has_pending_pose(&self) -> bool {
-        !self.pending_pose.is_empty()
+        !self.pending_pose.is_empty() || !self.pending_slot_colors.is_empty()
     }
 
     pub fn set_status(&mut self, msg: impl Into<String>) {
@@ -645,6 +654,7 @@ impl Session {
     }
 
     pub fn select_bone(&mut self, bone: Option<BoneId>) {
+        self.cancel_deform_drag();
         self.reveal_selection = true;
         self.selection = bone.map(Selection::Bone);
         self.selected_bones.clear();
@@ -668,6 +678,7 @@ impl Session {
     }
 
     pub fn select_slot(&mut self, slot: Option<SlotId>) {
+        self.cancel_deform_drag();
         self.reveal_selection = true;
         self.selection = slot.map(Selection::Slot);
         self.selected_bones.clear();
@@ -704,9 +715,17 @@ impl Session {
     }
 
     pub fn clear_previews(&mut self) {
+        self.cancel_deform_drag();
         self.preview_locals.clear();
         self.preview_bone = None;
         self.pending_pose.clear();
+        self.pending_slot_colors.clear();
+    }
+
+    fn cancel_deform_drag(&mut self) {
+        if self.deform_drag.take().is_some() {
+            self.dragging_vertex = None;
+        }
     }
 
     pub fn has_previews(&self) -> bool {

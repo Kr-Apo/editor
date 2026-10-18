@@ -235,6 +235,7 @@ dependencies = [
  "ankhimate-export",
  "ankhimate-formats",
  "ankhimate-plugins",
+ "ankhimate-render",
  "bytemuck",
  "directories",
  "eframe",

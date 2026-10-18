@@ -1,0 +1,74 @@
+{
+  "frames": 90,
+  "pages": 10,
+  "uniqueFrames": 59,
+  "sheetSequencePixels": "all identical",
+  "rgbaTransparent": true,
+  "cameraIdentical": true,
+  "webglVsCpu": [
+    {
+      "frame": 0,
+      "meanPremultRgbaDelta": 0.941558837890625,
+      "visibleMeanDelta": 2.6189612181017563,
+      "alphaMeanDelta": 0.2743873596191406,
+      "pixelFractionDeltaOver32": 0.0108489990234375
+    },
+    {
+      "frame": 15,
+      "meanPremultRgbaDelta": 0.9672927856445312,
+      "visibleMeanDelta": 2.63896260680425,
+      "alphaMeanDelta": 0.3077354431152344,
+      "pixelFractionDeltaOver32": 0.011135101318359375
+    },
+    {
+      "frame": 30,
+      "meanPremultRgbaDelta": 0.9683418273925781,
+      "visibleMeanDelta": 2.63699448386192,
+      "alphaMeanDelta": 0.3091773986816406,
+      "pixelFractionDeltaOver32": 0.0111083984375
+    },
+    {
+      "frame": 39,
+      "meanPremultRgbaDelta": 0.9681186676025391,
+      "visibleMeanDelta": 2.636195076347772,
+      "alphaMeanDelta": 0.30854034423828125,
+      "pixelFractionDeltaOver32": 0.011020660400390625
+    },
+    {
+      "frame": 42,
+      "meanPremultRgbaDelta": 0.9654989242553711,
+      "visibleMeanDelta": 2.6321236922564943,
+      "alphaMeanDelta": 0.307586669921875,
+      "pixelFractionDeltaOver32": 0.011051177978515625
+    },
+    {
+      "frame": 46,
+      "meanPremultRgbaDelta": 0.9419069290161133,
+      "visibleMeanDelta": 2.6199850386766124,
+      "alphaMeanDelta": 0.274169921875,
+      "pixelFractionDeltaOver32": 0.010746002197265625
+    },
+    {
+      "frame": 50,
+      "meanPremultRgbaDelta": 0.9490756988525391,
+      "visibleMeanDelta": 2.6208206046560623,
+      "alphaMeanDelta": 0.2897758483886719,
+      "pixelFractionDeltaOver32": 0.01104736328125
+    },
+    {
+      "frame": 58,
+      "meanPremultRgbaDelta": 0.9411907196044922,
+      "visibleMeanDelta": 2.6183540273798154,
+      "alphaMeanDelta": 0.273406982421875,
+      "pixelFractionDeltaOver32": 0.010711669921875
+    },
+    {
+      "frame": 75,
+      "meanPremultRgbaDelta": 0.9411907196044922,
+      "visibleMeanDelta": 2.6183540273798154,
+      "alphaMeanDelta": 0.273406982421875,
+      "pixelFractionDeltaOver32": 0.010711669921875
+    }
+  ],
+  "webglTolerance": "mean premultiplied RGBA absolute delta <8/255 over full image; no pixel identity claim"
+}

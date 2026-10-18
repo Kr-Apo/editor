@@ -14,6 +14,7 @@ pub mod icons;
 pub mod inspector;
 pub mod motion;
 pub mod plugin_panel;
+pub mod png_sequence;
 pub mod psd_import;
 pub mod rename;
 pub mod settings;
@@ -25,6 +26,7 @@ pub mod toolbar;
 pub mod trace;
 pub mod tree;
 pub mod uv;
+pub mod video;
 pub mod weights;
 
 use eframe::egui;
@@ -200,6 +202,7 @@ impl Tab {
 
 pub struct AppBehavior<'a> {
     pub state: &'a mut crate::app_state::AppState,
+    pub operators: &'a crate::registry::Registry,
     /// Plugins, for drawing the panels they declare.
     ///
     /// Borrowed beside `state` rather than held inside it: a plugin's source is
@@ -398,14 +401,20 @@ impl AppBehavior<'_> {
                 egui::Frame::NONE
                     .inner_margin(egui::Margin::same(4))
                     .show(ui, |ui| {
-                        timeline::dopesheet(ui, self.state, self.theme, self.fonts);
+                        timeline::dopesheet(ui, self.state, self.theme, self.fonts, self.operators);
                     });
             }
             Tab::Graph => {
                 egui::Frame::NONE
                     .inner_margin(egui::Margin::same(4))
                     .show(ui, |ui| {
-                        timeline::graph_view(ui, self.state, self.theme, self.fonts);
+                        timeline::graph_view(
+                            ui,
+                            self.state,
+                            self.theme,
+                            self.fonts,
+                            self.operators,
+                        );
                     });
             }
             Tab::DrawOrder => {
@@ -439,7 +448,7 @@ impl AppBehavior<'_> {
                     .auto_shrink([false, false])
                     .show(ui, |ui| {
                         egui::Frame::NONE.inner_margin(margin).show(ui, |ui| {
-                            export::ui(ui, self.state, self.plugins);
+                            export::ui(ui, self.state, self.plugins, self.theme);
                         });
                     });
             }
@@ -914,6 +923,7 @@ mod layout_tests {
             egui::CentralPanel::default().show(ctx, |ui| {
                 let mut behavior = AppBehavior {
                     state: &mut state,
+                    operators: &crate::registry::Registry::with_builtins(),
                     plugins: &Default::default(),
                     theme: &theme,
                     grid: &grid,

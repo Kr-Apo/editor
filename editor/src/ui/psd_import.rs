@@ -12,6 +12,25 @@ use ankhimate_formats::psd_tags::{self, Tags};
 use eframe::egui;
 use std::collections::HashSet;
 
+/// Shared routing for the main window and a torn-off viewport. Never import a
+/// mixed drop partly as images while a PSD decision is still pending.
+pub fn dropped_path(
+    files: &[egui::DroppedFile],
+) -> Result<Option<std::path::PathBuf>, &'static str> {
+    let psd = files.iter().find(|file| {
+        file.path
+            .as_ref()
+            .and_then(|path| path.extension())
+            .and_then(|ext| ext.to_str())
+            .is_some_and(|ext| ext.eq_ignore_ascii_case("psd") || ext.eq_ignore_ascii_case("psb"))
+    });
+    match psd {
+        None => Ok(None),
+        Some(file) if files.len() == 1 => Ok(file.path.clone()),
+        Some(_) => Err("Drop one PSD at a time, without other files. Nothing was imported."),
+    }
+}
+
 /// A PSD staged for import. Session state — cancelling must leave no trace.
 #[derive(Clone)]
 pub struct PendingPsd {
@@ -27,6 +46,10 @@ pub struct PendingPsd {
     pub skip_hidden: bool,
     /// Replace the open document rather than merging into it.
     pub replace: bool,
+    /// Exact-path image refresh; never Replace or Merge the rig.
+    pub reimport: bool,
+    pub reimport_report: Option<ankhimate_document::psd_reimport::Report>,
+    pub preservation_error: Option<String>,
     /// Tags read off each node's name, parallel to `nodes`.
     ///
     /// Parsed once when the file is staged rather than per frame: the tree
@@ -44,6 +67,21 @@ pub struct PendingPsd {
 }
 
 impl PendingPsd {
+    /// Shared preparation only: reading a preview never mutates the document.
+    pub fn read(path: &std::path::Path) -> Result<Self, String> {
+        let bytes = std::fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
+        let nodes = ankhimate_formats::psd::layer_tree(&bytes)
+            .map_err(|e| format!("{}: {e}", path.display()))?;
+        let name = path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("psd")
+            .to_owned();
+        let mut pending = Self::new(name, bytes, nodes);
+        pending.source_path = Some(path.to_string_lossy().into_owned());
+        Ok(pending)
+    }
+
     pub fn new(name: String, bytes: Vec<u8>, nodes: Vec<LayerNode>) -> Self {
         // Everything visible starts ticked: the common case is "import this
         // file", and starting from nothing makes the user click forty times to
@@ -92,6 +130,9 @@ impl PendingPsd {
             scale: 1.0,
             skip_hidden: true,
             replace: true,
+            reimport: false,
+            reimport_report: None,
+            preservation_error: None,
         }
     }
 
@@ -138,10 +179,17 @@ impl PendingPsd {
     }
 }
 
-/// Draw the import window. Returns `true` when it should close.
-pub fn ui(ctx: &egui::Context, state: &mut AppState, theme: &crate::theme::Theme) -> bool {
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum PreviewChoice {
+    None,
+    Import,
+    Cancel,
+}
+
+/// Collect options; only the app may authorize replacement through M001.
+pub fn ui(ctx: &egui::Context, state: &mut AppState, theme: &crate::theme::Theme) -> PreviewChoice {
     let Some(mut pending) = state.session.pending_psd.clone() else {
-        return false;
+        return PreviewChoice::None;
     };
 
     let mut close = false;
@@ -152,7 +200,7 @@ pub fn ui(ctx: &egui::Context, state: &mut AppState, theme: &crate::theme::Theme
         .width(620.0)
         .show(ctx, theme, |ui| {
             ui.horizontal_top(|ui| {
-                layer_tree(ui, &mut pending);
+                ui.add_enabled_ui(!pending.reimport, |ui| layer_tree(ui, &mut pending));
 
                 ui.vertical(|ui| {
                     ui.set_min_width(230.0);
@@ -164,51 +212,99 @@ pub fn ui(ctx: &egui::Context, state: &mut AppState, theme: &crate::theme::Theme
                     );
                     ui.add_space(8.0);
 
-                    ui.horizontal(|ui| {
-                        ui.label("Scale");
-                        ui.add(
-                            egui::DragValue::new(&mut pending.scale)
-                                .speed(0.01)
-                                .range(0.01..=10.0),
-                        )
-                        .on_hover_text("World units per PSD pixel");
-                    });
-                    if ui
-                        .checkbox(&mut pending.skip_hidden, "Skip hidden layers")
-                        .on_hover_text("A hidden layer is usually a sketch or an alternate")
-                        .changed()
+                    if !state.doc.psd_layer_paths.is_empty()
+                        && ui
+                            .checkbox(
+                                &mut pending.reimport,
+                                "Update existing PSD images (keep rig)",
+                            )
+                            .changed()
+                        && pending.reimport
                     {
-                        // The tick list was seeded from visibility, so honour the
-                        // new answer rather than leaving a stale selection.
-                        if pending.skip_hidden {
-                            let hidden: Vec<String> = pending
-                                .nodes
-                                .iter()
-                                .filter(|n| !n.visible)
-                                .map(|n| n.path.clone())
-                                .collect();
-                            for path in hidden {
-                                pending.include.remove(&path);
-                            }
-                        } else {
-                            let all: Vec<String> =
-                                pending.nodes.iter().map(|n| n.path.clone()).collect();
-                            pending.include.extend(all);
+                        pending.replace = false;
+                        match ankhimate_document::psd_reimport::ReimportPsd::prepare(
+                            &state.doc,
+                            &pending.bytes,
+                        ) {
+                            Ok((_, report)) => pending.reimport_report = Some(report),
+                            Err(error) => pending.preservation_error = Some(error),
                         }
                     }
-                    ui.checkbox(&mut pending.replace, "Replace the open project")
-                        .on_hover_text(
-                            "Off: add the imported rig to what is already open, keeping \
-                             existing bones and animations",
-                        );
+                    ui.add_enabled_ui(!pending.reimport, |ui| {
+                        ui.horizontal(|ui| {
+                            ui.label("Scale");
+                            ui.add(
+                                egui::DragValue::new(&mut pending.scale)
+                                    .speed(0.01)
+                                    .range(0.01..=10.0),
+                            )
+                            .on_hover_text("World units per PSD pixel");
+                        });
+                        if ui
+                            .checkbox(&mut pending.skip_hidden, "Skip hidden layers")
+                            .on_hover_text("A hidden layer is usually a sketch or an alternate")
+                            .changed()
+                        {
+                            // The tick list was seeded from visibility, so honour the
+                            // new answer rather than leaving a stale selection.
+                            if pending.skip_hidden {
+                                let hidden: Vec<String> = pending
+                                    .nodes
+                                    .iter()
+                                    .filter(|n| !n.visible)
+                                    .map(|n| n.path.clone())
+                                    .collect();
+                                for path in hidden {
+                                    pending.include.remove(&path);
+                                }
+                            } else {
+                                let all: Vec<String> =
+                                    pending.nodes.iter().map(|n| n.path.clone()).collect();
+                                pending.include.extend(all);
+                            }
+                        }
+                        ui.radio_value(&mut pending.replace, true, "Replace the open project");
+                        ui.radio_value(&mut pending.replace, false, "Merge into the open project")
+                            .on_hover_text("Keep existing bones, images and animations");
+                    });
+                    if pending.reimport {
+                        if let Some(error) = &pending.preservation_error {
+                            ui.colored_label(ui.visuals().error_fg_color, error);
+                        }
+                        if let Some(report) = &pending.reimport_report {
+                            egui::ScrollArea::vertical()
+                                .id_salt("psd_reimport_report")
+                                .max_height(220.0)
+                                .show(ui, |ui| {
+                                    for line in report.lines() {
+                                        ui.label(line);
+                                    }
+                                });
+                        }
+                    }
 
                     ui.add_space(8.0);
-                    what_was_decided(ui, &pending);
+                    if !pending.reimport {
+                        what_was_decided(ui, &pending);
+                    }
 
                     ui.add_space(10.0);
                     ui.horizontal(|ui| {
                         if ui
-                            .add_enabled(layers > 0, egui::Button::new("Import"))
+                            .add_enabled(
+                                layers > 0
+                                    && (!pending.reimport
+                                        || (pending.preservation_error.is_none()
+                                            && pending
+                                                .reimport_report
+                                                .as_ref()
+                                                .is_some_and(|r| r.conflicts.is_empty()))),
+                                egui::Button::new(if pending.reimport {
+                                    "Update images"
+                                } else {
+                                    "Import"
+                                }),
+                            )
                             .clicked()
                         {
                             confirm = true;
@@ -221,17 +317,15 @@ pub fn ui(ctx: &egui::Context, state: &mut AppState, theme: &crate::theme::Theme
             });
         });
 
-    if confirm {
-        run_import(state, &pending);
-        close = true;
-    }
     close |= dialog.closed;
+    state.session.pending_psd = Some(pending);
     if close {
-        state.session.pending_psd = None;
+        PreviewChoice::Cancel
+    } else if confirm {
+        PreviewChoice::Import
     } else {
-        state.session.pending_psd = Some(pending);
+        PreviewChoice::None
     }
-    close
 }
 
 /// What the reader worked out on its own, before anything is imported.
@@ -445,14 +539,27 @@ fn layer_tree(ui: &mut egui::Ui, pending: &mut PendingPsd) {
 }
 
 /// Run the import and fold the result into the document as one undo step.
-fn run_import(state: &mut AppState, pending: &PendingPsd) {
-    let imported = match ankhimate_formats::psd::import(&pending.bytes, &pending.options()) {
-        Ok(imported) => imported,
-        Err(e) => {
-            state.session.set_status(format!("PSD import failed: {e}"));
-            return;
+pub(crate) fn run_import(state: &mut AppState, pending: &PendingPsd) -> Result<String, String> {
+    if pending.reimport {
+        if let Some(error) = &pending.preservation_error {
+            return Err(error.clone());
         }
-    };
+        let (command, report) =
+            ankhimate_document::psd_reimport::ReimportPsd::prepare(&state.doc, &pending.bytes)?;
+        state.session.import_summary = Some(report.lines());
+        if !report.conflicts.is_empty() {
+            return Err(report.lines().join("\n"));
+        }
+        if let Some(command) = command {
+            if !state.dispatch(Box::new(command)) {
+                return Err("Switch to Setup mode to update PSD images".into());
+            }
+            state.invalidate_asset_caches();
+        }
+        return Ok(report.lines()[0].clone());
+    }
+    let imported = ankhimate_formats::psd::import(&pending.bytes, &pending.options())
+        .map_err(|e| format!("PSD import failed: {e}"))?;
 
     // `[mesh]` and `[weights]`, applied before the import is dispatched. The
     // tracer lives in `document` because `core` stays dependency-light, so the
@@ -473,9 +580,35 @@ fn run_import(state: &mut AppState, pending: &PendingPsd) {
         pending.name.clone(),
     );
     if state.dispatch(Box::new(command)) {
-        state
-            .session
-            .set_status(import_status(&summary, &traced, &not_traced));
+        if pending.replace {
+            state.reset_rig_session();
+            state.refresh_pose();
+        } else {
+            state.invalidate_asset_caches();
+        }
+        let status = import_status(&summary, &traced, &not_traced);
+        let mut notes = vec![status.clone()];
+        notes.extend(
+            summary
+                .skipped
+                .iter()
+                .map(|layer| format!("Skipped: {layer}")),
+        );
+        notes.extend(
+            summary
+                .lost_blend
+                .iter()
+                .map(|(layer, mode)| format!("Unsupported blend: {layer} ({mode})")),
+        );
+        notes.extend(
+            not_traced
+                .iter()
+                .map(|failure| format!("{} not traced: {}", failure.attachment, failure.because)),
+        );
+        state.session.import_summary = Some(notes);
+        Ok(status)
+    } else {
+        Err("Switch to Setup mode to import a PSD".into())
     }
 }
 

@@ -1,0 +1,11 @@
+{
+  "name":"ankhimate-spritesheet-phaser-example",
+  "version":"0.0.0",
+  "private":true,
+  "type":"module",
+  "engines":{"node":">=22"},
+  "scripts":{"start":"node server.mjs","check":"node --check src/demo.js && node --check src/metadata.js && node --check server.mjs && node --test test/metadata.test.mjs","test":"npm run check && node test/webgl.mjs"},
+  "dependencies":{"phaser":"3.90.0"},
+  "devDependencies":{"playwright":"1.58.2"},
+  "license":"MIT OR Apache-2.0"
+}

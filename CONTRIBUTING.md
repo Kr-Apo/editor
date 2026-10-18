@@ -1,97 +1,53 @@
-# Contributing to Ankhimate
+# Contributing
 
-Thanks for your interest! This file is a quick orientation; the normative
-references are [`docs/ARCHITECTURE_PLAN.md`](docs/ARCHITECTURE_PLAN.md) and
-[`docs/TASKS.md`](docs/TASKS.md).
+Small, reproducible changes are welcome. Explain the user-visible problem,
+the affected release/commit and the verification performed. Discuss larger work
+before implementation; do not treat every editor feature as a runtime promise.
 
-## Clean-room policy (read first)
+## Safety and scope
 
-Ankhimate is licensed **MIT OR Apache-2.0** so that anyone can embed the runtime
-in any game. Keeping that promise means the codebase must stay free of code
-derived from copyleft-licensed projects.
+Contribute only code and assets you may redistribute. Do not copy, translate or
+closely paraphrase another animation editor's source. Describe behavior and use
+original implementations. Preserve existing copyright and dependency notices.
+If you have read the source of a GPL-licensed animation editor, do not contribute
+to the matching Ankhimate feature; choose a different task.
+For this repository's code, contributions are MIT OR Apache-2.0 unless explicitly
+agreed otherwise. Dependency and sample-asset licenses remain separate.
 
-**Do not copy, translate, or closely paraphrase source code from any other
-animation editor.** Implement observed *behavior* — what a feature does, how it
-should feel — never ported code. If you have read the source of a GPL-licensed
-editor, do not contribute to the matching Ankhimate feature; pick a different
-task.
+Never attach private projects, credentials, access tokens, local configuration or
+unredacted personal paths. Construct a minimal synthetic rig where possible.
+Keep `.ankh` assets alongside any shareable project. Include only the files needed
+to reproduce; verify ownership before posting screenshots or sample artwork.
 
-Reading a **file format** is different from reading source: a format is
-reverse-engineered from sample data files, and the findings are written up as a
-document before any code is written. That document, not the importer, is then the
-record of what was observed.
+## Changes and validation
 
-Full policy: [ADR 005](docs/adr/0005-license-and-clean-room-policy.md).
+Keep changes focused and add a regression before a confirmed bug fix. Explain
+which checks were run and which historical evidence was retained. UI changes
+need relevant interaction checks; rendering changes need numerical/pixel evidence,
+not just screenshots. Do not update reference outputs simply to make tests pass.
 
-## Getting started
+Use explicit staged paths and review the complete diff. Do not include generated
+build/cache files, backups, private recordings or dependency directories.
+Do not introduce a new format version, package publication or release asset as an
+incidental part of a fix. Read SECURITY.md for vulnerability reporting.
 
-```bash
-git clone https://github.com/Ankhimate/editor.git
-cd editor
-cargo test --workspace
-cargo run -p ankhimate-editor
+## Editor commands and architecture
+
+Use the pinned Rust 1.95.0 toolchain. Windows builds need MSVC build tools/SDK.
+
+```sh
+cargo fmt --all -- --check
+cargo test --workspace --locked --all-targets
+cargo clippy --workspace --locked --all-targets
+cargo build --workspace --locked
+cargo check --locked -p ankhimate-core --target wasm32-unknown-unknown
+cargo run --locked -p xtask -- docs-check
 ```
 
-Needs a recent stable Rust toolchain (`rust-toolchain.toml` pins it) and a GPU
-with Vulkan, Metal, DX12, or GL support.
-
-## Picking something to work on
-
-Work is broken into PR-sized tasks in [`docs/TASKS.md`](docs/TASKS.md), each with
-dependencies and acceptance criteria. Tasks marked ∥ can be done in parallel with
-their siblings. Comment on the issue (or open one) before starting anything large
-so two people do not build the same thing.
-
-Small fixes need no ceremony — open the PR.
-
-## House rules
-
-These are what the review will actually check:
-
-- **`core/` stays framework-free.** No egui, no wgpu, no editor types. It is the
-  contract games compile against.
-- **World transforms are always computed from local**, never stored.
-- **Every user action is a command** with `apply` and `revert`, pushed to the
-  history stack. If it changes the document, it must undo.
-- **Setup vs Animate**: structural edits are Setup-only and must be refused with
-  a hint in Animate, not silently allowed (see
-  [ADR 006](docs/adr/0006-work-modes.md)).
-- **Comments explain why, not what.** A comment restating the code is noise; a
-  comment recording why an obvious approach was rejected is worth its lines.
-- **New behavior comes with a test.** Bug fixes come with the test that would
-  have caught the bug.
-
-## Before opening a PR
-
-All of these must pass:
-
-```bash
-cargo fmt --check
-cargo clippy --workspace --all-targets -- -D warnings
-cargo test --workspace
-```
-
-Do not break the editor build, even if your task is core-only. If your change is
-visual, say what you verified on screen — the render path is not covered by
-tests.
-
-Reference the task ID in the PR title where there is one (e.g.
-`T-405: clipping attachments`), and describe what you *did not* do as well as
-what you did.
-
-## Decisions and ADRs
-
-Significant decisions are recorded as Architecture Decision Records in
-[`docs/adr/`](docs/adr/). A change that deviates from the plan needs a new ADR
-(`docs/adr/NNN-*.md`) in the same PR — not a follow-up.
-
-## Reporting bugs
-
-Include the OS, GPU/backend, and what you did to trigger it. For rendering bugs
-a screenshot is worth more than a paragraph. If a rig is involved and you can
-share it, attach the `.ankh`.
-
-## License of contributions
-
-Unless you state otherwise, any contribution you intentionally submit for
-inclusion shall be dual-licensed as MIT OR Apache-2.0, with no additional terms.
+Consult [architecture](docs/ARCHITECTURE_PLAN.md), [tasks](docs/TASKS.md),
+[clean-room policy](docs/adr/0005-license-and-clean-room-policy.md) and
+[work modes](docs/adr/0006-work-modes.md). Keep core independent of the UI,
+mutations in undoable document commands, and Setup/Animate semantics distinct.
+Do not weaken staged publication, rollback or project recovery protections.
+There are three accepted baseline editor deprecation warnings; identify them
+explicitly and introduce none. This is not permission to hide new warnings.

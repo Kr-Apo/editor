@@ -92,6 +92,105 @@ pub fn owning_skin(doc: &Document, active: SkinId, slot: SlotId, name: &str) -> 
         .map(|_| default)
 }
 
+/// Choose art for a region in the explicitly named skin. Unlike Relink this
+/// changes a reference, never shared pixels. An inherited region is copied
+/// into the target skin; undo removes that override and restores fallback.
+pub struct SetRegionImage {
+    skin: SkinId,
+    slot: SlotId,
+    name: String,
+    after: RegionAttachment,
+    before: Option<Attachment>,
+    captured: bool,
+    applied: bool,
+}
+
+impl SetRegionImage {
+    pub fn new(
+        doc: &Document,
+        skin: SkinId,
+        slot: SlotId,
+        name: &str,
+        image: &str,
+    ) -> Result<Self, &'static str> {
+        if !doc.skeleton.skins.contains_key(skin) || !doc.skeleton.slots.contains_key(slot) {
+            return Err("The target skin or slot no longer exists");
+        }
+        let Some(attachment) = doc.skeleton.resolve(skin, slot, name) else {
+            return Err("The attachment is missing from the active and default skins");
+        };
+        let Attachment::Region(region) = attachment else {
+            return Err("Image assignment supports regions only; mesh UVs are not remapped");
+        };
+        if region.sequence.is_some() {
+            return Err("Image assignment is unavailable for image sequences");
+        }
+        let asset = doc
+            .assets
+            .by_name(image)
+            .and_then(|id| doc.assets.get(id))
+            .ok_or("The selected image is missing from the asset library")?;
+        let decoded = image::load_from_memory(&asset.bytes).map_err(
+            |_| "The selected image cannot be decoded; import or relink a valid image first",
+        )?;
+        if decoded.width() != asset.width || decoded.height() != asset.height {
+            return Err("The selected image dimensions are inconsistent; reimport it first");
+        }
+        let mut after = region.clone();
+        after.texture = image.to_owned();
+        Ok(Self {
+            skin,
+            slot,
+            name: name.to_owned(),
+            after,
+            before: None,
+            captured: false,
+            applied: false,
+        })
+    }
+}
+
+impl EditCommand for SetRegionImage {
+    fn apply(&mut self, doc: &mut Document) {
+        let Some(skin) = doc.skeleton.skins.get_mut(self.skin) else {
+            return;
+        };
+        if !self.captured {
+            self.before = skin.get(self.slot, &self.name).cloned();
+            self.captured = true;
+        }
+        skin.set(
+            self.slot,
+            &self.name,
+            Attachment::Region(self.after.clone()),
+        );
+        self.applied = true;
+    }
+
+    fn revert(&mut self, doc: &mut Document) {
+        if self.applied
+            && let Some(skin) = doc.skeleton.skins.get_mut(self.skin)
+        {
+            if let Some(before) = &self.before {
+                skin.set(self.slot, &self.name, before.clone());
+            } else {
+                skin.remove(self.slot, &self.name);
+            }
+        }
+        self.applied = false;
+    }
+
+    fn label(&self) -> &str {
+        "Assign Skin Image"
+    }
+    fn requires_mode(&self) -> Option<WorkMode> {
+        Some(WorkMode::Setup)
+    }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+}
+
 /// Set a region attachment's transform. Merges, so a spinbox drag is one step.
 pub struct SetRegionProps {
     skin: SkinId,

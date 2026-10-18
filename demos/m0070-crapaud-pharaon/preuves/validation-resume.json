@@ -1,0 +1,15 @@
+{
+  "rustTestsPassed": 1103,
+  "rustFailures": 0,
+  "clippyWarningsSameAsM0061": true,
+  "nativeAnd90FramesRepeatIdentical": true,
+  "runtimeSnapshotFiles": 16,
+  "personalPathsInSavedAssets": false,
+  "projectChangePaths": [
+    "/animations",
+    "/export_presets",
+    "/skins/0/entries/15/attachment/offset_x",
+    "/skins/0/entries/15/attachment/offset_y",
+    "/slots/4/attachment"
+  ]
+}

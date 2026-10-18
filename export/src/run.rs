@@ -4,18 +4,18 @@
 //! that was never ours to lose, so it holds three rules:
 //!
 //! 1. **Confine every path** to the output directory. See [`crate::template::confine`].
-//! 2. **All or nothing.** Render every file to memory first, write only once all
-//!    of them succeed. A template that fails on the ninth animation must not
-//!    leave eight files from this run beside four from the last — a state no
-//!    user can reason about and no runtime can load.
-//! 3. **Never delete.** A stale-file sweep is the obvious convenience and it is
+//! 2. **Prepare, then publish with rollback.** Render every file to memory and
+//!    stage all bytes before replacing any destination. Ordinary failures restore
+//!    previous files; failed restoration retains backups and reports their path.
+//!    This is not filesystem-wide atomicity or recovery after a process crash.
+//! 3. **Never delete orphans.** A stale-file sweep is the obvious convenience and it is
 //!    refused: `output_dir` is user-chosen and can be pointed at a source tree
 //!    by accident. Orphans are reported, and the user decides.
 
 use crate::atlas::{self, Atlas};
 use crate::context::{Context, ExportInfo};
 use crate::preset::{Cadence, Preset};
-use crate::template::{Engine, RenderedFile, TemplateError, confine};
+use crate::template::{Engine, RenderedFile, TemplateError};
 use ankhimate_core::assets::AssetDb;
 use ankhimate_formats::schema::Project;
 use std::collections::BTreeSet;
@@ -49,7 +49,7 @@ impl std::fmt::Display for ExportError {
                 second,
             } => write!(
                 f,
-                "templates '{first}' and '{second}' both write '{path}'; one would overwrite the \
+                "outputs '{first}' and '{second}' conflict at '{path}'; one would overwrite the \
                  other, so nothing was written"
             ),
             ExportError::Io { path, reason } => write!(f, "could not write '{path}': {reason}"),
@@ -91,17 +91,28 @@ impl Plan {
     pub fn survey(&self, output_dir: &Path) -> Survey {
         let mut created = Vec::new();
         let mut replaced = Vec::new();
-        for path in self.paths() {
+        // Use exactly the portable paths the writer will publish, including
+        // plugin plans containing Windows separators. Invalid plans are
+        // diagnosed by `inspect`; surveying them must not follow unsafe paths.
+        let paths: Vec<_> = self
+            .paths()
+            .into_iter()
+            .filter_map(|path| crate::staged::validate_path(path).ok())
+            .collect();
+        for path in &paths {
             if output_dir.join(path).exists() {
-                replaced.push(path.to_string());
+                replaced.push(path.clone());
             } else {
-                created.push(path.to_string());
+                created.push(path.clone());
             }
         }
         Survey {
             created,
             replaced,
-            orphans: orphans(output_dir, &self.paths()),
+            orphans: orphans(
+                output_dir,
+                &paths.iter().map(String::as_str).collect::<Vec<_>>(),
+            ),
         }
     }
 }
@@ -119,13 +130,33 @@ pub struct Survey {
 }
 
 fn orphans(output_dir: &Path, writing: &[&str]) -> Vec<String> {
-    let expected: BTreeSet<String> = writing.iter().map(|p| p.to_string()).collect();
+    if crate::staged::validate_directory(output_dir).is_err() {
+        return Vec::new();
+    }
+    let expected: BTreeSet<String> = writing.iter().map(|p| survey_key(output_dir, p)).collect();
     let mut found = Vec::new();
     walk(output_dir, output_dir, &mut found);
     found
         .into_iter()
-        .filter(|p| !expected.contains(p))
+        .filter(|p| !expected.contains(&survey_key(output_dir, p)))
         .collect()
+}
+
+fn survey_key(_root: &Path, relative: &str) -> String {
+    #[cfg(windows)]
+    {
+        let path = _root.join(relative);
+        // Resolve ordinary existing files for case and 8.3 aliases, but never
+        // follow an orphan's link/reparse point to another file or directory.
+        if std::fs::symlink_metadata(&path).is_ok_and(|m| !crate::staged::is_link(&m))
+            && let Ok(canonical) = std::fs::canonicalize(&path)
+        {
+            return canonical.to_string_lossy().to_lowercase();
+        }
+        relative.to_lowercase()
+    }
+    #[cfg(not(windows))]
+    relative.to_string()
 }
 
 fn walk(root: &Path, dir: &Path, out: &mut Vec<String>) {
@@ -135,7 +166,10 @@ fn walk(root: &Path, dir: &Path, out: &mut Vec<String>) {
     let mut paths: Vec<PathBuf> = entries.filter_map(|e| e.ok()).map(|e| e.path()).collect();
     paths.sort();
     for path in paths {
-        if path.is_dir() {
+        let Ok(metadata) = std::fs::symlink_metadata(&path) else {
+            continue;
+        };
+        if metadata.is_dir() && !crate::staged::is_link(&metadata) {
             walk(root, &path, out);
         } else if let Ok(rel) = path.strip_prefix(root) {
             out.push(rel.to_string_lossy().replace('\\', "/"));
@@ -175,6 +209,24 @@ pub fn plan_with(
     preset: &Preset,
     images: Images,
 ) -> Result<Plan, ExportError> {
+    // JSON's Value conversion maps non-finite f32s to null. Reject them before
+    // building the context, including headless/preview callers without preflight.
+    // Other templates retain their existing contracts and diagnostic policy.
+    if crate::preflight::Target::for_preset(preset) == crate::preflight::Target::Runtime
+        && let Some(slot) = project.slots.iter().find(|slot| {
+            slot.dark_color
+                .is_some_and(|dark| dark.iter().any(|value| !value.is_finite()))
+        })
+    {
+        return Err(TemplateError::Render {
+            template: preset.templates[0].name.clone(),
+            reason: format!(
+                "slot {:?} has non-finite dark tint; export aborted",
+                slot.name
+            ),
+        }
+        .into());
+    }
     let baked: Option<Atlas> = if preset.atlas.enabled {
         Some(atlas::bake(assets, &preset.atlas.settings).map_err(ExportError::Atlas)?)
     } else {
@@ -205,7 +257,7 @@ pub fn plan_with(
         for value in renders {
             let path_name = format!("{} (output path)", template.name);
             let rendered_path = engine.render(&path_name, &template.output_path, &value)?;
-            let path = confine(&template.name, &rendered_path)?;
+            let path = crate::staged::validate_path(&rendered_path)?;
 
             if let Some((_, first)) = claimed.iter().find(|(p, _)| p == &path) {
                 return Err(ExportError::DuplicatePath {
@@ -252,15 +304,35 @@ pub fn plan_with(
         }
     }
 
+    crate::staged::validate_paths(&plan)?;
     Ok(plan)
 }
 
 /// Write a plan to disk.
 ///
-/// Every file is rendered before this is called, so a failure here is an I/O
-/// failure rather than a template one. Directories are created as needed;
-/// nothing is removed.
+/// Validate all text/image paths, stage all bytes on the destination filesystem,
+/// then publish with backups and rollback. See `docs/export-safety.md` for the
+/// guarantees, including Windows replacement and crash limitations.
 pub fn write(plan: &Plan, output_dir: &Path) -> Result<(), ExportError> {
+    write_data(plan, output_dir, None)
+}
+
+/// Publish through the same staged writer, refusing a changed replacement list.
+/// Consent covers names, not unchanged contents. This is not a filesystem lock
+/// against unrelated processes; see `docs/export-preflight.md`.
+pub fn write_reviewed(
+    plan: &Plan,
+    output_dir: &Path,
+    replacements: &[String],
+) -> Result<(), ExportError> {
+    write_data(plan, output_dir, Some(replacements))
+}
+
+fn write_data(
+    plan: &Plan,
+    output_dir: &Path,
+    replacements: Option<&[String]>,
+) -> Result<(), ExportError> {
     // A plan built with `Images::Named` carries page names and no bytes. Writing
     // it would produce zero-length PNGs beside perfectly good JSON — an export
     // that looks successful and is not, which is the failure this module exists
@@ -274,32 +346,87 @@ pub fn write(plan: &Plan, output_dir: &Path) -> Result<(), ExportError> {
         });
     }
 
-    std::fs::create_dir_all(output_dir).map_err(|e| ExportError::Io {
-        path: output_dir.display().to_string(),
-        reason: e.to_string(),
-    })?;
-
-    for file in &plan.files {
-        write_one(output_dir, &file.path, file.contents.as_bytes())?;
+    match replacements {
+        Some(replacements) => crate::staged::write_reviewed(plan, output_dir, replacements),
+        None => crate::staged::write(plan, output_dir),
     }
-    for (path, bytes) in &plan.binaries {
-        write_one(output_dir, path, bytes)?;
-    }
-    Ok(())
 }
 
-fn write_one(output_dir: &Path, rel: &str, bytes: &[u8]) -> Result<(), ExportError> {
-    let full = output_dir.join(rel);
-    if let Some(parent) = full.parent() {
-        std::fs::create_dir_all(parent).map_err(|e| ExportError::Io {
-            path: parent.display().to_string(),
-            reason: e.to_string(),
-        })?;
+/// Advisory read-only preflight. Not a permission probe, lock or reservation.
+/// `write` remains authoritative and rechecks paths/content before staging.
+pub fn inspect(plan: &Plan, output_dir: &Path) -> Result<(), ExportError> {
+    crate::staged::inspect(plan, output_dir)
+}
+
+/// Stage PNGs one at a time without holding a whole sequence in memory.
+/// Text files carry their final contents; binaries are names with empty bytes.
+/// Existing destinations are refused. Cancellation during publication rolls
+/// back like any other ordinary error; rollback itself cannot be cancelled.
+/// See `docs/export-safety.md` for crash and concurrent-writer limitations.
+pub fn write_generated_pngs(
+    plan: &Plan,
+    output_dir: &Path,
+    generate: impl FnMut(usize, &str) -> Result<Vec<u8>, String>,
+    cancelled: impl Fn() -> bool,
+) -> Result<(), ExportError> {
+    if plan
+        .binaries
+        .iter()
+        .any(|(name, bytes)| !name.ends_with(".png") || !bytes.is_empty())
+    {
+        return Err(ExportError::Io {
+            path: output_dir.display().to_string(),
+            reason: "generated PNG plan must contain .png names with no precomputed bytes".into(),
+        });
     }
-    std::fs::write(&full, bytes).map_err(|e| ExportError::Io {
-        path: full.display().to_string(),
-        reason: e.to_string(),
-    })
+    crate::staged::write_generated(plan, output_dir, generate, cancelled)
+}
+
+/// Generated PNG/JPEG/WebP images use the same staged transaction and refusal of
+/// existing names. The callback's bytes must decode as the planned extension.
+/// The original PNG-only entry point remains unchanged for historical callers.
+pub fn write_generated_images(
+    plan: &Plan,
+    output_dir: &Path,
+    mut generate: impl FnMut(usize, &str) -> Result<Vec<u8>, String>,
+    cancelled: impl Fn() -> bool,
+) -> Result<(), ExportError> {
+    fn format(path: &str) -> Option<image::ImageFormat> {
+        match Path::new(path).extension()?.to_str()? {
+            "png" => Some(image::ImageFormat::Png),
+            "jpg" => Some(image::ImageFormat::Jpeg),
+            "webp" => Some(image::ImageFormat::WebP),
+            _ => None,
+        }
+    }
+    if plan
+        .binaries
+        .iter()
+        .any(|(name, bytes)| format(name).is_none() || !bytes.is_empty())
+    {
+        return Err(ExportError::Io {
+            path: output_dir.display().to_string(),
+            reason: "generated image plan requires .png/.jpg/.webp names and no precomputed bytes"
+                .into(),
+        });
+    }
+    crate::staged::write_generated(
+        plan,
+        output_dir,
+        |index, path| {
+            let bytes = generate(index, path)?;
+            let expected = format(path).expect("validated image suffix");
+            let actual = image::guess_format(&bytes)
+                .map_err(|e| format!("Invalid generated image {path}: {e}"))?;
+            if actual != expected {
+                return Err(format!("Image encoding does not match filename {path}"));
+            }
+            image::load_from_memory_with_format(&bytes, expected)
+                .map_err(|e| format!("Invalid generated image {path}: {e}"))?;
+            Ok(bytes)
+        },
+        cancelled,
+    )
 }
 
 /// Render and write in one step.

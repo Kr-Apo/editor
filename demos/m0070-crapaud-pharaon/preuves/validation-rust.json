@@ -1,0 +1,369 @@
+{
+  "bones": 16,
+  "clips": 1,
+  "frames": [
+    {
+      "frame": 0,
+      "pixels_identical": true
+    },
+    {
+      "frame": 1,
+      "pixels_identical": true
+    },
+    {
+      "frame": 2,
+      "pixels_identical": true
+    },
+    {
+      "frame": 3,
+      "pixels_identical": true
+    },
+    {
+      "frame": 4,
+      "pixels_identical": true
+    },
+    {
+      "frame": 5,
+      "pixels_identical": true
+    },
+    {
+      "frame": 6,
+      "pixels_identical": true
+    },
+    {
+      "frame": 7,
+      "pixels_identical": true
+    },
+    {
+      "frame": 8,
+      "pixels_identical": true
+    },
+    {
+      "frame": 9,
+      "pixels_identical": true
+    },
+    {
+      "frame": 10,
+      "pixels_identical": true
+    },
+    {
+      "frame": 11,
+      "pixels_identical": true
+    },
+    {
+      "frame": 12,
+      "pixels_identical": true
+    },
+    {
+      "frame": 13,
+      "pixels_identical": true
+    },
+    {
+      "frame": 14,
+      "pixels_identical": true
+    },
+    {
+      "frame": 15,
+      "pixels_identical": true
+    },
+    {
+      "frame": 16,
+      "pixels_identical": true
+    },
+    {
+      "frame": 17,
+      "pixels_identical": true
+    },
+    {
+      "frame": 18,
+      "pixels_identical": true
+    },
+    {
+      "frame": 19,
+      "pixels_identical": true
+    },
+    {
+      "frame": 20,
+      "pixels_identical": true
+    },
+    {
+      "frame": 21,
+      "pixels_identical": true
+    },
+    {
+      "frame": 22,
+      "pixels_identical": true
+    },
+    {
+      "frame": 23,
+      "pixels_identical": true
+    },
+    {
+      "frame": 24,
+      "pixels_identical": true
+    },
+    {
+      "frame": 25,
+      "pixels_identical": true
+    },
+    {
+      "frame": 26,
+      "pixels_identical": true
+    },
+    {
+      "frame": 27,
+      "pixels_identical": true
+    },
+    {
+      "frame": 28,
+      "pixels_identical": true
+    },
+    {
+      "frame": 29,
+      "pixels_identical": true
+    },
+    {
+      "frame": 30,
+      "pixels_identical": true
+    },
+    {
+      "frame": 31,
+      "pixels_identical": true
+    },
+    {
+      "frame": 32,
+      "pixels_identical": true
+    },
+    {
+      "frame": 33,
+      "pixels_identical": true
+    },
+    {
+      "frame": 34,
+      "pixels_identical": true
+    },
+    {
+      "frame": 35,
+      "pixels_identical": true
+    },
+    {
+      "frame": 36,
+      "pixels_identical": true
+    },
+    {
+      "frame": 37,
+      "pixels_identical": true
+    },
+    {
+      "frame": 38,
+      "pixels_identical": true
+    },
+    {
+      "frame": 39,
+      "pixels_identical": true
+    },
+    {
+      "frame": 40,
+      "pixels_identical": true
+    },
+    {
+      "frame": 41,
+      "pixels_identical": true
+    },
+    {
+      "frame": 42,
+      "pixels_identical": true
+    },
+    {
+      "frame": 43,
+      "pixels_identical": true
+    },
+    {
+      "frame": 44,
+      "pixels_identical": true
+    },
+    {
+      "frame": 45,
+      "pixels_identical": true
+    },
+    {
+      "frame": 46,
+      "pixels_identical": true
+    },
+    {
+      "frame": 47,
+      "pixels_identical": true
+    },
+    {
+      "frame": 48,
+      "pixels_identical": true
+    },
+    {
+      "frame": 49,
+      "pixels_identical": true
+    },
+    {
+      "frame": 50,
+      "pixels_identical": true
+    },
+    {
+      "frame": 51,
+      "pixels_identical": true
+    },
+    {
+      "frame": 52,
+      "pixels_identical": true
+    },
+    {
+      "frame": 53,
+      "pixels_identical": true
+    },
+    {
+      "frame": 54,
+      "pixels_identical": true
+    },
+    {
+      "frame": 55,
+      "pixels_identical": true
+    },
+    {
+      "frame": 56,
+      "pixels_identical": true
+    },
+    {
+      "frame": 57,
+      "pixels_identical": true
+    },
+    {
+      "frame": 58,
+      "pixels_identical": true
+    },
+    {
+      "frame": 59,
+      "pixels_identical": true
+    },
+    {
+      "frame": 60,
+      "pixels_identical": true
+    },
+    {
+      "frame": 61,
+      "pixels_identical": true
+    },
+    {
+      "frame": 62,
+      "pixels_identical": true
+    },
+    {
+      "frame": 63,
+      "pixels_identical": true
+    },
+    {
+      "frame": 64,
+      "pixels_identical": true
+    },
+    {
+      "frame": 65,
+      "pixels_identical": true
+    },
+    {
+      "frame": 66,
+      "pixels_identical": true
+    },
+    {
+      "frame": 67,
+      "pixels_identical": true
+    },
+    {
+      "frame": 68,
+      "pixels_identical": true
+    },
+    {
+      "frame": 69,
+      "pixels_identical": true
+    },
+    {
+      "frame": 70,
+      "pixels_identical": true
+    },
+    {
+      "frame": 71,
+      "pixels_identical": true
+    },
+    {
+      "frame": 72,
+      "pixels_identical": true
+    },
+    {
+      "frame": 73,
+      "pixels_identical": true
+    },
+    {
+      "frame": 74,
+      "pixels_identical": true
+    },
+    {
+      "frame": 75,
+      "pixels_identical": true
+    },
+    {
+      "frame": 76,
+      "pixels_identical": true
+    },
+    {
+      "frame": 77,
+      "pixels_identical": true
+    },
+    {
+      "frame": 78,
+      "pixels_identical": true
+    },
+    {
+      "frame": 79,
+      "pixels_identical": true
+    },
+    {
+      "frame": 80,
+      "pixels_identical": true
+    },
+    {
+      "frame": 81,
+      "pixels_identical": true
+    },
+    {
+      "frame": 82,
+      "pixels_identical": true
+    },
+    {
+      "frame": 83,
+      "pixels_identical": true
+    },
+    {
+      "frame": 84,
+      "pixels_identical": true
+    },
+    {
+      "frame": 85,
+      "pixels_identical": true
+    },
+    {
+      "frame": 86,
+      "pixels_identical": true
+    },
+    {
+      "frame": 87,
+      "pixels_identical": true
+    },
+    {
+      "frame": 88,
+      "pixels_identical": true
+    },
+    {
+      "frame": 89,
+      "pixels_identical": true
+    }
+  ],
+  "native_repeat_identical": true,
+  "pose_cases": 12,
+  "project_load": "clean"
+}

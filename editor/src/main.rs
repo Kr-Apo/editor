@@ -1,18 +1,27 @@
+#![cfg_attr(all(windows, not(debug_assertions)), windows_subsystem = "windows")]
+
 pub mod app;
 pub mod app_state;
 pub mod autosave;
 pub mod config;
 pub mod edit_router;
+pub mod export_preflight;
 pub mod fileops;
+pub mod key_clipboard;
 pub mod keymap;
 pub mod operators;
 mod paste_tests;
 pub mod plugins;
+pub mod png_export;
+mod pose_clipboard;
 pub mod registry;
 pub mod renderer;
 pub mod session;
+pub mod spritesheet_export;
+pub mod system_open;
 pub mod theme;
 pub mod ui;
+pub mod video_export;
 
 use eframe::egui;
 
@@ -73,3 +82,11 @@ fn main() -> eframe::Result {
         Box::new(move |cc| Ok(Box::new(app::AnkhimateApp::with_file(cc, open)))),
     )
 }
+
+#[cfg(test)]
+mod rendered_export_tests;
+
+#[cfg(test)]
+mod batch_export_tests;
+
+mod batch_export;

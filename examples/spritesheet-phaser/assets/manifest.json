@@ -1,0 +1,71 @@
+[
+  {
+    "id": "walker-walk",
+    "label": "walker-walk",
+    "metadata": "./assets/walker-walk/spritesheet.json",
+    "references": [
+      {
+        "index": 0,
+        "image": "./assets/walker-walk/reference_000000.png"
+      },
+      {
+        "index": 15,
+        "image": "./assets/walker-walk/reference_000015.png"
+      },
+      {
+        "index": 30,
+        "image": "./assets/walker-walk/reference_000030.png"
+      },
+      {
+        "index": 45,
+        "image": "./assets/walker-walk/reference_000045.png"
+      }
+    ]
+  },
+  {
+    "id": "walker-leg_ik",
+    "label": "walker-leg_ik",
+    "metadata": "./assets/walker-leg_ik/spritesheet.json",
+    "references": [
+      {
+        "index": 0,
+        "image": "./assets/walker-leg_ik/reference_000000.png"
+      },
+      {
+        "index": 15,
+        "image": "./assets/walker-leg_ik/reference_000015.png"
+      },
+      {
+        "index": 30,
+        "image": "./assets/walker-leg_ik/reference_000030.png"
+      },
+      {
+        "index": 45,
+        "image": "./assets/walker-leg_ik/reference_000045.png"
+      }
+    ]
+  },
+  {
+    "id": "tagged_rig-animation_1",
+    "label": "tagged_rig-animation_1",
+    "metadata": "./assets/tagged_rig-animation_1/spritesheet.json",
+    "references": [
+      {
+        "index": 0,
+        "image": "./assets/tagged_rig-animation_1/reference_000000.png"
+      },
+      {
+        "index": 15,
+        "image": "./assets/tagged_rig-animation_1/reference_000015.png"
+      },
+      {
+        "index": 30,
+        "image": "./assets/tagged_rig-animation_1/reference_000030.png"
+      },
+      {
+        "index": 45,
+        "image": "./assets/tagged_rig-animation_1/reference_000045.png"
+      }
+    ]
+  }
+]

@@ -97,6 +97,7 @@ impl AppState {
     /// refused here (T-207) and reported in the status bar — the document is not
     /// touched and nothing lands on the undo stack.
     pub fn dispatch(&mut self, cmd: Box<dyn EditCommand>) -> bool {
+        let preview = crate::key_clipboard::preview_before(self, cmd.as_ref());
         let required = cmd.requires_mode();
         if !self
             .history
@@ -109,6 +110,7 @@ impl AppState {
             self.session.set_status(hint);
             return false;
         }
+        crate::key_clipboard::rebase_preview(self, preview);
         self.after_document_change();
         true
     }
@@ -133,13 +135,25 @@ impl AppState {
     }
 
     pub fn undo(&mut self) {
+        let preview = self
+            .history
+            .undo_command()
+            .and_then(|cmd| crate::key_clipboard::preview_before(self, cmd));
         if self.history.undo(&mut self.doc) {
+            self.invalidate_asset_caches();
+            crate::key_clipboard::rebase_preview(self, preview);
             self.after_document_change();
         }
     }
 
     pub fn redo(&mut self) {
+        let preview = self
+            .history
+            .redo_command()
+            .and_then(|cmd| crate::key_clipboard::preview_before(self, cmd));
         if self.history.redo(&mut self.doc) {
+            self.invalidate_asset_caches();
+            crate::key_clipboard::rebase_preview(self, preview);
             self.after_document_change();
         }
     }
@@ -157,12 +171,33 @@ impl AppState {
         // it would otherwise serve the previous rig's export.
         self.revision = self.revision.wrapping_add(1);
         self.doc = doc;
-        self.session = Session::new(self.doc.skeleton.default_skin);
+        self.reset_rig_session();
         self.history = History::default();
         // Binds are derived and not serialized, so a freshly loaded weighted
         // mesh has none until this runs.
         self.rebind_meshes();
         self.refresh_pose();
+    }
+
+    /// A different rig can reuse every entity ID. Reseat its UI references,
+    /// while retaining a cancelled export until its transaction has unwound.
+    /// PSD replacement uses this without clearing its undoable import command.
+    pub(crate) fn reset_rig_session(&mut self) {
+        // Keep the cancelled worker reachable until its transaction finishes;
+        // it owns an immutable snapshot, never the newly opened document.
+        let png = std::mem::take(&mut self.session.export.png);
+        png.cancel();
+        self.session = Session::new(self.doc.skeleton.default_skin);
+        self.session.export.png = png;
+    }
+
+    /// History can swap the asset database under unchanged IDs and names.
+    /// The GPU remains content-keyed; only session memoization is invalidated.
+    pub(crate) fn invalidate_asset_caches(&mut self) {
+        self.session.texture_keys.clear();
+        self.session.thumbnails.clear();
+        self.session.silhouettes.clear();
+        self.session.stale_assets.clear();
     }
 
     // ── Work mode (T-207) ────────────────────────────────────────────────
@@ -245,6 +280,27 @@ impl AppState {
         self.commit(EditIntent::SlotColor { slot, value: color }, None);
     }
 
+    /// Same router and baseline policy as a pose edit, restricted to one track.
+    pub fn commit_bone_property(
+        &mut self,
+        bone: BoneId,
+        value: Transform,
+        property: ankhimate_document::commands::key_cmds::BoneProperty,
+        axis: Option<ankhimate_core::animation::Axis>,
+    ) {
+        if !self.session.is_bone_locked(bone) {
+            self.commit(
+                EditIntent::BoneProperty {
+                    bone,
+                    value,
+                    property,
+                    axis,
+                },
+                Some(bone),
+            );
+        }
+    }
+
     pub fn commit_slot_attachment(&mut self, slot: SlotId, name: Option<String>) {
         self.commit(EditIntent::SlotAttachment { slot, value: name }, None);
     }
@@ -261,12 +317,22 @@ impl AppState {
     fn commit(&mut self, intent: EditIntent, pending_bone: Option<BoneId>) {
         // Keep the value around for the Pending branch before the intent moves.
         let pending_value = match (&intent, pending_bone) {
-            (EditIntent::BoneLocal { value, .. }, Some(_)) => Some(*value),
+            (
+                EditIntent::BoneLocal { value, .. } | EditIntent::BoneProperty { value, .. },
+                Some(_),
+            ) => Some(*value),
+            _ => None,
+        };
+        let pending_color = match &intent {
+            EditIntent::SlotColor { slot, value } => Some((*slot, *value)),
             _ => None,
         };
 
         match edit_router::route(intent, &self.doc, &self.session) {
             Routed::Commands(cmds) => {
+                if let Some((slot, _)) = pending_color {
+                    self.session.pending_slot_colors.remove(slot);
+                }
                 self.dispatch_all(cmds);
             }
             Routed::Pending => {
@@ -277,6 +343,12 @@ impl AppState {
                     }
                     self.session
                         .set_status("Unkeyed pose — press K to key it, or enable auto-key");
+                    self.refresh_pose();
+                }
+                if let Some((slot, value)) = pending_color {
+                    self.session.pending_slot_colors.insert(slot, value);
+                    self.session
+                        .set_status("Unkeyed colour — press K to key it, or enable auto-key");
                     self.refresh_pose();
                 }
             }
@@ -297,6 +369,12 @@ impl AppState {
             .filter_map(|&bone| self.session.preview_locals.get(bone).map(|t| (bone, *t)))
             .collect();
 
+        let colors: Vec<_> = self
+            .session
+            .pending_slot_colors
+            .iter()
+            .map(|(s, c)| (s, *c))
+            .collect();
         self.session.clear_previews();
         for (bone, local) in pending {
             if self.session.is_bone_locked(bone) {
@@ -312,6 +390,15 @@ impl AppState {
                 }
                 Routed::Pending => {}
                 Routed::Refused(reason) => self.session.set_status(reason),
+            }
+        }
+        for (slot, value) in colors {
+            if let Routed::Commands(cmds) = edit_router::route_forced(
+                EditIntent::SlotColor { slot, value },
+                &self.doc,
+                &self.session,
+            ) {
+                self.dispatch_all(cmds);
             }
         }
         self.refresh_pose();
@@ -480,6 +567,7 @@ impl AppState {
 
         match self.session.clipboard.clone() {
             Clipboard::Empty => self.session.set_status("Clipboard is empty"),
+            Clipboard::Keys(_) => self.session.set_status("Use Paste keys at playhead in the dopesheet; global Paste still belongs to bones/poses"),
             Clipboard::Bones(clip) => {
                 // Paste under the active bone so the gesture reads as "another
                 // one of these, here"; with nothing selected they become roots.
@@ -494,24 +582,7 @@ impl AppState {
                 }
             }
             Clipboard::Pose(clip) => {
-                let clip = if mirrored { clip.mirrored() } else { clip };
-                let mut applied = 0;
-                for (name, local) in clip.entries {
-                    // Resolved by name every paste, so undo/redo id churn cannot
-                    // land a pose on the wrong bone.
-                    let Some((id, _)) =
-                        self.doc.skeleton.bones.iter().find(|(_, b)| b.name == name)
-                    else {
-                        continue;
-                    };
-                    // Routed: setup edit in Setup, keys at the playhead in
-                    // Animate — pasting a pose onto a frame *is* how you key it.
-                    self.commit_bone_pose(id, local);
-                    applied += 1;
-                }
-                let what = if mirrored { "mirrored pose" } else { "pose" };
-                self.session
-                    .set_status(format!("Pasted {what} onto {applied} bone(s)"));
+                self.paste_pose(clip, mirrored);
             }
         }
     }
@@ -863,6 +934,11 @@ impl AppState {
         }
         if let Some(order) = &session.panel_draw_order {
             pose.draw_order.clone_from(order);
+        }
+        for (slot, color) in &session.pending_slot_colors {
+            if doc.skeleton.slots.contains_key(slot) {
+                pose.slot_colors.insert(slot, *color);
+            }
         }
     }
 }

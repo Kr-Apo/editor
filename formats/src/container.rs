@@ -79,24 +79,12 @@ pub fn decode(bytes: &[u8]) -> Result<Vec<u8>, ContainerError> {
 }
 
 pub fn atomic_write(path: &Path, bytes: &[u8]) -> Result<(), ContainerError> {
-    let file_name = path
-        .file_name()
-        .and_then(|s| s.to_str())
-        .unwrap_or("project");
-    let temp = path.with_file_name(format!(".{file_name}.tmp"));
-    std::fs::write(&temp, bytes)?;
-    if path.exists() {
-        let backup = path.with_file_name(format!(".{file_name}.bak-{}", std::process::id()));
-        std::fs::rename(path, &backup)?;
-        if let Err(error) = std::fs::rename(&temp, path) {
-            let _ = std::fs::rename(&backup, path);
-            return Err(error.into());
-        }
-        std::fs::remove_file(backup)?;
-    } else {
-        std::fs::rename(temp, path)?;
-    }
+    crate::safe_write::write(path, bytes)?;
     Ok(())
+}
+
+pub fn recoverable_writes(path: &Path) -> Vec<PathBuf> {
+    crate::safe_write::recoverable(path)
 }
 
 pub fn asset_root(project: &Path) -> PathBuf {
@@ -154,5 +142,35 @@ mod tests {
         assert!(confined_asset(root, r"C:\secret.png").is_err());
         assert!(confined_asset(root, r"ab\..\secret.png").is_err());
         assert!(confined_asset(root, r"\\server\secret.png").is_err());
+    }
+
+    #[test]
+    fn saving_never_clobbers_preexisting_temporary_or_backup_files() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("rig.ankh");
+        let temp = dir.path().join(".rig.ankh.tmp");
+        let backup = dir
+            .path()
+            .join(format!(".rig.ankh.bak-{}", std::process::id()));
+        std::fs::write(&path, b"old project").unwrap();
+        std::fs::write(&temp, b"other session temp").unwrap();
+        std::fs::write(&backup, b"other session backup").unwrap();
+        let result = atomic_write(&path, b"new project");
+        assert_eq!(std::fs::read(&temp).unwrap(), b"other session temp");
+        assert_eq!(std::fs::read(&backup).unwrap(), b"other session backup");
+        result.unwrap();
+        assert_eq!(std::fs::read(path).unwrap(), b"new project");
+    }
+
+    #[test]
+    fn a_directory_destination_is_never_moved_or_replaced() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("rig.ankh");
+        std::fs::create_dir(&path).unwrap();
+        std::fs::write(path.join("user.txt"), b"user data").unwrap();
+        assert!(atomic_write(&path, b"new project").is_err());
+        assert!(path.is_dir());
+        assert_eq!(std::fs::read(path.join("user.txt")).unwrap(), b"user data");
+        assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 1);
     }
 }

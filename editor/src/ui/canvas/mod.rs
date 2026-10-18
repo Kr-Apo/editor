@@ -129,6 +129,18 @@ fn handle_dropped_files(ui: &egui::Ui, rect: egui::Rect, state: &mut AppState) {
     if dropped.is_empty() {
         return;
     }
+    match crate::ui::psd_import::dropped_path(&dropped) {
+        Ok(Some(path)) => {
+            // Torn-off viewports also reach the app's guarded preview.
+            state.session.request_psd_import = Some(path);
+            return;
+        }
+        Err(error) => {
+            state.session.set_status(error);
+            return;
+        }
+        Ok(None) => {}
+    }
     if !state.session.can_edit_structure() {
         state
             .session

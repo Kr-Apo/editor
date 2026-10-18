@@ -142,3 +142,7 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+#[path = "paste_tests/pose_tests.rs"]
+mod pose_tests;

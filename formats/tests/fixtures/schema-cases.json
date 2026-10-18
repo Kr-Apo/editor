@@ -1,0 +1,617 @@
+[
+  {
+    "type": "Project",
+    "variant": null,
+    "value": {
+      "version": 1,
+      "name": "sample é 🐸",
+      "fps": 1,
+      "assets": [],
+      "bones": [],
+      "slots": [],
+      "draw_order": [],
+      "skins": [],
+      "default_skin": "sample é 🐸",
+      "constraints": [],
+      "constraint_order": [],
+      "animations": [],
+      "groups": [],
+      "psd_layer_paths": {},
+      "export_presets": []
+    }
+  },
+  {
+    "type": "Group",
+    "variant": null,
+    "value": {
+      "name": "sample é 🐸",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "members": [],
+      "parent": "sample é 🐸"
+    }
+  },
+  {
+    "type": "Asset",
+    "variant": null,
+    "value": {
+      "name": "sample é 🐸",
+      "file": "sample é 🐸",
+      "width": 1,
+      "height": 1,
+      "source_path": null
+    }
+  },
+  {
+    "type": "Bone",
+    "variant": null,
+    "value": {
+      "name": "sample é 🐸",
+      "parent": "sample é 🐸",
+      "length": 1,
+      "tx": 1,
+      "ty": 1,
+      "rotation": 1,
+      "sx": 1,
+      "sy": 1,
+      "shear_x": 1,
+      "shear_y": 1,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": null
+    }
+  },
+  {
+    "type": "Slot",
+    "variant": null,
+    "value": {
+      "name": "sample é 🐸",
+      "bone": "sample é 🐸",
+      "attachment": null,
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "dark_color": null,
+      "blend_mode": "sample é 🐸"
+    }
+  },
+  {
+    "type": "Skin",
+    "variant": null,
+    "value": {
+      "name": "sample é 🐸",
+      "entries": [],
+      "bones": [],
+      "constraints": []
+    }
+  },
+  {
+    "type": "SkinEntry",
+    "variant": null,
+    "value": {
+      "slot": "sample é 🐸",
+      "name": "sample é 🐸",
+      "attachment": {
+        "type": "region",
+        "texture": "sample é 🐸",
+        "offset_x": 1,
+        "offset_y": 1,
+        "rotation": 1,
+        "scale_x": 1,
+        "scale_y": 1,
+        "width": 1,
+        "height": 1,
+        "uv": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "pivot_x": 1,
+        "pivot_y": 1,
+        "sequence": null
+      }
+    }
+  },
+  {
+    "type": "Attachment",
+    "variant": "Region",
+    "value": {
+      "type": "region",
+      "texture": "sample é 🐸",
+      "offset_x": 1,
+      "offset_y": 1,
+      "rotation": 1,
+      "scale_x": 1,
+      "scale_y": 1,
+      "width": 1,
+      "height": 1,
+      "uv": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "pivot_x": 1,
+      "pivot_y": 1,
+      "sequence": null
+    }
+  },
+  {
+    "type": "Attachment",
+    "variant": "Mesh",
+    "value": {
+      "type": "mesh",
+      "texture": "sample é 🐸",
+      "vertices": [],
+      "uvs": [],
+      "triangles": [],
+      "edges": [],
+      "weights": [],
+      "linked": null,
+      "sequence": null
+    }
+  },
+  {
+    "type": "Attachment",
+    "variant": "Clipping",
+    "value": {
+      "type": "clipping",
+      "vertices": [],
+      "end_slot": null
+    }
+  },
+  {
+    "type": "Attachment",
+    "variant": "Path",
+    "value": {
+      "type": "path",
+      "vertices": [],
+      "closed": true,
+      "constant_speed": true
+    }
+  },
+  {
+    "type": "Attachment",
+    "variant": "BoundingBox",
+    "value": {
+      "type": "boundingbox",
+      "vertices": [],
+      "weights": []
+    }
+  },
+  {
+    "type": "Attachment",
+    "variant": "Point",
+    "value": {
+      "type": "point",
+      "x": 1,
+      "y": 1,
+      "rotation": 1
+    }
+  },
+  {
+    "type": "BoundingBox",
+    "variant": null,
+    "value": {
+      "vertices": [],
+      "weights": []
+    }
+  },
+  {
+    "type": "Point",
+    "variant": null,
+    "value": {
+      "x": 1,
+      "y": 1,
+      "rotation": 1
+    }
+  },
+  {
+    "type": "Sequence",
+    "variant": null,
+    "value": {
+      "frames": [],
+      "fps": 1,
+      "mode": "sample é 🐸",
+      "setup_index": 1
+    }
+  },
+  {
+    "type": "LinkedMesh",
+    "variant": null,
+    "value": {
+      "skin": null,
+      "slot": "sample é 🐸",
+      "attachment": "sample é 🐸",
+      "inherit_deform": true
+    }
+  },
+  {
+    "type": "Path",
+    "variant": null,
+    "value": {
+      "vertices": [],
+      "closed": true,
+      "constant_speed": true
+    }
+  },
+  {
+    "type": "Clipping",
+    "variant": null,
+    "value": {
+      "vertices": [],
+      "end_slot": null
+    }
+  },
+  {
+    "type": "Region",
+    "variant": null,
+    "value": {
+      "texture": "sample é 🐸",
+      "offset_x": 1,
+      "offset_y": 1,
+      "rotation": 1,
+      "scale_x": 1,
+      "scale_y": 1,
+      "width": 1,
+      "height": 1,
+      "uv": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "pivot_x": 1,
+      "pivot_y": 1,
+      "sequence": null
+    }
+  },
+  {
+    "type": "Mesh",
+    "variant": null,
+    "value": {
+      "texture": "sample é 🐸",
+      "vertices": [],
+      "uvs": [],
+      "triangles": [],
+      "edges": [],
+      "weights": [],
+      "linked": null,
+      "sequence": null
+    }
+  },
+  {
+    "type": "Constraint",
+    "variant": null,
+    "value": {
+      "name": "sample é 🐸",
+      "type": "sample é 🐸",
+      "target": "sample é 🐸",
+      "bones": [],
+      "bend_direction": 1,
+      "mix": 1,
+      "softness": 1,
+      "stretch": true,
+      "stretch_limit": 1,
+      "stiffness": 1,
+      "transform_mix": null,
+      "offsets": null,
+      "local": true,
+      "relative": true,
+      "physics": null,
+      "forces": null,
+      "channels": null,
+      "slot": null,
+      "path": null
+    }
+  },
+  {
+    "type": "Animation",
+    "variant": null,
+    "value": {
+      "name": "sample é 🐸",
+      "duration": 1,
+      "looping": true,
+      "timelines": [],
+      "events": [],
+      "markers": [],
+      "bone_offsets": []
+    }
+  },
+  {
+    "type": "BoneOffset",
+    "variant": null,
+    "value": {
+      "bone": "sample é 🐸",
+      "offset": 1
+    }
+  },
+  {
+    "type": "Marker",
+    "variant": null,
+    "value": {
+      "time": 1,
+      "name": "sample é 🐸",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  {
+    "type": "Event",
+    "variant": null,
+    "value": {
+      "time": 1,
+      "name": "sample é 🐸",
+      "int_value": 1,
+      "float_value": 1,
+      "string_value": "sample é 🐸",
+      "audio": "sample é 🐸",
+      "volume": 1,
+      "balance": 1
+    }
+  },
+  {
+    "type": "Timeline",
+    "variant": "BoneTranslate",
+    "value": {
+      "kind": "bone_translate",
+      "bone": "sample é 🐸",
+      "axis": "x",
+      "keys": []
+    }
+  },
+  {
+    "type": "Timeline",
+    "variant": "BoneRotate",
+    "value": {
+      "kind": "bone_rotate",
+      "bone": "sample é 🐸",
+      "keys": []
+    }
+  },
+  {
+    "type": "Timeline",
+    "variant": "BoneScale",
+    "value": {
+      "kind": "bone_scale",
+      "bone": "sample é 🐸",
+      "axis": "x",
+      "keys": []
+    }
+  },
+  {
+    "type": "Timeline",
+    "variant": "BoneShear",
+    "value": {
+      "kind": "bone_shear",
+      "bone": "sample é 🐸",
+      "axis": "x",
+      "keys": []
+    }
+  },
+  {
+    "type": "Timeline",
+    "variant": "SlotColor",
+    "value": {
+      "kind": "slot_color",
+      "slot": "sample é 🐸",
+      "keys": []
+    }
+  },
+  {
+    "type": "Timeline",
+    "variant": "SlotVisible",
+    "value": {
+      "kind": "slot_visible",
+      "slot": "sample é 🐸",
+      "keys": []
+    }
+  },
+  {
+    "type": "Timeline",
+    "variant": "SlotAttachment",
+    "value": {
+      "kind": "slot_attachment",
+      "slot": "sample é 🐸",
+      "keys": []
+    }
+  },
+  {
+    "type": "Timeline",
+    "variant": "DrawOrder",
+    "value": {
+      "kind": "draw_order",
+      "keys": []
+    }
+  },
+  {
+    "type": "Timeline",
+    "variant": "IkMix",
+    "value": {
+      "kind": "ik_mix",
+      "constraint": "sample é 🐸",
+      "keys": []
+    }
+  },
+  {
+    "type": "Timeline",
+    "variant": "IkBendDirection",
+    "value": {
+      "kind": "ik_bend_direction",
+      "constraint": "sample é 🐸",
+      "keys": []
+    }
+  },
+  {
+    "type": "Timeline",
+    "variant": "IkSoftness",
+    "value": {
+      "kind": "ik_softness",
+      "constraint": "sample é 🐸",
+      "keys": []
+    }
+  },
+  {
+    "type": "Timeline",
+    "variant": "TransformConstraintMix",
+    "value": {
+      "kind": "transform_constraint_mix",
+      "constraint": "sample é 🐸",
+      "keys": []
+    }
+  },
+  {
+    "type": "Timeline",
+    "variant": "Deform",
+    "value": {
+      "kind": "deform",
+      "slot": "sample é 🐸",
+      "attachment": "sample é 🐸",
+      "keys": []
+    }
+  },
+  {
+    "type": "Interp",
+    "variant": "Linear",
+    "value": {
+      "curve": "linear"
+    }
+  },
+  {
+    "type": "Interp",
+    "variant": "Stepped",
+    "value": {
+      "curve": "stepped"
+    }
+  },
+  {
+    "type": "Interp",
+    "variant": "Bezier",
+    "value": {
+      "curve": "bezier",
+      "handles": [
+        1,
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  {
+    "type": "ScalarKey",
+    "variant": null,
+    "value": {
+      "time": 1,
+      "value": 1,
+      "curve": "linear"
+    }
+  },
+  {
+    "type": "Vec2Key",
+    "variant": null,
+    "value": {
+      "time": 1,
+      "x": 1,
+      "y": 1,
+      "curve": "linear"
+    }
+  },
+  {
+    "type": "ColorKey",
+    "variant": null,
+    "value": {
+      "time": 1,
+      "value": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "curve": "linear"
+    }
+  },
+  {
+    "type": "Axis",
+    "variant": "X",
+    "value": "x"
+  },
+  {
+    "type": "Axis",
+    "variant": "Y",
+    "value": "y"
+  },
+  {
+    "type": "TransformMix",
+    "variant": null,
+    "value": {
+      "rotate": 1,
+      "translate_x": 1,
+      "translate_y": 1,
+      "scale_x": 1,
+      "scale_y": 1,
+      "shear_x": 1,
+      "shear_y": 1
+    }
+  },
+  {
+    "type": "MixKey",
+    "variant": null,
+    "value": {
+      "time": 1,
+      "rotate": 1,
+      "translate_x": 1,
+      "translate_y": 1,
+      "scale_x": 1,
+      "scale_y": 1,
+      "shear_x": 1,
+      "shear_y": 1,
+      "curve": "linear"
+    }
+  },
+  {
+    "type": "VisibleKey",
+    "variant": null,
+    "value": {
+      "time": 1,
+      "value": true
+    }
+  },
+  {
+    "type": "AttachmentKey",
+    "variant": null,
+    "value": {
+      "time": 1,
+      "value": null
+    }
+  },
+  {
+    "type": "DrawOrderKey",
+    "variant": null,
+    "value": {
+      "time": 1,
+      "offsets": []
+    }
+  },
+  {
+    "type": "DeformKey",
+    "variant": null,
+    "value": {
+      "time": 1,
+      "offsets": [],
+      "curve": "linear"
+    }
+  }
+]

@@ -1,0 +1,49 @@
+{
+  "author_version": 1,
+  "container_version": 1,
+  "spec_anchor": "author-v1",
+  "migration_test": "formats/tests/migrations.rs",
+  "fixtures": [
+    {
+      "id": "author-v1-minimal",
+      "version": 1,
+      "profile": "ANKH",
+      "path": "formats/tests/fixtures/minimal.ankh",
+      "sha256": "605a04030c0c5bd0c729a1e372df3f3c1c7060b0f45589744c5f3f14593230f6",
+      "source_commit": "f3defa55dfc4e38b1921398808bbaea804e085f7",
+      "source_path": "formats/tests/fixtures/minimal.ankh",
+      "git_blob": "546d19a026d0b32b29b5aad3a3174dd53053ac41"
+    },
+    {
+      "id": "author-v1-tentacle",
+      "version": 1,
+      "profile": "ANKH",
+      "path": "formats/tests/fixtures/tentacle.ankh",
+      "sha256": "9bf020307dd50d0a5ef6ba41d0fc500438c5e774069ece667b75333f783e5c7c",
+      "source_commit": "f3defa55dfc4e38b1921398808bbaea804e085f7",
+      "source_path": "formats/tests/fixtures/tentacle.ankh",
+      "git_blob": "dc0bc4c726a262a606b7f21491c4cf682f2c08e7"
+    },
+    {
+      "id": "author-v1-crapaud",
+      "version": 1,
+      "profile": "ANKH",
+      "path": "demos/m0070-crapaud-pharaon/projet/Crapaud-Pharaon.ankh",
+      "sha256": "4f8e2378a8a78ab53671b8469936d40f1db716dce0215b8b33c77a3dc1ddcdfa",
+      "source_commit": "be4b2f6dd5232ff58edac6ecc5ff82d9efe7682a",
+      "source_path": "demos/m0070-crapaud-pharaon/projet/Crapaud-Pharaon.ankh",
+      "git_blob": "14fe3820460312328f6093b1d8f98141c61fb87f"
+    }
+  ],
+  "unsupported_prototype": {
+    "path": "formats/tests/fixtures/history/prototype-minimal.ankh",
+    "sha256": "5996b8b3c13ef281cb5f123e77ebb8531179fc45d74f5a0781760948685887c1",
+    "source_commit": "5c6d435ca72684117abde0c8a293b414b560fca2",
+    "source_path": "formats/tests/fixtures/minimal.ankh",
+    "git_blob": "af7ded30d2c93c097181a3175398a38f6e8eb4ed",
+    "internal_project_version": 1,
+    "profile": "ZIP project.json + images/",
+    "reader_status": "rejected; no current migration"
+  },
+  "v0_fixture": null
+}

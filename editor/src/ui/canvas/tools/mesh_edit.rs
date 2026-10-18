@@ -26,14 +26,137 @@
 use super::ToolContext;
 use ankhimate_core::attachment::{Attachment, MeshAttachment};
 use ankhimate_core::ids::{SkinId, SlotId};
+use ankhimate_core::{ids::AnimationId, transforms::Affine2};
 use ankhimate_document::commands::attachment_cmds::owning_skin;
 use ankhimate_document::commands::mesh_cmds::{EditMesh, MeshEdit};
 use eframe::egui;
+use std::{
+    ops::Range,
+    sync::atomic::{AtomicU64, Ordering},
+};
 
 /// Screen-space grab radius for a vertex.
 pub const VERTEX_HIT: f32 = 9.0;
 /// How close to an edge a click must land to insert a vertex there.
 const EDGE_HIT: f32 = 8.0;
+
+#[cfg(test)]
+mod tests;
+
+/// A mouse gesture is measured from its initial pose, never from its last key.
+pub struct DeformDrag {
+    id: u64,
+    anim: AnimationId,
+    skin: SkinId,
+    slot: SlotId,
+    name: String,
+    time: f32,
+    revision: u64,
+    pointer: glam::Vec2,
+    offsets: Vec<glam::Vec2>,
+    last: Vec<glam::Vec2>,
+    conversions: Vec<(Range<usize>, Affine2)>,
+}
+
+impl DeformDrag {
+    fn begin(
+        state: &crate::app_state::AppState,
+        target: &MeshTarget,
+        pointer: glam::Vec2,
+        indices: &[usize],
+    ) -> Result<Self, &'static str> {
+        static NEXT_DRAG: AtomicU64 = AtomicU64::new(1);
+        let anim = state
+            .session
+            .active_animation
+            .ok_or("Select an animation before deforming a mesh")?;
+        let weighted = !target.mesh.weights.is_empty();
+        let count = if weighted {
+            target.mesh.influence_count()
+        } else {
+            target.mesh.setup_vertices.len()
+        };
+        let mut offsets = state
+            .pose
+            .deforms
+            .get(&(target.slot, target.name.clone()))
+            .cloned()
+            .unwrap_or_default();
+        offsets.resize(count, glam::Vec2::ZERO);
+        let mut conversions = Vec::new();
+        for &index in indices {
+            if index >= target.mesh.setup_vertices.len() {
+                continue;
+            }
+            let range = if weighted {
+                target.mesh.influence_range(index)
+            } else {
+                index..index + 1
+            };
+            if range.is_empty() {
+                return Err("Cannot deform this vertex: it has no influences in the weighted mesh");
+            }
+            // A common offset added to each influence has this exact linear
+            // world-space effect. Inverting the blend preserves existing,
+            // potentially different, per-influence offsets and all weights.
+            let mut linear = target.world;
+            if weighted {
+                let mut sum = Affine2 {
+                    a: 0.0,
+                    b: 0.0,
+                    c: 0.0,
+                    d: 0.0,
+                    tx: 0.0,
+                    ty: 0.0,
+                };
+                let mut total = 0.0;
+                for influence in &target.mesh.weights[index] {
+                    if let (Some(world), Some(bind)) = (
+                        state.pose.worlds.get(influence.bone),
+                        target.mesh.inverse_bind_matrices.get(&influence.bone),
+                    ) {
+                        let skin = world.mul(bind);
+                        sum.a += skin.a * influence.weight;
+                        sum.b += skin.b * influence.weight;
+                        sum.c += skin.c * influence.weight;
+                        sum.d += skin.d * influence.weight;
+                        total += influence.weight;
+                    }
+                }
+                if total > 0.0 {
+                    linear = Affine2 {
+                        a: sum.a / total,
+                        b: sum.b / total,
+                        c: sum.c / total,
+                        d: sum.d / total,
+                        tx: 0.0,
+                        ty: 0.0,
+                    };
+                }
+            }
+            linear.tx = 0.0;
+            linear.ty = 0.0;
+            let inverse = linear
+                .invert()
+                .filter(|m| [m.a, m.b, m.c, m.d].iter().all(|v| v.is_finite()))
+                .ok_or("Cannot deform this selection: its posed transform is not invertible")?;
+            conversions.push((range, inverse));
+        }
+        Ok(Self {
+            id: NEXT_DRAG.fetch_add(1, Ordering::Relaxed),
+            anim,
+            skin: target.skin,
+            slot: target.slot,
+            name: target.name.clone(),
+            time: state.session.playhead,
+            revision: state.revision,
+            pointer,
+            last: offsets.clone(),
+            offsets,
+            conversions,
+        })
+    }
+}
 
 /// The mesh the tool is editing, with everything needed to address it.
 pub struct MeshTarget {
@@ -82,10 +205,16 @@ pub fn vertex_screen_positions(
     let deform = state.pose.deforms.get(&(target.slot, target.name.clone()));
     (0..target.mesh.setup_vertices.len())
         .map(|i| {
-            let offset = deform.and_then(|d| d.get(i).copied()).unwrap_or_default();
+            let offsets = match deform {
+                Some(d) if !target.mesh.weights.is_empty() => {
+                    d.get(target.mesh.influence_range(i)).unwrap_or_default()
+                }
+                Some(d) => d.get(i..i + 1).unwrap_or_default(),
+                None => &[],
+            };
             let world = target
                 .mesh
-                .skin_vertex_with_ffd(i, offset, &state.pose, &target.world);
+                .skin_vertex_with_deform(i, offsets, &state.pose, &target.world);
             state.session.camera.world_to_screen(world, viewport_size)
         })
         .collect()
@@ -98,6 +227,7 @@ pub fn update(ctx: &mut ToolContext, mouse_screen: Option<glam::Vec2>) {
         // stale index here would have the label describing a mesh that is no
         // longer open.
         ctx.state.session.hovered_vertex = None;
+        ctx.state.session.deform_drag = None;
         return;
     };
     let positions = vertex_screen_positions(&target, ctx.state, viewport_size);
@@ -160,6 +290,8 @@ pub fn update(ctx: &mut ToolContext, mouse_screen: Option<glam::Vec2>) {
     if escape {
         ctx.state.session.mesh_edit = false;
         ctx.state.session.selected_vertices.clear();
+        ctx.state.session.deform_drag = None;
+        ctx.state.session.dragging_vertex = None;
         return;
     }
     if delete && !ctx.state.session.selected_vertices.is_empty() {
@@ -185,6 +317,10 @@ pub fn update(ctx: &mut ToolContext, mouse_screen: Option<glam::Vec2>) {
 
     // ── Drag ─────────────────────────────────────────────────────────────
     if ctx.ui.input(|i| i.pointer.primary_released()) {
+        if let Some(mouse) = mouse_screen {
+            key_deform(ctx, &target, mouse, viewport_size);
+        }
+        ctx.state.session.deform_drag = None;
         ctx.state.session.dragging_vertex = None;
         // Finish a box: everything inside joins the selection.
         if let Some(start) = ctx.state.session.vertex_box_start.take()
@@ -216,6 +352,10 @@ pub fn update(ctx: &mut ToolContext, mouse_screen: Option<glam::Vec2>) {
         return;
     }
     if let (Some(index), Some(mouse)) = (ctx.state.session.dragging_vertex, mouse_screen) {
+        if ctx.state.session.is_animating() {
+            key_deform(ctx, &target, mouse, viewport_size);
+            return;
+        }
         let world = ctx
             .state
             .session
@@ -236,9 +376,7 @@ pub fn update(ctx: &mut ToolContext, mouse_screen: Option<glam::Vec2>) {
             };
             let delta = local - anchor;
 
-            if ctx.state.session.is_animating() {
-                key_deform(ctx, &target, &selected, delta);
-            } else {
+            {
                 let moves: Vec<(usize, glam::Vec2)> = selected
                     .iter()
                     .filter_map(|&i| target.mesh.setup_vertices.get(i).map(|v| (i, *v + delta)))
@@ -297,6 +435,25 @@ pub fn update(ctx: &mut ToolContext, mouse_screen: Option<glam::Vec2>) {
             ctx.state.session.selected_vertices = vec![index];
         }
         ctx.state.session.dragging_vertex = Some(index);
+        if ctx.state.session.is_animating() {
+            let pointer = ctx
+                .state
+                .session
+                .camera
+                .screen_to_world(mouse, viewport_size);
+            let selected = if ctx.state.session.selected_vertices.contains(&index) {
+                ctx.state.session.selected_vertices.clone()
+            } else {
+                vec![index]
+            };
+            match DeformDrag::begin(ctx.state, &target, pointer, &selected) {
+                Ok(drag) => ctx.state.session.deform_drag = Some(drag),
+                Err(reason) => {
+                    ctx.state.session.dragging_vertex = None;
+                    ctx.state.session.set_status(reason);
+                }
+            }
+        }
         return;
     }
 
@@ -337,41 +494,62 @@ pub fn update(ctx: &mut ToolContext, mouse_screen: Option<glam::Vec2>) {
     ctx.state.session.selected_vertices.clear();
 }
 
-/// Key the whole mesh's offsets at the playhead, with `index` moved to `local`.
+/// Apply the pointer displacement to the offsets captured at gesture start.
 ///
 /// A deform key holds every vertex, not just the moved one: the sampler
 /// interpolates whole shapes, so a key that listed one vertex would snap the
 /// rest back to setup the moment it took effect.
-fn key_deform(ctx: &mut ToolContext, target: &MeshTarget, indices: &[usize], delta: glam::Vec2) {
+fn key_deform(
+    ctx: &mut ToolContext,
+    target: &MeshTarget,
+    mouse: glam::Vec2,
+    viewport_size: glam::Vec2,
+) {
     use ankhimate_document::commands::key_cmds::AddDeformKey;
 
-    let Some(anim) = ctx.state.session.active_animation else {
+    let Some(mut drag) = ctx.state.session.deform_drag.take() else {
         return;
     };
-    // Start from what is on screen — any existing deform at this time — so
-    // dragging a second vertex does not discard the first.
-    let mut offsets: Vec<glam::Vec2> = ctx
+    // Do not replay a stale gesture after undo, a seek, or a target/mode change.
+    if !ctx.state.session.is_animating()
+        || ctx.state.session.active_animation != Some(drag.anim)
+        || ctx.state.session.playhead != drag.time
+        || ctx.state.revision != drag.revision
+        || target.skin != drag.skin
+        || target.slot != drag.slot
+        || target.name != drag.name
+    {
+        ctx.state.session.dragging_vertex = None;
+        return;
+    }
+    let delta = ctx
         .state
-        .pose
-        .deforms
-        .get(&(target.slot, target.name.clone()))
-        .cloned()
-        .unwrap_or_else(|| vec![glam::Vec2::ZERO; target.mesh.setup_vertices.len()]);
-    offsets.resize(target.mesh.setup_vertices.len(), glam::Vec2::ZERO);
-
-    for &index in indices {
-        if let Some(offset) = offsets.get_mut(index) {
-            *offset += delta;
+        .session
+        .camera
+        .screen_to_world(mouse, viewport_size)
+        - drag.pointer;
+    let mut offsets = drag.offsets.clone();
+    for (range, inverse) in &drag.conversions {
+        let local_delta = inverse.transform_vector(delta);
+        for offset in &mut offsets[range.clone()] {
+            *offset += local_delta;
         }
     }
-
-    ctx.state.dispatch(Box::new(AddDeformKey::new(
-        anim,
-        target.slot,
-        target.name.clone(),
-        ctx.state.session.playhead,
-        offsets,
-    )));
+    if offsets != drag.last {
+        ctx.state.dispatch(Box::new(
+            AddDeformKey::new(
+                drag.anim,
+                drag.slot,
+                drag.name.clone(),
+                drag.time,
+                offsets.clone(),
+            )
+            .with_drag_id(drag.id),
+        ));
+        drag.revision = ctx.state.revision;
+        drag.last = offsets;
+    }
+    ctx.state.session.deform_drag = Some(drag);
 }
 
 fn distance_to_segment(p: glam::Vec2, a: glam::Vec2, b: glam::Vec2) -> f32 {

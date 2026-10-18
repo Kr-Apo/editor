@@ -1,0 +1,30 @@
+{
+  "snapshot": "m0061-8888e0e",
+  "runtimeCodeCommit": "8888e0e74ad642818c076c6446cca3d9358dd05f",
+  "versions": {
+    "core": "0.1.1",
+    "adapter": "0.1.0",
+    "phaser": "3.90.0",
+    "fflate": "0.8.3",
+    "testedNode": "24.18.0"
+  },
+  "files": {
+    "runtime/adapter/dark-tint.js": "10d6ab6ac16761e8d36b158b49d9099dcb54608a1614f78c88baf0fe4475faf3",
+    "runtime/adapter/index.js": "f90d239d5876627af685c9a8d4d892d8adf33cde3adbc0f3191c9d749ec7e865",
+    "runtime/adapter/phaser.js": "0b96e7914fa3f0ec809a0842aee85ce600f01396f4382ac48db88bf15b99f778",
+    "runtime/core/ankh-types.js": "2c94b702c618aea7e52ee2abed7b7a6cf370aaad30e2b51ff03ae41d20f786ad",
+    "runtime/core/ankh.js": "c94669ea8264a6bd209bcfcd0079ef0af304ca7e9d36c32e5de1aa96313279f4",
+    "runtime/core/attachments.js": "dd94e67d0062fa218339994ae62f85b27c34b7f5324070afa9a907d77c236a91",
+    "runtime/core/compact.js": "0ccae971fe0a97b66eba26cc8e97c6efb00a6771a4cb0f2b32b5967e17e7018c",
+    "runtime/core/constraints.js": "7355ba158291b41193333c98761d15bc83e451e4900089b7fcdf11408c6fb8df",
+    "runtime/core/evaluate.js": "cbc178d08aa7487a218114574b837850207869aad6814a3e4551a2d5af14bcea",
+    "runtime/core/index.js": "dc8155059f330d40b80dd24df5847855f01e4040f094911de94a7e0145161c1f",
+    "runtime/core/messagepack.js": "418adf49f4bf0548d3df20bbf3ddbc195e846b65d73f8bfe5aa572ae211d9e89",
+    "runtime/core/player.js": "f9a97ce458542fd7397b2d8fc4db5b3defc5defea669c55ca0ad0152006c9f29",
+    "runtime/core/rig.js": "a32807727bdb9b3c0f22e2a817f3229a845d9ec3ce1fd073afc562c9c74e02e7",
+    "runtime/core/types.js": "01ae2a5b120382f9a648ced7ee8507493a134f216d100fc61600c6c9738235d2",
+    "runtime/fflate.js": "b7ca4450b19559a1d50eb381adcee94b82449674be4cd17789d9beba7e6122a1",
+    "runtime/phaser.min.js": "e92ddef111ba42e92d316979c732311757093688ea1810591cb7aa2858eba7a7"
+  },
+  "note": "Only runtime/ is copied byte-for-byte from the qualified M006.1 game. Character exports are new, unmodified native editor exports."
+}

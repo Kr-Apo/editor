@@ -17,6 +17,9 @@ use eframe::egui;
 const KEY_HIT_R: f32 = 5.0;
 const DELETE_DROP_MARGIN: f32 = 36.0;
 
+#[cfg(test)]
+mod clipboard_tests;
+
 /// Selected keys, in egui memory (UI state, never undoable).
 #[derive(Clone, Default)]
 pub struct Selection {
@@ -71,7 +74,8 @@ pub fn ui(
     let visuals = ui.visuals().clone();
     painter.rect_filled(rect, 0.0, sheet_bg(&visuals));
 
-    let sel_id = ui.id().with("tl_sel");
+    // A key index from another clip must never become a destination by accident.
+    let sel_id = ui.id().with(("tl_sel", anim));
     let mut selection: Selection = ui
         .ctx()
         .memory(|m| m.data.get_temp(sel_id))
@@ -278,7 +282,7 @@ pub fn ui(
                         if !selection.contains(&kref) {
                             selection.set_single(kref.clone());
                         }
-                        key_context_menu(ui, state, anim, &selection);
+                        key_context_menu(ui, state, anim, &selection, style.operators);
                     });
                 }
             }
@@ -287,6 +291,15 @@ pub fn ui(
     }
 
     let sheet_bottom = y.min(rect.bottom());
+
+    // Unlike context_menu's default, a primary click on this wide host must
+    // not close the popup before a button within the sheet receives that click.
+    egui::Popup::context_menu(&bg)
+        .open_memory(
+            bg.secondary_clicked()
+                .then_some(egui::SetOpenCommand::Bool(true)),
+        )
+        .show(|ui| clipboard_menu(ui, state, anim, &selection, style.operators));
 
     // Playhead over the sheet.
     let px = layout.time_to_x(state.session.playhead);
@@ -469,7 +482,10 @@ fn key_context_menu(
     state: &mut AppState,
     anim: AnimationId,
     selection: &Selection,
+    operators: &crate::registry::Registry,
 ) {
+    clipboard_menu(ui, state, anim, selection, operators);
+    ui.separator();
     if ui.button("Delete").clicked() {
         state.dispatch(Box::new(DeleteKeys::new(anim, selection.keys.clone())));
         ui.close();
@@ -486,4 +502,70 @@ fn key_context_menu(
             }
         }
     });
+}
+
+fn clipboard_menu(
+    ui: &mut egui::Ui,
+    state: &mut AppState,
+    anim: AnimationId,
+    selection: &Selection,
+    operators: &crate::registry::Registry,
+) {
+    // Canonical *visible row order*, independent of Ctrl-click order. Read-only
+    // placeholder addresses are deliberately excluded instead of guessed.
+    let model = TimelineModel::build(state, anim);
+    let mut ordered = Vec::new();
+    for row in model
+        .groups
+        .iter()
+        .flat_map(|g| g.rows.iter())
+        .filter(|r| !r.read_only)
+    {
+        let mut refs: Vec<_> = selection
+            .keys
+            .iter()
+            .filter(|k| k.addr == row.addr)
+            .cloned()
+            .collect();
+        refs.sort_by_key(|r| r.index);
+        ordered.extend(refs);
+    }
+    let args = if ordered.len() == selection.keys.len() {
+        crate::key_clipboard::selection_args(state, anim, &ordered)
+    } else {
+        Err("Selection contains an unsupported or stale row".into())
+    };
+    let animate = state.session.is_animating();
+    if ui
+        .add_enabled(
+            animate && !selection.keys.is_empty(),
+            egui::Button::new("Copy selected keys"),
+        )
+        .clicked()
+    {
+        match &args {
+            Ok(args) => {
+                let _ = operators.try_invoke("anim.copy_selected_keys", state, args);
+            }
+            Err(reason) => state.session.set_status(format!("Copy refused: {reason}")),
+        }
+        ui.close();
+    }
+    if ui.add_enabled(animate && matches!(state.session.clipboard,ankhimate_document::clipboard::Clipboard::Keys(_)),egui::Button::new("Paste keys at playhead"))
+        .on_hover_text("Selected destination key rows map by row order and must match property/axis. No selected rows: use original named tracks. One Undo; exact-time keys are replaced.").clicked() {
+        match &args {Ok(args)=>{let _=operators.try_invoke("anim.paste_keys_at_playhead",state,args);},Err(reason)=>state.session.set_status(format!("Paste refused: {reason}"))}
+        ui.close();
+    }
+    let mirror_enabled = args
+        .as_ref()
+        .is_ok_and(|args| crate::key_clipboard::can_paste_mirrored_offsets(state, args));
+    if ui.add_enabled(mirror_enabled,egui::Button::new("Paste Keys Mirrored (Offsets)"))
+        .on_hover_text("Selected bone key rows map by visible row order. Negates translate X, rotation and shear offsets; preserves Y translation, scale, time and curves. Not an absolute pose mirror for asymmetric setups.")
+        .on_disabled_hover_text("Requires compatible copied bone transform keys and explicitly selected, unlocked bone destination key rows. Slots and other track types are excluded.")
+        .clicked() {
+        if let Ok(args) = &args {let _ = operators.try_invoke("anim.paste_keys_mirrored_offsets",state,args);}
+        ui.close();
+    }
+    ui.weak("Mirrors bone animation offsets only; asymmetric setups need not produce an absolute mirrored pose.");
+    ui.weak("Read-only here: draw order, constraints, FFD. Events use their own lane.");
 }

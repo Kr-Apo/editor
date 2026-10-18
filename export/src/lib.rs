@@ -12,8 +12,12 @@
 //! the field-by-field contract a template author works against.
 
 pub mod atlas;
+pub mod batch;
 pub mod context;
+pub mod new_file;
+pub mod preflight;
 pub mod preset;
 pub mod presets;
 pub mod run;
+mod staged;
 pub mod template;

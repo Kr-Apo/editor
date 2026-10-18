@@ -38,6 +38,13 @@ pub enum EditIntent {
         bone: BoneId,
         value: Transform,
     },
+    /// An inspector action owns one channel, even when other channels are posed.
+    BoneProperty {
+        bone: BoneId,
+        value: Transform,
+        property: BoneProperty,
+        axis: Option<Axis>,
+    },
     SlotColor {
         slot: SlotId,
         value: [f32; 4],
@@ -96,7 +103,9 @@ fn route_inner(intent: EditIntent, doc: &Document, session: &Session, force: boo
 
 fn setup_commands(intent: EditIntent) -> Vec<Box<dyn EditCommand>> {
     match intent {
-        EditIntent::BoneLocal { bone, value } => vec![Box::new(SetBoneTransform::new(bone, value))],
+        EditIntent::BoneLocal { bone, value } | EditIntent::BoneProperty { bone, value, .. } => {
+            vec![Box::new(SetBoneTransform::new(bone, value))]
+        }
         EditIntent::SlotColor { slot, value } => vec![Box::new(SetSlotColor::new(slot, value))],
         EditIntent::SlotAttachment { slot, value } => {
             vec![Box::new(SetSlotAttachment::new(slot, value))]
@@ -115,7 +124,13 @@ fn key_commands(
 ) -> Vec<Box<dyn EditCommand>> {
     let time = session.playhead.max(0.0);
     match intent {
-        EditIntent::BoneLocal { bone, value } => bone_keys(doc, anim, bone, value, time),
+        EditIntent::BoneLocal { bone, value } => bone_keys(doc, anim, bone, value, time, None),
+        EditIntent::BoneProperty {
+            bone,
+            value,
+            property,
+            axis,
+        } => bone_keys(doc, anim, bone, value, time, Some((property, axis))),
         EditIntent::SlotColor { slot, value } => {
             vec![Box::new(AddKey::new(
                 anim,
@@ -132,7 +147,8 @@ fn key_commands(
     }
 }
 
-/// Bone channels that actually changed, as offsets from the setup pose.
+/// Bone channels that depart from setup, or explicitly return an animated
+/// channel to setup, as offsets from the setup pose.
 ///
 /// A newly created timeline gets a `t = 0` baseline key holding the setup value
 /// first, so the change eases in from the setup pose instead of being constant
@@ -143,6 +159,7 @@ fn bone_keys(
     bone: BoneId,
     local: Transform,
     time: f32,
+    only: Option<(BoneProperty, Option<Axis>)>,
 ) -> Vec<Box<dyn EditCommand>> {
     let Some(setup) = doc.skeleton.bones.get(bone).map(|b| b.local_transform) else {
         return Vec::new();
@@ -210,7 +227,7 @@ fn bone_keys(
 
     let mut cmds: Vec<Box<dyn EditCommand>> = Vec::new();
     for (property, axis, value, rest, changed) in channels {
-        if !changed {
+        if only.is_some_and(|channel| channel != (property, axis)) {
             continue;
         }
         let addr = TimelineAddr::Bone {
@@ -218,6 +235,9 @@ fn bone_keys(
             property,
             axis,
         };
+        if !changed && !returns_from_animated_pose(doc, anim, &addr, setup, time) {
+            continue;
+        }
         if time > 0.0 && !timeline_exists(doc, anim, &addr) {
             cmds.push(Box::new(AddKey::new(
                 anim,
@@ -236,6 +256,39 @@ fn bone_keys(
         )));
     }
     cmds
+}
+
+/// A full-transform intent also carries untouched fields. Only key a rest
+/// value if this particular track currently poses the bone away from rest.
+/// Existing samplers retain the evaluator's easing and shortest-arc rules;
+/// empty tracks and tracks already at rest remain no-ops.
+fn returns_from_animated_pose(
+    doc: &Document,
+    anim: AnimationId,
+    addr: &TimelineAddr,
+    setup: Transform,
+    time: f32,
+) -> bool {
+    use ankhimate_core::animation::{sample, sample_angle_degrees};
+    let Some(timeline) = doc
+        .animations
+        .get(anim)
+        .and_then(|a| a.timelines.iter().find(|t| addr.matches_timeline(t)))
+    else {
+        return false;
+    };
+    let mut hint = 0;
+    let delta = match timeline {
+        Timeline::BoneTranslate { keys, .. } => sample(keys, time, &mut hint),
+        Timeline::BoneRotate { keys, .. } => sample_angle_degrees(keys, time, &mut hint)
+            .map(|degrees| ankhimate_core::transforms::wrap_angle(degrees.to_radians())),
+        Timeline::BoneScale { axis, keys, .. } => {
+            sample(keys, time, &mut hint).map(|factor| (factor - 1.0) * setup.scale[axis.index()])
+        }
+        Timeline::BoneShear { keys, .. } => sample(keys, time, &mut hint).map(f32::to_radians),
+        _ => None,
+    };
+    delta.is_some_and(|d| d.abs() > 1e-4)
 }
 
 /// Draw-order keys store offsets from the setup order, so the first key on a
@@ -369,3 +422,6 @@ pub fn bone_key_value(
 fn ratio(a: f32, b: f32) -> f32 {
     if b.abs() < 1e-6 { 1.0 } else { a / b }
 }
+
+#[cfg(test)]
+mod tests;

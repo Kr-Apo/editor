@@ -279,12 +279,16 @@ not hypothetical: a rig from an untrusted source could carry an attachment named
 `../../..%2fpayload`, and presets are meant to be shared between studios, so both
 halves can arrive from elsewhere.
 
-**Export is all-or-nothing.** Render every template to memory first; write only
-once all of them succeed. A template that fails on animation nine must not leave
-eight files from this run beside four from the last, which is a state no user can
-reason about and no runtime can load.
+**Prepare before replacement; roll back ordinary I/O failures.** Render every
+template to memory, validate the combined text/image paths, then prepare all
+bytes in a staging directory on the output filesystem. Publication moves previous
+files to temporary backups and then publishes the staged files. If it fails,
+restore backups and remove newly published files. A failed rollback retains the
+remaining backups and reports their path. This is not filesystem-wide atomicity:
+readers can observe intermediate states and a crash can leave a partial set.
+The [export safety contract](export-safety.md) defines the actual guarantees.
 
-**Nothing is deleted, ever.** A stale-file sweep of `output_dir` is the obvious
+**Orphans are never deleted.** A stale-file sweep of `output_dir` is the obvious
 convenience and it is refused: `output_dir` is user-chosen and can be pointed at
 a source tree by accident. Report orphans instead — list what is present but
 unwritten and let the user decide. Overwriting a file this export produces is

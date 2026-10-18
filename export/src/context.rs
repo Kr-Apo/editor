@@ -1026,8 +1026,11 @@ fn animation(anim: &schema::Animation, project: &Project) -> Value {
                 keys,
             } => deform.push(json!({
                 "slot": slot, "attachment": attachment,
-                "keys": keys.iter().map(|k| json!({
-                    "time": k.time, "offsets": k.offsets, "curve": interp(&k.interp),
+                // Like scalar_keys, move arrival easing onto the key starting
+                // the segment. FFD offsets remain in their authored order.
+                "keys": keys.iter().enumerate().map(|(i, k)| json!({
+                    "time": k.time, "offsets": k.offsets,
+                    "curve": keys.get(i + 1).map_or_else(|| json!("linear"), |next| interp(&next.interp)),
                 })).collect::<Vec<_>>(),
             })),
         }

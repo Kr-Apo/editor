@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,"><title>Ankhimate — Spritesheets dans Phaser</title>
+<style>
+body{margin:0;background:#171a21;color:#edf0f5;font:16px system-ui,sans-serif}main{max-width:1100px;margin:32px auto;padding:0 20px}h1{font-size:26px;margin-bottom:8px}p{color:#b4bdce}header,nav{display:flex;align-items:center;gap:12px;flex-wrap:wrap}header{justify-content:space-between}button,select{background:#2a3040;color:#fff;border:1px solid #56617b;border-radius:7px;padding:9px 14px;font:inherit}button{cursor:pointer}button:hover{background:#3b4560}#stage{margin-top:20px;background-color:#252a34;background-image:linear-gradient(45deg,#303744 25%,transparent 25%),linear-gradient(-45deg,#303744 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#303744 75%),linear-gradient(-45deg,transparent 75%,#303744 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0;border:1px solid #3d4659;border-radius:12px;overflow:hidden}canvas{display:block;max-width:100%;height:auto!important}#status{font-variant-numeric:tabular-nums;color:#e4d79e}#error{color:#ff9f9f;white-space:pre-wrap}.labels{display:flex;justify-content:space-around;color:#bcc6d8;padding:12px}small{color:#a5b0c4}
+</style></head><body><main>
+<header><div><h1>Ankhimate → Phaser</h1><p>Lecture de vraies spritesheets transparentes, sans runtime squelettique.</p></div><select id="clip" aria-label="Animation"></select></header>
+<nav><button id="play">Lire en boucle</button><button id="pause">Pause</button><span>Comparer à</span><button data-index="0">0 s</button><button data-index="15">0,25 s</button><button data-index="30">0,5 s</button><button data-index="45">0,75 s</button></nav>
+<p id="status">Chargement…</p><div id="error" role="alert"></div>
+<div id="stage"></div><div class="labels"><span id="left-label">Animation spritesheet</span><span id="right-label"></span></div>
+<small>Les boutons de comparaison figent la spritesheet à gauche et affichent le PNG individuel M004.1 à droite. Le damier reste visible à travers les zones transparentes.</small>
+<script src="./node_modules/phaser/dist/phaser.js"></script><script type="module" src="./src/demo.js"></script>
+</main></body></html>

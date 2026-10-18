@@ -18,6 +18,43 @@
 > **Legend:** `Deps:` tasks that must be merged first. `∥` = tasks in the same group that can run
 > in parallel with each other. ★ = suitable for a smaller/less capable agent.
 
+## Alpha checkpoint — M007.2 (2026-10-16)
+
+This status review supersedes stale implementation claims below; original task IDs,
+requirements and future work remain historical acceptance targets, not a claim of 1.0.
+Evidence and code references: [alpha-validation.md](alpha-validation.md).
+
+| Tasks | Current disposition |
+|---|---|
+| T-001, T-003, T-101–T-108, T-201–T-208, T-211, T-301, T-304–T-307 | Implemented; exercised by workspace regressions. Historical checkmarks do not certify every OS or UX acceptance. |
+| T-002 | CI configuration present; this local run does not certify remote Linux/Windows CI or warning-free `-D warnings`. |
+| T-209 | Partial: editable dopesheet key blocks now copy/paste by value in one Undo, including row mapping. T-209.3 adds explicit-row mirrored bone key offsets in the existing PasteKeys transaction. Slots, read-only tracks and events are excluded from mirror; complex track editing remains open. Normal/mirrored multibone pose paste is one Undo/Redo transaction (T-209.2); auto-key-off previews keep their existing policy. |
+| T-210 | Complete: per-property key dots, context reverts, Setup resets and slot-colour previews; covered by automated egui/AccessKit and command regressions. |
+| T-302 | Partial: initial flat/simple/nested imports plus exact-path region-image reimport preserve rig/animation IDs, Undo/Redo and Save As. Complex/shared/sequence updates and automatic add/delete reconciliation are refused or manual. |
+| T-303 | Removed/replaced by optional community importers (T-1003), not a built-in promise. |
+| T-401–T-405 | Implemented; targeted mesh/FFD/clipping cases validated. FFD drag fixed by M007.1b1; no general FFD dopesheet/complex clipping qualification. |
+| T-501–T-507 | Rust functionality present; alpha target fidelity is limited by [alpha-scope.md](alpha-scope.md). T-503 physics is excluded from native TypeScript playback. T-507 image assignment is regions only (M007.1b3). |
+| T-601 | Partial against original task: PNG sequence/spritesheet UI and files validated in M004, using shared CPU rendering instead of a second GPU renderer. T-601.1 adds JPEG (explicit opaque background) and lossless RGBA WebP sequences. T-601.2 adds opt-in global pixel bounds, per-frame trim/reconstruction and sequence padding. T-601.3 adds multi-clip checkboxes/counts and new-directory batch publication. General background controls, physics stepping and full original performance/viewport qualification remain open. |
+| T-602 | Functional acceptance complete (T-602.1–T-602.3): CPU rawvideo → external FFmpeg MP4/GIF, libx264 and qualified software libx264rgb, CRF/target kbit/s, background/cycles, progress/cancel, Windows opt-in association-open after publication. Default MP4/GIF bytes preserved. Native opening tested by injected opener only; RGB player limits, bounded diagnostics and publication/crash limits documented in [MP4](mp4-export.md) / [GIF](gif-export.md). No generic player/platform guarantee. |
+| T-603a–T-603d | Implemented and validated in M001/M004/M005: v2 scalar axes, escaping, staged publication, rollback and preflight. |
+| T-603e | Partial preset library; no invented Godot support. |
+| T-604 | Original in-workspace Rust runtime approach superseded by external runtimes. Pinned TypeScript/Phaser example validated in M003/M005/M006; no general runtime parity claim. |
+| T-605 | 🟡 Field inventory, authentic v1 profile round trips and version gate verified. Authentic v0 fixture/migration unqualified; no format change. |
+| T-701 | Partial overall; Settings/persisted keymap and isolated timed autosave/recovery are implemented. M001c/c.1 and M005.1 qualify save lifecycle and shortcuts. Remaining original settings and acceptance breadth stay open. |
+| T-702 | Partial overall; diagnostics and export integrity/fidelity consent validated in M005.2/M006.1. Not every original rule, navigation gesture or large-rig timing is certified. |
+| T-703, T-704, T-708, T-709 | Implemented in part; full onion/graph/viewport/accessibility acceptance remains open. Bone-name context menu issue persists; use its icon. |
+| T-705 | Not implemented; localization deferred after alpha. |
+| T-706 | Partial measurements only; no general 500-bone/60-FPS guarantee. Broader optimization deferred after alpha. |
+| T-707 | Partial: sidecar recovery implemented; panic-time emergency dump/update/feedback package not completed. |
+| T-801 | Partial: usable samples, PSD and pinned Phaser guide; not all original sample types, GIFs or documentation assertions are complete. |
+| T-802 | Partial: local Windows x64 ZIP procedure validated; no signed public release, installer or macOS/Linux artifact qualification. New ZIP needs a manual smoke test. |
+| T-803 | Not implemented; browser editor deferred after alpha. WASM core check is not a web editor. |
+| T-901–T-913 | Several commands/UI surfaces exist (rename, isolation, markers, offsets, detached panels, physics harness, hover labels); complete per-task UX acceptance not requalified. Deferred remainder, with T-910 second viewport and T-912 numeric tangents explicitly open. |
+| T-1001–T-1003 | Implemented and covered by existing workspace suites; external marketplace/community functionality is outside the supported alpha walkthrough. |
+
+M001–M007 evidence is summarized in alpha-validation; M007.0 and M006.1 remain
+preserved checkpoints. Public distribution waits for the final candidate review.
+
 ## Revision note (this pass)
 
 - Phases 0–2 shipped (T-001 … T-206) and are kept verbatim below for reference; amendments added
@@ -288,7 +325,7 @@ test); delete + undo restores every timeline; save/load round-trips all animatio
 ### 🟡 T-209 ∥ Clipboard: copy / paste / duplicate
 **Deps:** T-207 · **Refs:** PLAN §3.2
 
-> **Bones and poses shipped.** `editor/src/clipboard.rs` (`Clipboard`, `BoneClip`, `PoseClip`),
+> **Bones and poses shipped.** `document/src/clipboard.rs` (`Clipboard`, `BoneClip`, `PoseClip`),
 > `PasteBones` command, `AppState::{copy_selection, copy_pose, paste, duplicate_selection}`,
 > Edit-menu entries and Ctrl+C / Ctrl+Shift+C / Ctrl+V / Ctrl+Shift+V / Ctrl+D.
 > * Copying a bone takes its **whole subtree** plus its slots and their skin entries — pasting half
@@ -299,10 +336,62 @@ test); delete + undo restores every timeline; save/load round-trips all animatio
 > * Paste-mirrored negates X translation, rotation and shear; scale is untouched, because mirroring
 >   means "the same pose facing the other way", not a reflection of the art.
 >
-> **Still to do:** copying a *key selection* from the dopesheet (that selection lives in egui memory
-> inside `sheet.rs`, so it wants a context-menu entry there rather than a global shortcut).
-- `editor/src/clipboard.rs` with a typed payload enum: `Bones(subtree)`, `Keys(Vec<KeyRef>)`,
-  `Pose(SecondaryMap<BoneId, Transform>)`.
+> **Key blocks shipped:** dopesheet context menus now expose **Copy selected keys** and
+> **Paste keys at playhead**, via the named operators `anim.copy_selected_keys` and
+> `anim.paste_keys_at_playhead`. `Clipboard::Keys(KeyClip)` captures full owned values, source
+> times, interpolations/Bezier handles and named tracks; transient `KeyRef` indices are never
+> the clipboard payload. Selection is scoped to the animation. Without selected destination key
+> rows, paste resolves original named tracks; otherwise it maps selected key rows in visible row
+> order, with matching property/axis and row count required. There is no separate empty-row
+> selection tool. Ambiguous/missing targets or invalid data refuse the whole block.
+> `PasteKeys` reuses the existing exact-time sorted insertion/replacement policy, extends duration
+> like AddKey, and restores all timelines and duration in **one Undo**. Negative/nonfinite times
+> and precision collapse are refused rather than clamped; f32 time arithmetic is retained.
+> Bone scalar tracks (all axes), slot RGBA, visibility and attachment keys retain their complete
+> values and interpolation. No global shortcuts were added: text fields and bone/pose clipboard
+> bindings keep their existing priority. T-210 pending edits survive paste/Undo/Redo; untouched
+> components follow the new animation sample rather than masking pasted keys.
+>
+> **Still open (retain 🟡):** draw order, IK/transform constraints and FFD remain read-only
+> dopesheet rows without editable addresses; events live in a separate lane. They are explicitly
+> excluded/refused, never flattened to scalar keys. T-209.3 implements mirrored key blocks for
+> bone transform offsets only; slot/complex track mirroring remains excluded. Existing pose
+> mirroring is preserved. The original "every paste is one Undo" criterion is
+> satisfied for key blocks and bones; **T-209.2** also makes every authored multibone pose paste
+> (normal or mirrored) one Undo/Redo transaction in Setup and Animate. The earlier four-step
+> observation on the four-bone arm is fixed, with exact numeric results retained. Twenty-seven
+> T-209 regressions cover
+> document snapshots, three Undo/Redo cycles, save/reopen, types/curves, mapping/refusals,
+> pointer-operated egui menus, operator shadowing, text focus and existing clipboard behavior.
+> **T-209.2 (2026-10-17):** a pose resolves all names and validates destination
+> locks, values and mode before any write. Missing/ambiguous/duplicate targets,
+> invalid active clips or invalid pose data refuse the whole paste, including
+> previews, without clearing redo. Existing router commands execute inside one
+> `PastePose`/`Group`, never merge with drags or adjacent pastes, and redo owns
+> the values independently of the clipboard. Undo restores timelines, setup data
+> and any clip-duration growth. Auto-key off still creates session previews only,
+> without keys or an artificial history entry; existing T-210 previews keep the
+> same policy. Tests compare the complete document through three Undo/Redo cycles,
+> the legacy numeric result, menu/shortcut dispatch and Save/reopen with assets/skins.
+> At this checkpoint key-block mirroring remained an audit proposal; T-209.3 below adds the
+> bone-offset subset. T-209 stays 🟡.
+
+> **T-209.3 (2026-10-17):** **Paste Keys Mirrored (Offsets)** in the dopesheet
+> context menu reuses `KeyClip`, visible selected destination key-row order and
+> `PasteKeys`. Explicit compatible bone destination rows are required: no fallback
+> by name/suffix, no automatic left/right mapping. Translate X, Rotate and Shear
+> X/Y negate; Translate Y and Scale X/Y retain their values. Times, order, units,
+> Linear/Stepped/Bezier and normalized handles (including overshoot) are retained.
+> Offsets are mirrored, not absolute local/setup poses; asymmetric setups are
+> deliberately not compensated. Invalid/mixed/read-only/locked targets refuse
+> before writing or clearing Redo. One Undo/Redo; T-210 previews are rebased by
+> the existing PasteKeys hook. Normal paste and global shortcuts are unchanged.
+> See [keyframe clipboard contract](keyframe-clipboard.md) for angular boundary
+> measurements and exclusions. No slot, FFD, constraint, draw-order, event,
+> image or automatic retargeting mirror is introduced. T-209 remains 🟡.
+
+- `document/src/clipboard.rs` with a typed payload enum: `Bones(subtree)`, `Keys(KeyClip)`
+  (owned values + named tracks), `Pose(PoseClip)`.
 - Setup mode: copy/paste a bone subtree (deep clone of bones, slots, skin entries for those slots;
   names deduped `_2`), paste-as-child-of-selection; `Ctrl+D` duplicates in place.
 - Animate mode: copy/paste selected keys (paste at playhead, preserving relative times; cross-bone
@@ -312,7 +401,7 @@ test); delete + undo restores every timeline; save/load round-trips all animatio
 **Accept:** paste-mirrored on a 4-bone arm produces the mirrored pose (numeric test); every paste is
 one undo step; clipboard payloads survive an animation delete without dangling ids (resolve by name).
 
-### 🟡 T-210 ∥ ★ Keyed-value affordances in the inspector
+### ✅ T-210 ∥ ★ Keyed-value affordances in the inspector
 **Deps:** T-207 · **Refs:** PLAN §7
 
 > **Dots shipped.** `edit_router::{KeyState, key_state, bone_key_value}` plus a dot on every
@@ -322,8 +411,17 @@ one undo step; clipboard payloads survive an animation delete without dangling i
 > alt-click removes the key that is here. `bone_key_value` is shared with the timeline's set-key so
 > the two can never disagree about what "key this" means.
 >
-> **Still to do:** the right-click menu (revert to setup value / revert to animated value) and the
-> Setup-mode "reset to default" affordance.
+> **Completed (T-210):** right-click a bone transform/axis or slot-colour indicator for
+> **Revert to setup value** (local property only; normal auto-key routing, including exact setup
+> returns from M007.1b2) or **Revert to animated value** (discard only that pending property;
+> never remove a stored key). Auto-key off holds bone/colour previews until the dot or `K` keys
+> them. Indicators distinguish pending properties rather than flagging every channel on a bone.
+> Setup shows a plain reset button and **Reset to default** context action: position/rotation/shear
+> zero, scale one, slot colour white with alpha one. These explicit property resets are separate
+> Undo steps and preserve every other field and animation. Revert/setup values remain local even
+> when the transform display is World. Twenty regressions in
+> `editor/src/ui/inspector/key_control_tests.rs` cover actual egui pointer menus/clicks, AccessKit,
+> four states, both auto-key modes, no parasite keys, Undo/Redo and save/reopen round trips.
 - In Animate mode every keyable inspector field gets a state dot: **empty** (no timeline),
   **hollow** (timeline exists, not keyed at playhead), **filled** (keyed here), **amber** (value
   differs from the sampled animation value = unkeyed edit pending).
@@ -414,9 +512,19 @@ intact (pose-diff test).
 **Done:** `formats/src/psd.rs` with the documented mapping, the preview modal with per-row include
 and per-group flatten, and `ImportPsd` as one undoable command. Mapping functions unit-tested;
 end-to-end validated by hand against grouped, nested, offset and negative-bounds files.
-**Outstanding:** the checked-in fixture PSD, so the acceptance assertions above are not yet written.
-Three file-format traps are documented in `docs/psd-import.md`: group order is not parent-first, the
-visibility flag is inverted, and negative layer bounds panic `psd 0.3.5` (caught, layer skipped).
+**M007.2 status:** `tagged_rig.psd` plus eight minimal group fixtures now exist.
+M003.1 covers import Replace/Merge and history; M007.1b4 adds 14 regressions and
+real-source comparisons (16 bones / 44 slots/images becomes 16 / 18 / 18).
+**T-302 checkpoint:** opt-in image refresh in the existing preview matches unique raw
+layer paths, detects decoded RGBA/dimension changes and preserves bone/slot/asset IDs,
+authored transforms/pivots, skins, keys, curves and constraints. One Undo/Redo transaction;
+added/missing layers are reported without creation/deletion. Any ambiguous, shared,
+mesh/FFD, sequence, hidden-modified or unrepresentable operation blocks the batch.
+Save As/reopen, three cycles, texture upload data and conservative native-source
+preservation checks are covered headlessly. No schema/runtime or initial-import rewrite.
+**Still partial:** general complex attachment refresh, automatic added/deleted-layer
+reconciliation, and full Photoshop effects/masks qualification are not delivered. Negative bounds metadata is tested; off-canvas pixel
+resampling and Photoshop effects/masks are not newly qualified.
 
 ### ❌ T-303 — foreign armature importer *(removed)*
 Built and then deleted. Ankhimate's format is `.ankh`; carrying an importer for another editor's
@@ -723,7 +831,7 @@ key hides a slot at frame 10 and back at 20 with no interpolation artifacts; rou
 
 > T-601 → T-602; T-603 → T-604; T-605 last.
 
-### T-601 Offscreen render + image / spritesheet / sequence export *(was T-501)*
+### 🟡 T-601 Offscreen render + image / spritesheet / sequence export *(was T-501)*
 **Deps:** T-106, T-301 · **Refs:** PLAN §5 F-9
 - `export/`: headless wgpu render of evaluated poses at a chosen resolution/fps; PNG/JPG/WebP frames
   via the `image` crate. Spritesheet packer (sprites-per-row) + per-frame sequences + a JSON sidecar
@@ -734,16 +842,32 @@ key hides a slot at frame 10 and back at 20 with no interpolation artifacts; rou
 **Accept:** exported sheet of the sample walk matches the viewport (golden image diff, small
 tolerance); runs headless in CI; a 60-frame export of the sample completes in a documented budget.
 
-> **Foundation landed, export remains open.** `ankhimate-render` is a reusable,
-> transport-free CPU renderer over `Document` + core `Pose`. It renders regions,
-> rigid/weighted/linked meshes, FFD, animated visibility/draw order/attachments,
-> clipping, tint/two-color tint and all slot blend modes to deterministic PNG.
-> MCP frame and contact-sheet previews consume it, and contact sheets use one
-> union camera. Sequence/spritesheet files, trim/global-bounds controls, JSON
-> sidecars, export UI, physics stepping at export FPS, performance budget, and
-> viewport golden comparison have not landed, so T-601 is not marked complete.
+> **M004/M007.2: implemented but partial against this original task.**
+> `ankhimate-render::Sequence::prepare` powers PNG sequences and deterministic
+> multi-page spritesheets, shared camera, metadata, progress/cancel and staged
+> publication. M004 validates 60 frames at 60 FPS, reconstructed pixels and
+> preservation on failures. CPU rendering replaces the proposed separate GPU
+> path. Default skin / Normal blending only; physics is explicitly refused.
+> **T-601.1:** sequence UI offers PNG / JPEG / WebP lossless using the same CPU
+> poses and staged publisher. JPEG requires an explicit opaque RGB background
+> (white default, quality 95); WebP preserves RGBA. Historical PNG/spritesheet
+> bytes and the existing metadata schema/version are retained. See
+> [image sequence formats](png-sequences.md). General background controls,
+> physics stepping and the full original performance/viewport-golden acceptance
+> remain open.
+> **T-601.2:** optional global pixel crop, per-frame transparent trim and image
+> padding, with versioned reconstruction offsets. PNG/WebP can reconstruct exact
+> RGBA bytes; JPEG crops before explicit background composition. Spritesheets
+> keep source-sized fixed cells, so trim does not reduce page count. Defaults
+> and the 207 historical files remain unchanged. See [rendered framing](rendered-framing.md).
+> **T-601.3:** per-animation checkboxes and frame counts, total batch count,
+> independent child exports + manifest and no-replace publication of a new directory.
+> Single mode defaults/metadata are unchanged. See [batch export](batch-export.md).
+> General background controls, physics stepping, advanced rendering, dense
+> packing and complete original performance/viewport qualification remain open.
+> **T-601 stays 🟡.**
 
-### T-602 Video export via ffmpeg *(was T-502)*
+### ✅ T-602 Video export via ffmpeg *(was T-502)*
 **Deps:** T-601 · **Refs:** PLAN §0, §5 F-9
 - Locate `ffmpeg` (config setting → PATH auto-detect → friendly error with a download link; never
   bundle or link — PLAN §0 allows process spawn only). Pipe frames over stdin (rawvideo) → MP4
@@ -751,6 +875,37 @@ tolerance); runs headless in CI; a 60-frame export of the sample completes in a 
 - Progress dialog with cancel; "open after export".
 **Accept:** 2 s MP4 + GIF of the sample; cancel leaves no partial file; missing-ffmpeg path shows
 guidance and never panics; stderr from a failed encode is surfaced verbatim in the dialog.
+
+> **T-602.1 (2026-10-17): partial.** [MP4 contract](mp4-export.md): the shared CPU
+> `Sequence::prepare` supplies RGB24 frames to an external FFmpeg/libx264 process.
+> Configurable executable, explicit opaque background, CRF 0..51, integer cycles,
+> even dimensions, preflight, stderr drainage, cancellation/reaping and new-file
+> staging are implemented. MP4 only; no GIF, encoder choice/bitrate control or
+> open-after-export. Existing rendered image and batch pipelines stay unchanged.
+> T-602 remains 🟡 against its original combined acceptance.
+
+> **T-602.2 (2026-10-17): partial.** [Animated GIF contract](gif-export.md): two
+> complete CPU passes with `palettegen` / `paletteuse`, private palette PNG,
+> opaque RGB background and explicit play-once container behavior. Content cycles
+> are encoded frames, separate from container repeat. Centisecond delays are
+> measured, not advertised as exact fixed FPS. MP4/GIF select by session clip ID;
+> ambiguous legacy name-only calls refuse. Shared supervision/publication remain
+> authoritative. Encoder/bitrate choice and open-after-export still need follow-up;
+> T-602 stays 🟡. No GIF transparency or generic player timing guarantee.
+
+> **T-602.3 (2026-10-17): original functional acceptance complete.** MP4 now
+> offers CRF 0..51 (default 23) or single-pass target bitrate 64..100000 kbit/s,
+> explicitly reported in preflight, never together. libx264 remains default;
+> software libx264rgb is separately probed and real encode/decode-qualified,
+> with mandatory RGB H.264 player-compatibility consent and no fallback.
+> The 2 s sample MP4/GIF, supervised cancellation, missing-executable guidance,
+> failure diagnostics and no-overwrite publication are covered. Windows opt-in
+> Open after export uses a native UTF-16 association request once after complete
+> success, with separate open errors. It is tested with an injected opener;
+> no reader was launched, per T-602.3's test restriction. Other OSes hide it.
+> Default MP4 arguments/bytes, GIF palette/timing/bytes and all 207 historical
+> rendered-export references are preserved. No new renderer, audio, physics,
+> GIF transparency or universal player compatibility is claimed. T-601 stays 🟡.
 
 > **T-603 was split.** The original entry assumed one hardcoded runtime exporter.
 > It became a **user-authored format engine** instead: Ankhimate cannot know
@@ -818,8 +973,11 @@ survive save/load. **Not verified in the running editor** — see the note below
 **Accept:** ✅ the Phaser preset's output matches the documented atlas shape (frame rect, `rotated`,
 `trimmed`, `spriteSourceSize`, `sourceSize`, `meta`).
 
-### ✅ T-604 `ankhimate-runtime` crate
+### 🟡 T-604 Runtime integration (original Rust approach superseded)
 **Deps:** T-603c · **Refs:** PLAN §3.1, §6.2
+**M007.2:** the bullets below record the historical Rust contract. The supported
+alpha walkthrough uses the pinned external TypeScript/Phaser snapshot; see
+[alpha-scope.md](alpha-scope.md). This is not physics compatibility.
 - External runtimes repository, Rust reference package: `Rig` (load), `AnimationState` (play / loop / crossfade / speed, event
   dispatch, physics ownership), `build_batches` → `Vec<DrawBatch>` in draw order. No wgpu.
 - **Deliberately thin.** Crossfade is `evaluate()`'s existing alpha mixing, event windowing is
@@ -836,7 +994,7 @@ sequence gives the same pose.
   headlessly and its API is documented in place; a worked example wants a real exported rig to load,
   which is the natural first task of the next session rather than a stub written blind.
 
-### T-605 Format spec finalization + migration policy
+### 🟡 T-605 Format spec finalization + migration policy
 **Deps:** T-603 · **Refs:** PLAN §6, ADR 0004
 - `docs/format-spec.md` generated/verified against the shipped serialization (normative field
   tables for `.ankh` and `.ankh.runtime`); document the unknown-field preservation rule and the
@@ -844,6 +1002,13 @@ sequence gives the same pose.
   with one checked-in file per historical version.
 **Accept:** every documented field exists in code (a test walks the schema types); a v0-style file
 fixture migrates and round-trips; CI fails if `CURRENT_VERSION` changes without a new fixture.
+- **T-605 checkpoint:** normative author/runtime tables, 33-type schema inventory, compiled
+  Serde cases, historical v1 fixtures (minimal, tentacle, Crapaud), all-profile save/reopen
+  and version/fixture/spec gates are implemented. Current ANKH v1 is distinct from the
+  removed ZIP prototype (authentic negative fixture retained). No authenticated v0 file
+  was found; its migration criterion remains unqualified and no synthetic v0 is claimed.
+  Unknown Extra members survive typed Serde only, not loaded-model save; opaque presets
+  do survive. This limitation is documented/tested, not changed by this task.
 
 ---
 
@@ -853,7 +1018,7 @@ fixture migrates and round-trips; CI fails if `CURRENT_VERSION` changes without 
 > The cross-cutting interaction order, workbench layout, and measurable UX gates
 > are specified in [`ux-workbench-plan.md`](ux-workbench-plan.md).
 
-### T-701 Settings, keymap, autosave *(was T-505)*
+### 🟡 T-701 Settings, keymap, autosave *(was T-505)*
 **Deps:** T-108 · **Refs:** PLAN §5 F-15
 - `editor/src/config.rs`: `Config` serialized as RON to the platform config dir (`directories`) —
   UI scale, theme + custom color overrides, grid gap/foreground toggle, pixel-art filtering mode,
@@ -868,18 +1033,16 @@ fixture migrates and round-trips; CI fails if `CURRENT_VERSION` changes without 
   modifier matching, per-binding `while_typing`, unknown ids kept rather than dropped).
   Menus read label/shortcut/enabled from the operator, which removed three drifts the duplication
   had already produced (see commit `3a09c69`).
-  **Still to do here:** the Settings modal itself — click row → press chord, conflict highlighting,
-  reset-to-default per row — and persisting `Keymap` into `Config`, which is why this task stays
-  open. `Config` has no `keymap` field yet; the built-in table is rebuilt each launch.
-  Not yet operators: file actions (they open a native dialog and can fail with a message, which
-  `OpResult` has no room for) and `Shift+H` isolation (two session fields and a status line rather
-  than one verb; wants splitting into `view.isolate` / `view.show_all`).
+  **M007.2 correction:** Settings (`ui/settings.rs`), chord capture/conflicts,
+  reset and `Config.keymap` persistence are implemented. Exact-modifier Save /
+  Save As focus regressions were validated in M005.1. Keep this task partial:
+  the original settings list and every acceptance condition are not all closed.
 - Autosave: timer writes `<name>.ankh.autosave` beside the project (temp dir if unsaved); recovery
   offer on startup when newer than the save.
 **Accept:** rebinding undo to `Ctrl+U` works and persists; kill the process mid-edit → relaunch
 offers recovery with intact data; corrupt config falls back to defaults with a status message.
 
-### T-702 Diagnostics / warnings *(was T-506)*
+### 🟡 T-702 Diagnostics / warnings *(was T-506)*
 **Deps:** T-108 · **Refs:** PLAN §5 F-16
 - `editor/src/diagnostics.rs`, rules run debounced on document change: mesh vertex with zero total
   weight, unbound vertex group, slot with a dangling attachment name, keys beyond duration, empty
@@ -890,7 +1053,7 @@ offers recovery with intact data; corrupt config falls back to defaults with a s
 **Accept:** each rule has a unit test; the export modal surfaces an induced warning; the rule pass
 over a 500-bone rig stays under the documented debounce budget.
 
-### T-703 ∥ ★ Onion skinning *(was T-504)*
+### 🟡 T-703 ∥ ★ Onion skinning *(was T-504)*
 **Deps:** T-106, T-207 · **Refs:** PLAN §5 F-7
 - Transport toggle: evaluate at playhead ±1..k frames (k configurable 1–5), render ghost passes
   tinted (past reddish, future greenish, from theme tokens) under the main pose; opacity falloff;
@@ -899,7 +1062,7 @@ over a 500-bone rig stays under the documented debounce budget.
 **Accept:** ghosts visible while scrubbing; off = zero extra evaluations (counter assertion in a
 debug build); ghost count matches k.
 
-### T-704 ∥ Curve editor refinement *(was T-507)*
+### 🟡 T-704 ∥ Curve editor refinement *(was T-507)*
 **Deps:** T-203 · **Refs:** PLAN §5 F-6
 - `ui/timeline/graph.rs` exists — finish it: dopesheet ⇄ curve toggle, per-property value/time
   curves with draggable bezier handles (merged commands), per-property color coding, fit-to-view,
@@ -908,7 +1071,7 @@ debug build); ghost count matches k.
 **Accept:** dragging a handle changes easing live during playback; undo restores handles exactly;
 switching modes preserves the selection.
 
-### T-705 ∥ Localization (i18n)
+### ⏸ T-705 ∥ Localization (i18n)
 **Deps:** T-701 · **Refs:** PLAN §7
 - `editor/src/i18n.rs`: string catalog keyed by dotted ids, loaded from embedded `en` plus optional
   JSON files in the config dir; `t!("bone_panel.name")` macro; a fallback-to-English switch and a
@@ -918,7 +1081,7 @@ switching modes preserves the selection.
 **Accept:** switching language re-renders every panel; a catalog missing keys falls back cleanly;
 `xtask i18n-check` is green.
 
-### T-706 ∥ Performance pass *(was T-508)*
+### 🟡 T-706 ∥ Performance pass *(was T-508)*
 **Deps:** Phase 2, T-301 · **Refs:** PLAN §7.7
 - `xtask bench`: synthetic 500-bone / 200-slot rig; criterion benches for `evaluate` (<1 ms target),
   sampling, and atlas packing. Renderer: instanced bone widgets, batch attachments by
@@ -928,7 +1091,7 @@ switching modes preserves the selection.
 **Accept:** bench trend report in CI (non-gating); 60 fps with the synthetic rig on an integrated
 GPU (recorded in the PR); scrolling a 300-row dopesheet stays above 60 fps.
 
-### T-707 ∥ ★ Crash recovery, update check, feedback
+### 🟡 T-707 ∥ ★ Crash recovery, update check, feedback
 **Deps:** T-701 · **Refs:** PLAN §5 F-15
 - Panic hook writes a log next to the binary plus an emergency `.ankh` dump of the in-memory
   document; on next launch, offer to open the log and recover the dump.
@@ -939,7 +1102,7 @@ GPU (recorded in the PR); scrolling a 300-row dopesheet stays above 60 fps.
 **Accept:** an induced panic produces a recoverable dump; update check failure degrades to a
 message; a fresh install makes zero network requests until the user asks.
 
-### T-708 ∥ Viewport interaction polish
+### 🟡 T-708 ∥ Viewport interaction polish
 **Deps:** T-207 · **Refs:** PLAN §7
 - Transform gizmo per tool (translate / rotate / scale / shear) with axis handles and rings, plus a
   contextual edit bar: snap X/Y, rotation snap step, aspect-ratio lock, and **pivot editing mode**
@@ -953,7 +1116,7 @@ message; a fresh install makes zero network requests until the user asks.
 **Accept:** pivot edits change rotation center visibly and are undoable; snapping produces exact
 multiples (numeric test on the transform helpers); every modifier is listed in the keymap UI.
 
-### T-709 ∥ ★ Accessibility & window UX
+### 🟡 T-709 ∥ ★ Accessibility & window UX
 **Deps:** T-701 · **Refs:** PLAN §7
 - **UI control pass landed 2026-08-22:** ordinary controls now share a 28 px minimum height,
   roomier padding, and a consistent vertical rhythm. Assets and animation actions are justified;
@@ -972,7 +1135,7 @@ changes always prompts; layout survives restart.
 
 ## Phase 8 — Release
 
-### T-801 ★ Samples + documentation *(was T-602)*
+### 🟡 T-801 ★ Samples + documentation *(was T-602)*
 **Deps:** Phase 3, Phase 5 · **Refs:** PLAN §3.3
 - 3 CC0 rigged samples in `samples/`: a simple 2-bone-limb character, a mesh/deform character, and
   one PSD source demonstrating the import conventions. README with gifs; a "first rig in 10 minutes"
@@ -980,7 +1143,7 @@ changes always prompts; layout survives restart.
 **Accept:** every doc snippet compiles (doctest or `xtask docs-check`); each sample opens
 warning-free (T-702 clean) and plays.
 
-### T-802 Release packaging *(was T-603)*
+### 🟡 T-802 Release packaging *(was T-603)*
 **Deps:** T-701, T-801 · **Refs:** PLAN §3.3
 - `xtask package`: Windows (zip + optional `cargo-wix` installer), macOS (`.app` + dmg, notarization
   documented), Linux (AppImage). GitHub Actions release workflow on tag; version from workspace
@@ -988,7 +1151,7 @@ warning-free (T-702 clean) and plays.
 **Accept:** a tag push produces three platform artifacts; a fresh Windows VM passes the smoke script
 (open sample → play → export png).
 
-### T-803 ∥ Web build (F-17, post-v1 gate)
+### ⏸ T-803 ∥ Web build (F-17, post-v1 gate)
 **Deps:** T-604 · **Refs:** PLAN §3.1, §5 F-17
 - Keep `core` + `runtime` wasm-clean in CI (already required). Editor wasm target: eframe web
   backend, file access via the browser file picker + OPFS for recents/autosave, ffmpeg export

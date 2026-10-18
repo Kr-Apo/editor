@@ -1,169 +1,85 @@
 # Ankhimate
 
-A 2D skeletal animation editor written in Rust — bones, skins, meshes, weights
-and keyframes — with a portable, deterministic core you can embed in a game.
+Ankhimate is an open-source editor for 2D skeletal animation, with a separate
+TypeScript runtime for games. This first experimental alpha distributes a
+**Windows x64 editor and a PixiJS 8 / WebGL2 runtime**.
 
-Rig image parts into a skeleton, pose it on a timeline, and export a runtime
-format your engine can play back. Free and open source under MIT OR Apache-2.0:
-no runtime licence to buy, no copyleft to inherit.
+**[Download the Windows + PixiJS alpha](https://github.com/Ankhimate/ankhimate/releases/tag/alpha-2026.10.18-rc2)** ·
+**[Get started](docs/alpha/GETTING_STARTED.md)** ·
+**[Runtime repository](https://github.com/Ankhimate/ankhimate-runtime)**
 
-> **Status: pre-alpha, under active development.** The editor runs and the data
-> model is stable enough to build on, but the file format is not frozen and
-> export is unfinished. Not yet suitable for production rigs.
-> [`docs/TASKS.md`](docs/TASKS.md) tracks exactly what exists and what does not.
+The distributed Windows executables are unsigned. Compatibility with every
+project, GPU or browser is not guaranteed. Source features and runtime features
+have different scopes; check the [compatibility matrix](docs/alpha/RUNTIME_COMPATIBILITY.md)
+before exporting a rig.
 
-## What works today
+## Try Jade Sentinel
 
-- **Setup and Animate modes** — structural edits belong to Setup, poses to
-  Animate. The editor refuses the wrong one rather than quietly corrupting a rig.
-- **Bones** — hierarchy, FK, translate/rotate/scale/shear gizmos, and IK chains
-  of **any length** (FABRIK), not the two most editors cap at.
-- **Constraints** — IK, transform, path and physics, with a stability harness
-  behind the last of those (fixed-step, framerate-independent, soak-tested).
-- **Slots, attachments and skins** — art is addressed through slots, so one
-  skeleton drives many outfits. Clipping polygons, bounding boxes, points,
-  sequences and linked meshes are all authorable.
-- **Meshes** — convert a region to a mesh, edit vertices, trace a silhouette
-  from the artwork's alpha, and paint bone weights with a real brush — radius,
-  feather, five blend modes, per-bone locking. Every vertex and UV is typeable,
-  and a multi-selection aligns on an axis.
-- **Animation** — dopesheet, graph editor, bezier interpolation, transform and
-  free-form deform (FFD) timelines, events with audio, ruler markers, and
-  non-destructive per-bone track offsets for secondary motion.
-- **Working on a big rig** — folders in the hierarchy, isolation mode, bulk
-  rename with numbering, box-select, multi-selection transforms about a shared
-  pivot, hover labels naming what is under the cursor, and panels that tear off
-  into their own window.
-- **Files** — `.ankh` projects (a zip of `project.json` + images), image import,
-  PSD import, and atlas/spritesheet import.
+1. Download and extract the complete RC2 ZIP. Verify its SHA-256 against the release.
+2. Run `Editor/Ankhimate.exe` and open `Examples/Jade-Sentinel/Sentinelle.ankh`.
+   Keep its adjacent `.assets` folder. Save a separate copy before editing.
+3. In Animate, play `idle` or `attack`. Use Data / atlas and the Ankhimate runtime
+   preset to export native v2 into a new folder inside the extracted archive.
+4. Review the export preflight, then publish only if its diagnostics are acceptable.
+5. Run `Start-Demo.exe`, keep its console open, and load your export in the browser.
 
-- **Export, in any format you can write** — export is a *format editor*, not a
-  fixed list of exporters. A preset is an atlas setting plus templates that say
-  what the files look like, with a live preview against the open rig. Ankhimate's
-  own runtime format ships as one of those templates, so nothing is reachable to
-  us that is not reachable to you. See
-  [`docs/export-context.md`](docs/export-context.md).
-- **A Rust reference runtime** — maintained in the separate runtimes repository,
-  it loads an export and plays it: crossfade, events, physics, and draw batches.
+The bundled demo needs a desktop WebGL2 browser, but no Node.js, npm, Rust or
+internet download. The launcher serves only the extracted folder on loopback.
+See [Getting Started](docs/alpha/GETTING_STARTED.md) for the exact workflow.
 
-## Not there yet
+Jade Sentinel is the **only official alpha sample**. It uses original procedural
+art, weighted meshes, FFD, two clips and events. Older examples and the historical
+Crapaud demonstrator remain development/regression material, not additional
+official samples or claims of runtime qualification.
 
-**Rendered output**: image sequence, spritesheet and video export are unwritten.
-The data pipeline works — a rig and its atlas can leave for an engine — but
-Ankhimate cannot yet hand you a PNG sequence or an MP4 of a clip. A reusable
-headless renderer now powers MCP frame/contact-sheet previews, but the T-601
-file-export iteration, UI, physics stepping and metadata are still open.
+## Qualified game-runtime subset
 
-The runtime crate has no worked example yet — `macroquad_player` and
-`docs/runtime-guide.md` are the next task.
+Native runtime v2, bones, regions, rigid/weighted meshes, compatible FFD,
+Normal blending, light/static dark tint, compatible skins, sequential polygon
+clipping, looping, events and distinct-clip crossfades are qualified within the
+documented limits. Interrupted crossfades can produce a visible pose jump.
 
-Also missing: panic-time crash dumps, localization, and a second viewport in its
-own window (other panels tear off; the canvas does not). Autosave/recovery and
-onion skinning are implemented; both remain part of the unfinished production-polish pass.
+Constraints, linked meshes, Add/Multiply/Screen, WebGPU, WebGL1 and mobile are
+outside the qualified PixiJS alpha profile. Phaser remains available in the
+[runtime sources](https://github.com/Ankhimate/ankhimate-runtime/tree/main/phaser) with its historical tests; it is
+not an officially qualified distributed runtime for this alpha.
 
-## Workspace
+## Build the editor from source
 
-| Crate | Description |
-|---|---|
-| [`core`](core) (`ankhimate-core`) | Framework-free data model + `evaluate()`. The single runtime contract used by the editor, exporters, and games. `#![forbid(unsafe_code)]`, compiles for native + `wasm32`. |
-| [`document`](document) (`ankhimate-document`) | Headless document, undo, named verbs, and the shared plugin/MCP read surface. |
-| [`editor`](editor) (`ankhimate-editor`) | The egui/wgpu desktop application. |
-| [`formats`](formats) (`ankhimate-formats`) | `.ankh` read/write, importers, version migration. |
-| [`plugins`](plugins) (`ankhimate-plugins`) | Sandboxed QuickJS plugins: operators, importers, exporters, and declarative panels. |
-| [`render`](render) (`ankhimate-render`) | Transport-free headless PNG renderer shared by MCP previews and future rendered exports. |
-| [`mcp`](mcp) (`ankhimate-mcp`) | Stdio MCP server over the same headless verbs and format/export registries. |
-| [`export`](export) (`ankhimate-export`) | Atlas bake + the template engine presets are written against. Headless. |
+Install the pinned Rust toolchain (`rust-toolchain.toml`: 1.95.0) and the native
+build tools for your host. Windows builds need the MSVC C++ build tools and SDK.
 
-Game-side runtimes remain in the separate
-[`runtime`](https://github.com/Ankhimate/runtime) repository, intended to grow
-into a multi-runtime home for Rust, JavaScript, Phaser, Unity, and other engines.
-The [`community-plugins`](https://github.com/Ankhimate/community-plugins)
-repository is the remotely fetched plugin marketplace.
-
-## Build & run
-
-Requirements: a recent stable Rust toolchain (see `rust-toolchain.toml`) and a
-GPU with Vulkan, Metal, DX12, or GL support.
-
-```bash
-cargo run -p ankhimate-editor             # launch the editor
-cargo run -p ankhimate-mcp                # start the MCP stdio server
-cargo test --workspace --all-targets      # run all workspace tests
-cargo fmt --all --check                   # check formatting
-cargo clippy --workspace --all-targets    # lint
+```sh
+git clone https://github.com/Ankhimate/ankhimate.git
+cd ankhimate
+cargo build --locked --release -p ankhimate-editor
+cargo run --locked -p ankhimate-editor
 ```
 
-## Try it
-
-A generated sample rig — 12 bones, a walk cycle, an IK constraint and event
-markers — plus a walkthrough of how it was built:
-
-```bash
-cargo run -p ankhimate-formats --example make_sample   # writes samples/walker.ankh
-cargo run -p ankhimate-editor                          # then open it
-```
-
-See [`docs/rigging-walkthrough.md`](docs/rigging-walkthrough.md).
-
-An eight-bone IK chain, which a two-bone solver cannot express at all — drag
-`tentacle-target` and the whole thing curls:
-
-```bash
-cargo run -p ankhimate-formats --example gen_tentacle   # writes samples/tentacle.ankh
-```
-
-[`docs/what-others-cannot.md`](docs/what-others-cannot.md) is the short, honest
-list of where this goes further than the established editors — and where it does
-not.
-
-## Contributing
-
-Contributions are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md). Work is
-broken into PR-sized tasks in [`docs/TASKS.md`](docs/TASKS.md), each with its own
-acceptance criteria; picking one up is the easiest way in.
-
-**Read the clean-room policy first.** Ankhimate implements features observed in
-other animation editors — never their source code.
-
-## License
-
-Dual-licensed under either of
-
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
-- MIT License ([LICENSE-MIT](LICENSE-MIT))
-
-at your option. This explicitly allows embedding the runtime in games under
-either license — a deliberate advantage over GPL-only alternatives.
-
-Unless you state otherwise, any contribution you intentionally submit for
-inclusion shall be dual-licensed as above, with no additional terms.
-
-### Bundled assets
-
-The editor ships the [Lucide](https://lucide.dev) icon font
-(`editor/assets/lucide.ttf`) under the ISC license, reproduced verbatim at
-`editor/assets/LUCIDE-LICENSE`. ISC is permissive and imposes no obligation on
-anything you build with Ankhimate — it applies to the icon font alone, which the
-runtime does not use.
+Builds on other hosts do not establish a qualified Linux or macOS distribution.
+The separately versioned distribution is `alpha-2026.10.18-rc2`; the editor crates remain 0.1.0.
+See the runtime repository for TypeScript builds. No npm publication is implied.
 
 ## Documentation
 
-The product and integration site is published at
-[ankhimate.github.io/editor](https://ankhimate.github.io/editor/). Build it locally
-with the locked Bun dependencies:
+- [Alpha documentation index](docs/alpha/README.md)
+- [PixiJS integration and public APIs](docs/alpha/PIXIJS_INTEGRATION.md)
+- [Native runtime v2](docs/alpha/FORMAT_V2.md)
+- [Troubleshooting](docs/alpha/TROUBLESHOOTING.md)
+- [Release notes](docs/alpha/RELEASE_NOTES.md)
+- [AI integration context](docs/alpha/AI_INTEGRATION_CONTEXT.md) and [llms.txt](llms.txt)
+- [Authoring architecture](docs/ARCHITECTURE_PLAN.md) and [task status](docs/TASKS.md)
 
-```bash
-cargo run -p xtask -- docs-check
-bun install --frozen-lockfile
-bun run check
-bun run build
-```
+## Contribute and report problems
 
-- [`docs/ARCHITECTURE_PLAN.md`](docs/ARCHITECTURE_PLAN.md) — normative architecture & roadmap
-- [`docs/TASKS.md`](docs/TASKS.md) — task breakdown and current status
-- [`docs/rigging-walkthrough.md`](docs/rigging-walkthrough.md) — how a rig is put together
-- [`docs/what-others-cannot.md`](docs/what-others-cannot.md) — where this goes past the established editors, and where it does not
-- [`docs/graph-editor.md`](docs/graph-editor.md) — the curve editor's interaction rules, and why each one is what it is
-- [`docs/export-context.md`](docs/export-context.md) — writing an export format: syntax, helpers, and every field a template can address
-- [`docs/export-plan.md`](docs/export-plan.md) — why export is a format editor rather than a list of exporters
-- [`docs/adr/`](docs/adr/) — architecture decision records
+Read [CONTRIBUTING](CONTRIBUTING.md) and [SECURITY](SECURITY.md). Include the exact
+release/commit, Windows/browser/GPU versions and a minimal reproduction you may
+share publicly. Never attach private projects, credentials or personal paths.
+There is no automatic bug-report upload in the supplied demo.
+
+## License
+
+Ankhimate code is **MIT OR Apache-2.0**, at your choice:
+[MIT](LICENSE-MIT), [Apache-2.0](LICENSE-APACHE). Bundled dependencies/fonts keep
+their own notices. The ZIP includes a complete notices collection and Jade's MIT
+asset grant; these are not replaced by the source-code license.

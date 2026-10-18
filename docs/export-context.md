@@ -98,6 +98,15 @@ array order can just walk it.
 `name`, `bone`, `attachment` (setup attachment name, may be null), `color`,
 `dark_color`, `blend` (`normal` / `additive` / `multiply` / `screen`).
 
+`color` is the light RGBA. `dark_color` is an optional **static** RGBA array
+(null when disabled) in this context; there is no dark-color animation track.
+Its alpha scales the shadow RGB contribution, not slot opacity. The current
+native runtime v2 template emits an optional `slots[].dark_color` array through
+`{{json dark_color}}`, omitting it when disabled. This preserves finite authored
+f32 values without hex quantization or decimal rounding. Existing light `color`
+and context version remain unchanged. See [runtime-dark-tint.md](runtime-dark-tint.md)
+for the wire contract, CPU equation and current TypeScript/Phaser limitation.
+
 ### `skeleton.skins[]`
 
 `name`, `bones[]`, `constraints[]`, and `entries[]` of
@@ -333,6 +342,19 @@ is *arrived at*, so the handles authored on key `i` describe the span
 `i-1 → i`. Most published formats — Spine among them — hang the curve on the key
 that starts the segment, so the context shifts frames by one for you. A template
 reads the key it is on and needs no lookahead.
+
+This also applies to `deform[].keys[].curve` (M005.4b1): the curve on FFD key
+`i` comes from the authored interpolation of key `i+1`. The final key has no
+outgoing segment and carries the neutral `"linear"` value. Empty and single-key
+tracks keep their original lengths; key times and flat offsets are unchanged,
+including the per-influence ordering of weighted deforms. FFD keys do not gain
+the scalar-only `points` or `has_next` fields.
+
+Earlier native v2 exports copied the FFD arrival curve directly. They remain
+readable, but non-linear FFD animations exported with that bug must be exported
+again to recover the intended easing. A reader cannot infer the author's
+intention from an already incorrect curve placement. No format/context/preset
+version changes are needed for this correction to the documented mapping.
 
 This is worth stating because getting it wrong is close to invisible: keyframe
 poses stay exactly right, since a curve only affects values *between* keys. Only

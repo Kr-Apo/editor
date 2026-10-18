@@ -8,6 +8,8 @@ pub mod psd;
 pub mod psd_infer;
 pub mod psd_read;
 pub mod psd_tags;
+pub mod reimport_guard;
+mod safe_write;
 pub mod schema;
 
 use std::path::Path;
@@ -76,6 +78,19 @@ pub fn save(
     extra_images: &[ImageBlob],
 ) -> Result<(), Error> {
     let schema = convert::to_schema(project);
+    safe_write::validate_project(path)?;
+    let profile = path.to_string_lossy().to_ascii_lowercase();
+    let bytes = if profile.ends_with(".ankh.min.json") {
+        serde_json::to_vec(&compact::contract(serde_json::to_value(&schema)?))?
+    } else if profile.ends_with(".ankh.json") {
+        serde_json::to_vec_pretty(&schema)?
+    } else {
+        let compact = compact::contract(serde_json::to_value(&schema)?);
+        let payload = rmp_serde::to_vec(&compact).map_err(|e| Error::MessagePack(e.to_string()))?;
+        container::encode(&payload)?
+    };
+    // Immutable, content-addressed assets are prepared first. Publishing the
+    // project last means failure leaves the old project and its assets usable.
     let root = container::asset_root(path);
     for asset in project
         .assets
@@ -88,23 +103,22 @@ pub fn save(
     for blob in extra_images {
         write_asset(&root, &blob.rel_path, &blob.bytes)?;
     }
-    let bytes = if path.to_string_lossy().ends_with(".ankh.min.json") {
-        serde_json::to_vec(&compact::contract(serde_json::to_value(&schema)?))?
-    } else if path.to_string_lossy().ends_with(".ankh.json") {
-        serde_json::to_vec_pretty(&schema)?
-    } else {
-        let compact = compact::contract(serde_json::to_value(&schema)?);
-        let payload = rmp_serde::to_vec(&compact).map_err(|e| Error::MessagePack(e.to_string()))?;
-        container::encode(&payload)?
-    };
     container::atomic_write(path, &bytes)?;
     Ok(())
 }
 
 fn write_asset(root: &Path, uri: &str, bytes: &[u8]) -> Result<(), Error> {
     let path = container::confined_asset(root, uri)?;
+    safe_write::validate_asset(&path)?;
     if path.exists() {
-        return Ok(());
+        if std::fs::read(&path)? == bytes {
+            return Ok(());
+        }
+        return Err(std::io::Error::other(format!(
+            "asset {} already exists with different bytes; previous project and asset preserved",
+            path.display()
+        ))
+        .into());
     }
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent)?;
@@ -117,6 +131,16 @@ fn write_asset(root: &Path, uri: &str, bytes: &[u8]) -> Result<(), Error> {
 ///
 /// Asset bytes are loaded from the project's confined sibling asset directory.
 pub fn load(path: &Path) -> Result<(Loaded, Vec<ImageBlob>), Error> {
+    load_with_assets(path, path)
+}
+
+/// Read a recovery payload while resolving assets relative to its original
+/// project. Useful for staged backups whose temporary filename is not an asset
+/// namespace; the Ankh v1 format and normal [`load`] behavior are unchanged.
+pub fn load_with_assets(
+    path: &Path,
+    asset_origin: &Path,
+) -> Result<(Loaded, Vec<ImageBlob>), Error> {
     let bytes = std::fs::read(path)?;
     let value = if bytes.starts_with(container::MAGIC) {
         let payload = container::decode(&bytes)?;
@@ -143,7 +167,7 @@ pub fn load(path: &Path) -> Result<(Loaded, Vec<ImageBlob>), Error> {
         .map(|asset| (asset.file.clone(), asset.name.clone()))
         .collect();
     let mut loaded = convert::from_schema(&project);
-    let root = container::asset_root(path);
+    let root = container::asset_root(asset_origin);
     for (uri, name) in index {
         let asset_path = container::confined_asset(&root, &uri)?;
         if let Ok(bytes) = std::fs::read(asset_path)
@@ -550,6 +574,105 @@ mod tests {
             .map(|(_, b)| b)
             .unwrap();
         assert!((arm.local_transform.rotation - 15.0_f32.to_radians()).abs() < 1e-4);
+    }
+
+    #[test]
+    fn a_corrupt_existing_asset_aborts_save_without_replacing_the_project() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("hero.ankh");
+        let skeleton = sample_skeleton();
+        let animations = SlotMap::with_key();
+        let mut assets = AssetDb::new();
+        let asset = ImageAsset::new("image", vec![1, 2, 3], 1, 1);
+        let asset_path = container::asset_root(&path).join(convert::asset_file_name(&asset));
+        assets.add(asset);
+        save(
+            &path,
+            &project(&skeleton, &animations, &assets, "old", 30),
+            &[],
+        )
+        .unwrap();
+        let previous = std::fs::read(&path).unwrap();
+        std::fs::write(&asset_path, b"corrupt bytes").unwrap();
+        assert!(
+            save(
+                &path,
+                &project(&skeleton, &animations, &assets, "new", 30),
+                &[]
+            )
+            .is_err()
+        );
+        assert_eq!(std::fs::read(path).unwrap(), previous);
+        assert_eq!(std::fs::read(asset_path).unwrap(), b"corrupt bytes");
+    }
+
+    #[test]
+    fn unchanged_readonly_assets_can_be_reused_without_replacement() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("hero.ankh");
+        let skeleton = sample_skeleton();
+        let animations = SlotMap::with_key();
+        let mut assets = AssetDb::new();
+        let asset = ImageAsset::new("image", vec![1, 2, 3], 1, 1);
+        let asset_path = container::asset_root(&path).join(convert::asset_file_name(&asset));
+        assets.add(asset);
+        save(
+            &path,
+            &project(&skeleton, &animations, &assets, "old", 30),
+            &[],
+        )
+        .unwrap();
+        let original_permissions = std::fs::metadata(&asset_path).unwrap().permissions();
+        let mut readonly = original_permissions.clone();
+        readonly.set_readonly(true);
+        std::fs::set_permissions(&asset_path, readonly).unwrap();
+        let result = save(
+            &path,
+            &project(&skeleton, &animations, &assets, "new", 30),
+            &[],
+        );
+        std::fs::set_permissions(&asset_path, original_permissions).unwrap();
+        result.unwrap();
+        assert_eq!(load(&path).unwrap().0.name, "new");
+    }
+
+    #[test]
+    fn missing_project_parent_is_rejected_before_creating_assets() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("missing/hero.ankh");
+        let skeleton = sample_skeleton();
+        let animations = SlotMap::with_key();
+        let mut assets = AssetDb::new();
+        assets.add(ImageAsset::new("image", vec![1, 2, 3], 1, 1));
+        assert!(
+            save(
+                &path,
+                &project(&skeleton, &animations, &assets, "new", 30),
+                &[]
+            )
+            .is_err()
+        );
+        assert!(!path.parent().unwrap().exists());
+    }
+
+    #[test]
+    fn uppercase_json_save_profiles_still_write_json() {
+        let dir = tempfile::tempdir().unwrap();
+        let skeleton = sample_skeleton();
+        let animations = SlotMap::with_key();
+        let assets = AssetDb::new();
+        for name in ["hero.ANKH.JSON", "hero.ANKH.MIN.JSON"] {
+            let path = dir.path().join(name);
+            save(
+                &path,
+                &project(&skeleton, &animations, &assets, "hero", 30),
+                &[],
+            )
+            .unwrap();
+            assert!(
+                serde_json::from_slice::<serde_json::Value>(&std::fs::read(path).unwrap()).is_ok()
+            );
+        }
     }
 
     #[test]

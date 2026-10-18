@@ -85,6 +85,67 @@ operator!(CopyPose, "edit.copy_pose", "Copy Pose",
     enabled: |s| !s.session.selected_bones.is_empty(),
     run: |s| { s.copy_pose(); OpResult::done() });
 
+/// Selection arguments come from the dopesheet, not the global bone selection.
+pub struct CopySelectedKeys;
+impl Operator for CopySelectedKeys {
+    fn id(&self) -> &'static str {
+        "anim.copy_selected_keys"
+    }
+    fn label(&self) -> &str {
+        "Copy selected keys"
+    }
+    fn requires_mode(&self) -> Option<WorkMode> {
+        Some(WorkMode::Animate)
+    }
+    fn invoke(
+        &self,
+        state: &mut AppState,
+        args: &ankhimate_document::Args,
+    ) -> Result<OpResult, ankhimate_document::ArgError> {
+        Ok(crate::key_clipboard::copy(state, args))
+    }
+}
+
+pub struct PasteKeysAtPlayhead;
+impl Operator for PasteKeysAtPlayhead {
+    fn id(&self) -> &'static str {
+        "anim.paste_keys_at_playhead"
+    }
+    fn label(&self) -> &str {
+        "Paste keys at playhead"
+    }
+    fn requires_mode(&self) -> Option<WorkMode> {
+        Some(WorkMode::Animate)
+    }
+    fn invoke(
+        &self,
+        state: &mut AppState,
+        args: &ankhimate_document::Args,
+    ) -> Result<OpResult, ankhimate_document::ArgError> {
+        Ok(crate::key_clipboard::paste(state, args))
+    }
+}
+
+pub struct PasteKeysMirroredOffsets;
+impl Operator for PasteKeysMirroredOffsets {
+    fn id(&self) -> &'static str {
+        "anim.paste_keys_mirrored_offsets"
+    }
+    fn label(&self) -> &str {
+        "Paste Keys Mirrored (Offsets)"
+    }
+    fn requires_mode(&self) -> Option<WorkMode> {
+        Some(WorkMode::Animate)
+    }
+    fn invoke(
+        &self,
+        state: &mut AppState,
+        args: &ankhimate_document::Args,
+    ) -> Result<OpResult, ankhimate_document::ArgError> {
+        Ok(crate::key_clipboard::paste_mirrored_offsets(state, args))
+    }
+}
+
 operator!(Paste, "edit.paste", "Paste",
     run: |s| { s.paste(false); OpResult::done() });
 
@@ -305,6 +366,9 @@ pub fn register_builtins(registry: &mut Registry) {
     registry.register(Box::new(Redo));
     registry.register(Box::new(CopySelection));
     registry.register(Box::new(CopyPose));
+    registry.register(Box::new(CopySelectedKeys));
+    registry.register(Box::new(PasteKeysAtPlayhead));
+    registry.register(Box::new(PasteKeysMirroredOffsets));
     registry.register(Box::new(Paste));
     registry.register(Box::new(PasteMirrored));
     registry.register(Box::new(DuplicateSelection));

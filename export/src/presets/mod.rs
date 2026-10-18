@@ -9,6 +9,11 @@ use crate::preset::Preset;
 /// Ankhimate's own runtime format — the reference template.
 pub const ANKHIMATE_RUNTIME: &str = include_str!("ankhimate_runtime.json");
 
+/// The additive M005.3a field. Removing this exact fragment identifies the
+/// previously shipped native template, without rewriting saved user presets.
+pub(crate) const DARK_TINT_FIELD: &str =
+    r#"{{#if dark_color}},"dark_color":{{json dark_color}}{{/if}}"#;
+
 /// A flat, engine-neutral JSON dump and the easiest starting point to modify.
 pub const GENERIC_JSON: &str = include_str!("generic_json.json");
 

@@ -14,8 +14,7 @@
 //!
 //! # When it writes
 //!
-//! Only when the document has actually changed, tracked by
-//! [`AppState::revision`], which every document mutation already bumps. A timer
+//! Only when persisted document content has changed. A timer
 //! alone would rewrite an untouched project every interval, and the one thing
 //! worse than no autosave is one that burns a laptop's disk while you read.
 //!
@@ -31,6 +30,12 @@
 
 use crate::app_state::AppState;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::{Duration, Instant};
+#[cfg(test)]
+#[path = "autosave_clock_tests.rs"]
+mod clock_tests;
+static NEXT_UNTITLED: AtomicU64 = AtomicU64::new(0);
 
 /// Extension appended to the project's own name: `walk.ankh.autosave`.
 ///
@@ -53,9 +58,8 @@ pub fn path_for(project: Option<&Path>) -> Option<PathBuf> {
             let name = path.file_name()?.to_str()?;
             Some(path.with_file_name(format!("{name}.autosave")))
         }
-        // Nothing to sit beside yet. One fixed name rather than a unique one per
-        // session: a temp directory quietly accumulating a file per crash is its
-        // own bug, and the newest unsaved document is the only one anybody wants.
+        // Legacy recovery location, read only by recovery discovery. New
+        // untitled writes use a separate path per process and document.
         None => Some(std::env::temp_dir().join(format!("untitled.{EXT}"))),
     }
 }
@@ -64,22 +68,24 @@ pub fn path_for(project: Option<&Path>) -> Option<PathBuf> {
 pub struct Autosave {
     /// Seconds between attempts. Zero disables.
     pub interval_secs: u64,
-    /// Seconds accumulated since the last attempt.
-    elapsed: f32,
-    /// `AppState::revision` as of the last successful write. `None` until one
-    /// happens, so a document edited before the first tick still saves.
-    saved_revision: Option<u64>,
+    /// Monotonic start of the pending interval, independent of rendered frames.
+    started_at: Option<Instant>,
     /// Where the last write went, for the status line and for cleanup.
     last_written: Option<PathBuf>,
+    unsaved_path: Option<PathBuf>,
+    saved_document: Option<serde_json::Value>,
+    pub last_error: Option<String>,
 }
 
 impl Default for Autosave {
     fn default() -> Self {
         Self {
             interval_secs: DEFAULT_INTERVAL_SECS,
-            elapsed: 0.0,
-            saved_revision: None,
+            started_at: None,
             last_written: None,
+            unsaved_path: None,
+            saved_document: None,
+            last_error: None,
         }
     }
 }
@@ -93,41 +99,77 @@ impl Autosave {
         }
     }
 
-    /// Advance the timer by a frame and report whether a write is due.
-    ///
-    /// `dt` comes from the frame clock rather than a wall-clock read, so this
-    /// stays testable — see the module note in `core` about determinism. The
-    /// same reasoning applies here for a different reason: a test that had to
-    /// sleep two minutes would not be written.
-    pub fn tick(&mut self, dt: f32, revision: u64) -> bool {
+    fn advance(&mut self, now: Instant) -> Schedule {
         if self.interval_secs == 0 {
-            return false;
+            self.started_at = None;
+            return Schedule::Idle;
         }
-        self.elapsed += dt;
-        if self.elapsed < self.interval_secs as f32 {
-            return false;
+        let started_at = self.started_at.get_or_insert(now);
+        let elapsed = now.saturating_duration_since(*started_at);
+        let interval = Duration::from_secs(self.interval_secs);
+        if elapsed < interval {
+            return Schedule::Wait(interval - elapsed);
         }
-        self.elapsed = 0.0;
-        // Unchanged since the last write: nothing to do. Checked after the timer
-        // resets so an idle document does not accumulate a backlog of attempts.
-        self.saved_revision != Some(revision)
+        // At most one attempt, even after a long suspension. Failed writes retry
+        // after a whole interval rather than requesting immediate repaint.
+        *started_at = now;
+        Schedule::Due
+    }
+
+    /// Caller supplies real monotonic time (or controlled time in tests) and
+    /// arms egui's delayed repaint only for `Wait`. Clean content and pending
+    /// recovery offers have no wakeup. Later edits start a fresh interval.
+    pub fn schedule(&mut self, now: Instant, state: &AppState, eligible: bool) -> Schedule {
+        if !eligible || self.interval_secs == 0 {
+            self.started_at = None;
+            return Schedule::Idle;
+        }
+        let current = snapshot(state);
+        if current.is_some() && current == self.saved_document {
+            self.started_at = None;
+            return Schedule::Idle;
+        }
+        self.advance(now)
     }
 
     /// Write the autosave beside `project`, or to the temp directory.
     ///
-    /// Failure is logged and swallowed. The user did not ask for this write, so
-    /// interrupting them because it failed would be the autosave making their
-    /// session worse — which is the opposite of the point.
+    /// Failure is logged and exposed in `last_error` for the status line.
     pub fn write(&mut self, state: &AppState, project: Option<&Path>) -> Option<PathBuf> {
-        let path = path_for(project)?;
+        let path = match project {
+            Some(path) => path_for(Some(path))?,
+            None => {
+                if self.unsaved_path.is_none() {
+                    let root = std::env::temp_dir().join("ankhimate-recovery");
+                    if let Err(e) = std::fs::create_dir_all(&root) {
+                        self.last_error = Some(e.to_string());
+                        return None;
+                    }
+                    loop {
+                        let path = root.join(format!(
+                            "untitled-{}-{}.ankh.autosave",
+                            std::process::id(),
+                            NEXT_UNTITLED.fetch_add(1, Ordering::Relaxed)
+                        ));
+                        if !path.exists() {
+                            self.unsaved_path = Some(path);
+                            break;
+                        }
+                    }
+                }
+                self.unsaved_path.clone().unwrap()
+            }
+        };
         match ankhimate_formats::save(&path, &state.doc.as_project_ref(), &[]) {
             Ok(()) => {
-                self.saved_revision = Some(state.revision);
                 self.last_written = Some(path.clone());
+                self.saved_document = snapshot(state);
+                self.last_error = None;
                 Some(path)
             }
             Err(e) => {
                 log::warn!("autosave to {} failed: {e}", path.display());
+                self.last_error = Some(e.to_string());
                 None
             }
         }
@@ -135,29 +177,30 @@ impl Autosave {
 
     /// Forget the current document's write history.
     ///
-    /// Called when the document is replaced — a new or opened project shares
-    /// nothing with the last one, and carrying its revision across would make
-    /// the first tick think an untouched document was already saved.
+    /// Reset the deadline and saved-content snapshot on a new/opened document.
+    /// Neither belongs to the next document, even if its revision is the same.
     pub fn reset(&mut self) {
-        self.elapsed = 0.0;
-        self.saved_revision = None;
+        self.started_at = None;
         self.last_written = None;
+        self.unsaved_path = None;
+        self.saved_document = None;
+        self.last_error = None;
     }
 
-    /// Delete the autosave for `project`, after a real save has superseded it.
+    /// Forget tracking without deleting a recovery file. A Save As or a second
+    /// process must not erase a previous session's only copy.
     ///
-    /// Best-effort and silent: a leftover autosave is harmless — recovery
-    /// compares timestamps — while an error dialog about deleting a file the
-    /// user never knew existed is not.
-    pub fn discard(&mut self, project: Option<&Path>) {
-        if let Some(path) = path_for(project)
-            && path.exists()
-            && let Err(e) = std::fs::remove_file(&path)
-        {
-            log::warn!("could not remove autosave {}: {e}", path.display());
-        }
-        self.last_written = None;
+    #[cfg(test)]
+    pub fn discard(&mut self, _project: Option<&Path>) {
+        self.reset();
     }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum Schedule {
+    Idle,
+    Wait(Duration),
+    Due,
 }
 
 /// An autosave worth offering at startup.
@@ -167,6 +210,8 @@ pub struct Recovery {
     pub autosave: PathBuf,
     /// The project it belongs to, if it had one.
     pub project: Option<PathBuf>,
+    /// A staged project payload keeps the original project's asset namespace.
+    pub asset_origin: Option<PathBuf>,
 }
 
 /// Is there an autosave newer than the project it shadows?
@@ -178,25 +223,82 @@ pub struct Recovery {
 /// A project whose own mtime cannot be read is treated as *not* superseding the
 /// autosave — the recovery is offered rather than hidden. Erring the other way
 /// silently discards the only copy of a crashed session.
+#[cfg(test)]
 pub fn check(project: Option<&Path>) -> Option<Recovery> {
-    let autosave = path_for(project)?;
-    let auto_time = std::fs::metadata(&autosave).ok()?.modified().ok()?;
+    check_after_open(project, true)
+}
 
-    if let Some(project) = project {
-        let project_time = std::fs::metadata(project)
-            .ok()
-            .and_then(|m| m.modified().ok());
-        if let Some(project_time) = project_time
-            && project_time >= auto_time
-        {
-            return None;
-        }
+pub fn check_after_open(project: Option<&Path>, primary_valid: bool) -> Option<Recovery> {
+    let primary_time = project
+        .filter(|_| primary_valid)
+        .and_then(|p| std::fs::metadata(p).ok()?.modified().ok());
+    let mut candidates = Vec::new();
+    if let Some(path) = path_for(project) {
+        candidates.push((path, None));
     }
+    if let Some(project) = project {
+        candidates.extend(
+            ankhimate_formats::container::recoverable_writes(project)
+                .into_iter()
+                .map(|p| (p, Some(project.to_path_buf()))),
+        );
+    } else if let Ok(entries) = std::fs::read_dir(std::env::temp_dir().join("ankhimate-recovery")) {
+        candidates.extend(
+            entries
+                .flatten()
+                .map(|e| e.path())
+                .filter(|p| {
+                    p.file_name().is_some_and(|n| {
+                        n.to_string_lossy().starts_with("untitled-")
+                            && n.to_string_lossy().ends_with(".ankh.autosave")
+                    })
+                })
+                .map(|p| (p, None)),
+        );
+    }
+    candidates
+        .into_iter()
+        .filter_map(|(path, origin)| {
+            let metadata = std::fs::symlink_metadata(&path).ok()?;
+            if !metadata.is_file() || metadata.file_type().is_symlink() {
+                return None;
+            }
+            #[cfg(windows)]
+            {
+                use std::os::windows::fs::MetadataExt;
+                if metadata.file_attributes() & 0x400 != 0 {
+                    return None;
+                }
+            }
+            let modified = metadata.modified().ok()?;
+            if primary_time.is_some_and(|t| t >= modified) {
+                return None;
+            }
+            // Keep timestamp-only behavior of check() for legacy named autosaves;
+            // staging candidates must decode before they can be offered.
+            if origin.is_some()
+                && ankhimate_formats::load_with_assets(&path, origin.as_ref().unwrap()).is_err()
+            {
+                return None;
+            }
+            Some((
+                modified,
+                Recovery {
+                    autosave: path,
+                    project: project.map(Path::to_path_buf),
+                    asset_origin: origin,
+                },
+            ))
+        })
+        .max_by_key(|(time, _)| *time)
+        .map(|(_, recovery)| recovery)
+}
 
-    Some(Recovery {
-        autosave,
-        project: project.map(Path::to_path_buf),
-    })
+fn snapshot(state: &AppState) -> Option<serde_json::Value> {
+    serde_json::to_value(ankhimate_formats::convert::to_schema(
+        &state.doc.as_project_ref(),
+    ))
+    .ok()
 }
 
 #[cfg(test)]
@@ -214,6 +316,68 @@ mod tests {
     }
 
     #[test]
+    fn a_save_cannot_delete_a_recovery_copy_not_written_by_this_session() {
+        let dir = tempfile::tempdir().unwrap();
+        let project = dir.path().join("other.ankh");
+        let path = path_for(Some(&project)).unwrap();
+        std::fs::write(&path, b"other session recovery").unwrap();
+        Autosave::default().discard(Some(&project));
+        assert_eq!(std::fs::read(path).unwrap(), b"other session recovery");
+    }
+
+    #[test]
+    fn unsaved_documents_get_independent_recovery_paths_and_keep_primary_untouched() {
+        let mut state = AppState::default();
+        state.doc.meta.name = "work".into();
+        let mut a = Autosave::default();
+        let mut b = Autosave::default();
+        let first = a.write(&state, None).unwrap();
+        let second = b.write(&state, None).unwrap();
+        assert_ne!(first, second);
+        assert_ne!(
+            first,
+            path_for(None).unwrap(),
+            "legacy fixed copy must not be overwritten"
+        );
+        assert_eq!(ankhimate_formats::load(&first).unwrap().0.name, "work");
+        a.reset();
+        let third = a.write(&state, None).unwrap();
+        assert_ne!(
+            first, third,
+            "New must not replace the previous untitled document's copy"
+        );
+        for path in [first, second, third] {
+            std::fs::remove_file(path).unwrap();
+        }
+    }
+
+    #[test]
+    fn autosave_tracks_persisted_content_even_without_a_revision_increment() {
+        let dir = tempfile::tempdir().unwrap();
+        let project = dir.path().join("project.ankh");
+        let mut state = AppState::default();
+        let mut autosave = Autosave::new(10);
+        autosave.write(&state, Some(&project)).unwrap();
+        let now = Instant::now();
+        assert_eq!(autosave.schedule(now, &state, true), Schedule::Idle);
+        state.doc.meta.name = "metadata edit".into();
+        assert_eq!(
+            autosave.schedule(now, &state, true),
+            Schedule::Wait(Duration::from_secs(10))
+        );
+        assert_eq!(
+            autosave.schedule(now + Duration::from_secs(10), &state, true),
+            Schedule::Due
+        );
+        let copy = autosave.write(&state, Some(&project)).unwrap();
+        assert_eq!(
+            ankhimate_formats::load(&copy).unwrap().0.name,
+            "metadata edit"
+        );
+        assert!(!project.exists());
+    }
+
+    #[test]
     fn an_unsaved_document_autosaves_to_the_temp_directory() {
         let auto = path_for(None).unwrap();
         assert_eq!(auto.parent().unwrap(), std::env::temp_dir());
@@ -222,45 +386,75 @@ mod tests {
     #[test]
     fn nothing_is_due_before_the_interval_elapses() {
         let mut autosave = Autosave::new(10);
-        assert!(!autosave.tick(9.0, 1));
-        assert!(autosave.tick(1.5, 1), "crossing the interval is due");
+        let now = Instant::now();
+        assert_eq!(
+            autosave.advance(now),
+            Schedule::Wait(Duration::from_secs(10))
+        );
+        assert_eq!(
+            autosave.advance(now + Duration::from_secs(9)),
+            Schedule::Wait(Duration::from_secs(1))
+        );
+        assert_eq!(
+            autosave.advance(now + Duration::from_millis(10500)),
+            Schedule::Due
+        );
     }
 
     #[test]
     fn an_untouched_document_is_not_rewritten() {
-        // The reason the revision is consulted at all: a timer alone rewrites an
-        // idle project every two minutes forever.
+        // Content saved in the recovery copy must not be rewritten periodically.
         let mut autosave = Autosave::new(10);
-        autosave.saved_revision = Some(7);
-        assert!(!autosave.tick(11.0, 7), "revision unchanged, nothing to do");
-        assert!(autosave.tick(11.0, 8), "edited since, now due");
+        let now = Instant::now();
+        let mut state = AppState::default();
+        autosave.saved_document = snapshot(&state);
+        assert_eq!(autosave.schedule(now, &state, true), Schedule::Idle);
+        state.doc.meta.name = "edited".into();
+        assert!(matches!(
+            autosave.schedule(now, &state, true),
+            Schedule::Wait(_)
+        ));
+        assert_eq!(
+            autosave.schedule(now + Duration::from_secs(10), &state, true),
+            Schedule::Due
+        );
     }
 
     #[test]
     fn an_edit_before_the_first_write_still_saves() {
-        // `saved_revision` starts as None rather than 0, so a document edited in
-        // the first two minutes is not mistaken for one already written.
+        // Never written content must be scheduled, even at revision zero.
         let mut autosave = Autosave::new(10);
-        assert!(autosave.tick(11.0, 0), "never written, so due");
+        let now = Instant::now();
+        let state = AppState::default();
+        autosave.schedule(now, &state, true);
+        assert_eq!(
+            autosave.schedule(now + Duration::from_secs(10), &state, true),
+            Schedule::Due
+        );
     }
 
     #[test]
     fn a_zero_interval_disables_it() {
         let mut autosave = Autosave::new(0);
-        assert!(!autosave.tick(10_000.0, 99));
+        assert_eq!(autosave.advance(Instant::now()), Schedule::Idle);
     }
 
     #[test]
-    fn resetting_forgets_the_previous_documents_revision() {
-        // A new document starts at revision 0 too. Without the reset, the first
-        // tick would compare against the *old* document's saved revision and
-        // could decide there was nothing to write.
+    fn resetting_forgets_the_previous_documents_saved_content() {
         let mut autosave = Autosave::new(10);
-        autosave.saved_revision = Some(0);
-        assert!(!autosave.tick(11.0, 0));
-
+        let now = Instant::now();
+        let state = AppState::default();
+        autosave.saved_document = snapshot(&state);
+        assert_eq!(autosave.schedule(now, &state, true), Schedule::Idle);
         autosave.reset();
-        assert!(autosave.tick(11.0, 0), "a fresh document is unwritten");
+        assert_eq!(
+            autosave.schedule(now, &state, true),
+            Schedule::Wait(Duration::from_secs(10))
+        );
+        assert_eq!(
+            autosave.schedule(now + Duration::from_secs(10), &state, true),
+            Schedule::Due
+        );
     }
 
     #[test]

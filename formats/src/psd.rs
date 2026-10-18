@@ -405,7 +405,14 @@ pub fn layer_tree(bytes: &[u8]) -> Result<Vec<LayerNode>, PsdError> {
             visible: shown(group),
             bounds: (left, top, width, height),
         });
-        for layer in psd.get_group_sub_layers(id).unwrap_or_default() {
+        // The library's range contains *all* descendants, not direct children.
+        // Bounds above need that range; ownership and preview paths do not.
+        for layer in psd
+            .get_group_sub_layers(id)
+            .unwrap_or_default()
+            .iter()
+            .filter(|layer| layer.parent_id() == Some(*id))
+        {
             nodes.push(node_for(layer, &format!("{path}/{}", layer.name())));
         }
     }
@@ -603,6 +610,10 @@ pub fn import(bytes: &[u8], options: &ImportOptions) -> Result<PsdImport, PsdErr
     // Bone and skin per group path, filled as groups are visited parent-first.
     let mut bones: HashMap<String, BoneId> = HashMap::new();
     let mut skins: HashMap<String, SkinId> = HashMap::new();
+    // File group IDs identify owners independently of repeated layer names.
+    // No entry means that this subtree was excluded or already flattened.
+    let mut targets: HashMap<u32, (BoneId, SkinId)> = HashMap::new();
+    let mut slot_order: HashMap<SlotId, usize> = HashMap::new();
 
     // Parents first, so a child group finds the bone it hangs from. The file's
     // own order does not guarantee it — a nested group can be listed ahead of
@@ -618,6 +629,15 @@ pub fn import(bytes: &[u8], options: &ImportOptions) -> Result<PsdImport, PsdErr
         let Some(group) = psd.groups().get(id) else {
             continue;
         };
+        let (parent, inherited_skin) = match group.parent_id() {
+            Some(parent_id) => {
+                let Some(target) = targets.get(&parent_id).copied() else {
+                    continue;
+                };
+                target
+            }
+            None => (root, skeleton.default_skin),
+        };
         let path = path.clone();
         if !options.wants(&path) {
             summary.skipped.push(format!("{path} (not selected)"));
@@ -628,7 +648,7 @@ pub fn import(bytes: &[u8], options: &ImportOptions) -> Result<PsdImport, PsdErr
             continue;
         }
 
-        let sub_layers = psd.get_group_sub_layers(id).unwrap_or_default();
+        let descendants = psd.get_group_sub_layers(id).unwrap_or_default();
 
         // `@skin:` groups are containers, not bones: their job is to route what
         // is inside them into a named skin.
@@ -640,34 +660,8 @@ pub fn import(bytes: &[u8], options: &ImportOptions) -> Result<PsdImport, PsdErr
             });
             // Its bone is its parent's, so art in a skin hangs where the base
             // art hangs rather than under a bone that only exists in one outfit.
-            let parent = group
-                .parent_id()
-                .and_then(|p| paths.get(&p))
-                .and_then(|p| bones.get(p))
-                .copied()
-                .unwrap_or(root);
             bones.insert(path.clone(), parent);
-            for layer in sub_layers {
-                let layer_path = format!("{path}/{}", layer.name());
-                add_layer(
-                    &mut Sink {
-                        skeleton: &mut skeleton,
-                        assets: &mut assets,
-                        summary: &mut summary,
-                        layer_paths: &mut layer_paths,
-                        frame_images: &mut frame_images,
-                        leads: &mut leads,
-                        trace_requests: &mut trace_requests,
-                    },
-                    &plan,
-                    skin_id,
-                    parent,
-                    layer,
-                    &layer_path,
-                    canvas,
-                    options,
-                );
-            }
+            targets.insert(*id, (parent, skin_id));
             continue;
         }
 
@@ -681,35 +675,8 @@ pub fn import(bytes: &[u8], options: &ImportOptions) -> Result<PsdImport, PsdErr
         // without it the guess is a sentence in a report and the hierarchy is
         // unchanged.
         if plan.not_a_bone.contains(&path) || group_tags.has("folder") {
-            let parent = group
-                .parent_id()
-                .and_then(|p| paths.get(&p))
-                .and_then(|p| bones.get(p))
-                .copied()
-                .unwrap_or(root);
             bones.insert(path.clone(), parent);
-            let default_skin = skeleton.default_skin;
-            for layer in sub_layers {
-                let layer_path = format!("{path}/{}", layer.name());
-                add_layer(
-                    &mut Sink {
-                        skeleton: &mut skeleton,
-                        assets: &mut assets,
-                        summary: &mut summary,
-                        layer_paths: &mut layer_paths,
-                        frame_images: &mut frame_images,
-                        leads: &mut leads,
-                        trace_requests: &mut trace_requests,
-                    },
-                    &plan,
-                    default_skin,
-                    parent,
-                    layer,
-                    &layer_path,
-                    canvas,
-                    options,
-                );
-            }
+            targets.insert(*id, (parent, inherited_skin));
             continue;
         }
 
@@ -718,8 +685,9 @@ pub fn import(bytes: &[u8], options: &ImportOptions) -> Result<PsdImport, PsdErr
         let bone_name = group_tags.name.clone();
 
         // `$pivot` places the bone; without one the group's own bounds do.
-        let origin = sub_layers
+        let origin = descendants
             .iter()
+            .filter(|layer| layer.parent_id() == Some(*id))
             .find(|l| tags_of(l.name()).has("pivot"))
             .map(|l| layer_center(layer_bounds(l), canvas, options.scale))
             .unwrap_or_else(|| {
@@ -735,12 +703,6 @@ pub fn import(bytes: &[u8], options: &ImportOptions) -> Result<PsdImport, PsdErr
                 )
             });
 
-        let parent = group
-            .parent_id()
-            .and_then(|p| paths.get(&p))
-            .and_then(|p| bones.get(p))
-            .copied()
-            .unwrap_or(root);
         // Bone transforms are local, so subtract the parent's world offset. Only
         // translation is ever produced here — a PSD has no rotation to read.
         let parent_origin = world_origin(&skeleton, parent);
@@ -761,13 +723,12 @@ pub fn import(bytes: &[u8], options: &ImportOptions) -> Result<PsdImport, PsdErr
         summary.bones += 1;
         bones.insert(path.clone(), bone);
 
-        let default_skin = skeleton.default_skin;
         if options.flatten.contains(&path) || group_tags.has("merge") {
             // Flattened: one attachment for the whole group, composited in
             // stacking order. The group stops being a hierarchy and becomes art.
             // `[merge]` is the same decision written in the file rather than
             // ticked in a dialog, so it survives the next import.
-            if let Some((asset, bounds)) = flatten_group(&psd, sub_layers, &path, options) {
+            if let Some((asset, bounds)) = flatten_group(&psd, descendants, &path, options) {
                 let name = asset.name.clone();
                 let (w, h) = (asset.width as f32, asset.height as f32);
                 assets.add(asset);
@@ -779,45 +740,39 @@ pub fn import(bytes: &[u8], options: &ImportOptions) -> Result<PsdImport, PsdErr
                 summary.slots += 1;
                 layer_paths.insert(name.clone(), path.clone());
                 let offset = layer_center(bounds, canvas, options.scale) - origin;
-                skeleton.skins[default_skin].set(
+                skeleton.skins[inherited_skin].set(
                     slot,
                     name.clone(),
                     region(name, offset, w * options.scale, h * options.scale),
                 );
+                // A composite occupies its original contiguous source range.
+                // Anchor at its last leaf, without comparing names or pixels.
+                let index = psd
+                    .layers()
+                    .iter()
+                    .rposition(|layer| descendants.iter().any(|child| std::ptr::eq(layer, child)))
+                    .unwrap_or(0);
+                slot_order.insert(slot, index);
             }
             continue;
         }
 
-        for layer in sub_layers {
-            let layer_path = format!("{path}/{}", layer.name());
-            add_layer(
-                &mut Sink {
-                    skeleton: &mut skeleton,
-                    assets: &mut assets,
-                    summary: &mut summary,
-                    layer_paths: &mut layer_paths,
-                    frame_images: &mut frame_images,
-                    leads: &mut leads,
-                    trace_requests: &mut trace_requests,
-                },
-                &plan,
-                default_skin,
-                bone,
-                layer,
-                &layer_path,
-                canvas,
-                options,
-            );
-        }
+        targets.insert(*id, (bone, inherited_skin));
     }
 
-    // Loose layers: no group, so they hang off the root.
-    let default_skin = skeleton.default_skin;
-    for layer in psd.layers() {
-        if layer.parent_id().is_some() {
-            continue;
-        }
-        let path = layer.name().to_string();
+    // One pass over actual source records, bottom to top. Group enumeration
+    // order is for building bones, never for ordering or duplicating images.
+    for (index, layer) in psd.layers().iter().enumerate() {
+        let (bone, skin, path) = match layer.parent_id() {
+            Some(parent) => {
+                let Some(&(bone, skin)) = targets.get(&parent) else {
+                    continue;
+                };
+                (bone, skin, format!("{}/{}", paths[&parent], layer.name()))
+            }
+            None => (root, skeleton.default_skin, layer.name().to_string()),
+        };
+        let previous = skeleton.draw_order.len();
         add_layer(
             &mut Sink {
                 skeleton: &mut skeleton,
@@ -829,14 +784,18 @@ pub fn import(bytes: &[u8], options: &ImportOptions) -> Result<PsdImport, PsdErr
                 trace_requests: &mut trace_requests,
             },
             &plan,
-            default_skin,
-            root,
+            skin,
+            bone,
             layer,
             &path,
             canvas,
             options,
         );
+        for slot in &skeleton.draw_order[previous..] {
+            slot_order.insert(*slot, index);
+        }
     }
+    skeleton.draw_order.sort_by_key(|slot| slot_order[slot]);
 
     // IK scaffolds, once every bone exists. The chain is the group's descendant
     // bones in hierarchy order; the target is a new bone at the chain's tip,
@@ -1437,8 +1396,11 @@ fn flatten_group(
     Some((ImageAsset::new(name, bytes, w, h), (l, t, w, h)))
 }
 
-/// Compare a PSD against an already-imported document.
+/// Legacy path-only comparison against an already-imported document.
 ///
+/// `unchanged` here means a matching path, not equal pixels; `changed` stays
+/// empty because this API has no existing images to compare. The document's
+/// `psd_reimport` planner combines this provenance contract with actual images.
 /// Reports rather than mutates. Deciding what to do about a removed layer is the
 /// user's call — deleting the slot would take its animation keys with it — so the
 /// import modal shows this and asks.

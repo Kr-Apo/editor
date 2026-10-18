@@ -26,6 +26,7 @@ pub enum Section {
     Keys,
     Saving,
     Plugins,
+    Video,
 }
 
 pub struct Extensions<'a> {
@@ -70,6 +71,7 @@ pub fn ui(
                     ("Keys", crate::ui::icons::PROPERTIES, Section::Keys),
                     ("Saving", crate::ui::icons::TIME, Section::Saving),
                     ("Plugins", crate::ui::icons::PLUGIN, Section::Plugins),
+                    ("Video", crate::ui::icons::FOLDER, Section::Video),
                 ] {
                     if ui
                         .selectable_label(
@@ -93,6 +95,13 @@ pub fn ui(
                     Section::Fonts => fonts(ui, config),
                     Section::Keys => keys(ui, config, extensions.operators),
                     Section::Saving => saving(ui, config),
+                    Section::Video => {
+                        ui.label("External FFmpeg executable (optional)");
+                        if ui.text_edit_singleline(&mut config.ffmpeg_path).changed() {config.save();}
+                        ui.label("Empty: find ffmpeg in PATH when exporting video. A custom path never falls back to PATH. FFmpeg is not bundled or installed automatically.");
+                        ui.hyperlink_to("Official FFmpeg downloads", crate::video_export::DOWNLOAD);
+                        ui.label("MP4 uses libx264; codec availability and the external build's licensing remain your responsibility.");
+                    },
                     Section::Plugins => {
                         plugin_marketplace(ui, state, extensions.installed, extensions.marketplace)
                     }
@@ -239,7 +248,8 @@ fn saving(ui: &mut egui::Ui, config: &mut Config) {
         .checkbox(&mut on, "Keep a recovery copy while working")
         .on_hover_text(
             "Writes beside the project as <name>.ankh.autosave. Your own file is never \
-             touched, and the copy is removed when you save.",
+             touched. Recovery copies are kept after Save; untitled documents use \
+             their own copy in the temporary recovery folder.",
         )
         .changed()
     {
