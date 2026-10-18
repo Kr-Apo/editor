@@ -1,12 +1,20 @@
-# Ankhimate
+# Ankhimate — Kr-Apo Community Fork (Unofficial)
+
+This is a community-developed derivative maintained independently by Kr-Apo.
+The original projects are [Ankhimate/editor](https://github.com/Ankhimate/editor)
+and [Ankhimate/runtime](https://github.com/Ankhimate/runtime).
+This derivative is not officially endorsed or maintained by the upstream
+Ankhimate organization. Original MIT OR Apache-2.0 licensing, copyrights and
+third-party attribution requirements are preserved. Naming identifies upstream
+origin; no upstream trademark license or endorsement is claimed.
 
 Ankhimate is an open-source editor for 2D skeletal animation, with a separate
 TypeScript runtime for games. This first experimental alpha distributes a
 **Windows x64 editor and a PixiJS 8 / WebGL2 runtime**.
 
-**[Download the Windows + PixiJS alpha](https://github.com/Ankhimate/ankhimate/releases/tag/alpha-2026.10.18-rc2)** ·
+**[Download the Windows + PixiJS alpha](https://github.com/Kr-Apo/ankhimate/releases/tag/alpha-2026.10.18-rc2)** ·
 **[Get started](docs/alpha/GETTING_STARTED.md)** ·
-**[Runtime repository](https://github.com/Ankhimate/ankhimate-runtime)**
+**[Runtime repository](https://github.com/Kr-Apo/ankhimate-runtime)**
 
 The distributed Windows executables are unsigned. Compatibility with every
 project, GPU or browser is not guaranteed. Source features and runtime features
@@ -41,7 +49,7 @@ documented limits. Interrupted crossfades can produce a visible pose jump.
 
 Constraints, linked meshes, Add/Multiply/Screen, WebGPU, WebGL1 and mobile are
 outside the qualified PixiJS alpha profile. Phaser remains available in the
-[runtime sources](https://github.com/Ankhimate/ankhimate-runtime/tree/main/phaser) with its historical tests; it is
+[runtime sources](https://github.com/Kr-Apo/ankhimate-runtime/tree/main/phaser) with its historical tests; it is
 not an officially qualified distributed runtime for this alpha.
 
 ## Build the editor from source
@@ -50,7 +58,7 @@ Install the pinned Rust toolchain (`rust-toolchain.toml`: 1.95.0) and the native
 build tools for your host. Windows builds need the MSVC C++ build tools and SDK.
 
 ```sh
-git clone https://github.com/Ankhimate/ankhimate.git
+git clone https://github.com/Kr-Apo/ankhimate.git
 cd ankhimate
 cargo build --locked --release -p ankhimate-editor
 cargo run --locked -p ankhimate-editor
