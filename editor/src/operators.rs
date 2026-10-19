@@ -390,7 +390,12 @@ pub fn register_builtins(registry: &mut Registry) {
     registry.register(Box::new(ToggleArtwork));
     registry.register(Box::new(ToggleBones));
     registry.register(Box::new(OpenSettings));
+    registry.register(Box::new(ExportVideoMp4));
 }
+
+operator!(ExportVideoMp4, "export.video_mp4", "Video MP4…",
+    enabled: |s| !s.session.export.png.is_running(),
+    run: |s| { crate::ui::video::open_mp4(s); OpResult::done() });
 
 #[cfg(test)]
 mod tests {

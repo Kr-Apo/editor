@@ -1,0 +1,97 @@
+[
+  {
+    "valid": true,
+    "plan": {
+      "summary": "Move an owned region in its bone frame",
+      "actions": [
+        {
+          "op": "attachment.set_region",
+          "skin": "default",
+          "slot": "accessory",
+          "attachment": "art",
+          "x": 4,
+          "y": 5,
+          "rotation": 15,
+          "scale_x": 1.1,
+          "scale_y": 0.9
+        }
+      ]
+    }
+  },
+  {
+    "valid": true,
+    "plan": {
+      "summary": "Create a helper and bind one region preserving FK Setup corners",
+      "actions": [
+        {
+          "op": "bone.create",
+          "name": "handle",
+          "parent": "torso",
+          "position": [
+            8,
+            2
+          ],
+          "rotation_degrees": 30,
+          "length": 6
+        },
+        {
+          "op": "slot.set_bone",
+          "skin": "default",
+          "slot": "accessory",
+          "attachment": "art",
+          "bone": "handle",
+          "keep_world": true
+        }
+      ]
+    }
+  },
+  {
+    "valid": true,
+    "plan": {
+      "summary": "Explicit complete Setup order",
+      "actions": [
+        {
+          "op": "slot.set_draw_order",
+          "slots": [
+            "costume",
+            "accessory"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "valid": false,
+    "reason": "No implicit fallback or missing entry",
+    "plan": {
+      "summary": "Missing skin refused",
+      "actions": [
+        {
+          "op": "slot.set_bone",
+          "skin": "absent",
+          "slot": "accessory",
+          "attachment": "art",
+          "bone": "torso",
+          "keep_world": true
+        }
+      ]
+    }
+  },
+  {
+    "valid": false,
+    "reason": "Explicit FK Setup preservation required",
+    "plan": {
+      "summary": "Unsafe local reassignment refused",
+      "actions": [
+        {
+          "op": "slot.set_bone",
+          "skin": "default",
+          "slot": "accessory",
+          "attachment": "art",
+          "bone": "torso",
+          "keep_world": false
+        }
+      ]
+    }
+  }
+]

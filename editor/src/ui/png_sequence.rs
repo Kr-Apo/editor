@@ -174,7 +174,17 @@ impl PngUiState {
                     ui.colored_label(egui::Color32::LIGHT_GREEN, s);
                 }
                 Err(e) => {
-                    ui.colored_label(egui::Color32::LIGHT_RED, e);
+                    ui.colored_label(
+                        egui::Color32::LIGHT_RED,
+                        e.lines().next().unwrap_or("Video export failed"),
+                    );
+                    ui.collapsing("Export error details", |ui| {
+                        egui::ScrollArea::vertical()
+                            .max_height(140.0)
+                            .show(ui, |ui| {
+                                ui.label(e);
+                            });
+                    });
                 }
             }
         }

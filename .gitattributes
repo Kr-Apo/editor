@@ -1,0 +1,2 @@
+# Generated documentation is compared byte-for-byte by xtask on every platform.
+docs/reference/*.md text eol=lf

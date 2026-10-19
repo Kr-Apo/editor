@@ -9,7 +9,40 @@ use std::path::PathBuf;
 #[derive(Debug, Default)]
 pub struct State {
     pub settings: Settings,
+    /// Simple entry; the existing Video tab retains all T-602 controls.
+    pub basic_mp4: bool,
     review: Option<Review>,
+}
+
+/// Session-only configuration. Never alters playback, document or preferences.
+pub fn open_mp4(state: &mut AppState) {
+    let clip = state
+        .session
+        .active_animation
+        .filter(|id| state.doc.animations.contains_key(*id))
+        .or_else(|| state.doc.animations.keys().next());
+    let animation = clip
+        .and_then(|id| state.doc.animations.get(id))
+        .map(|a| a.name.clone())
+        .unwrap_or_default();
+    state.session.export.video_settings = State {
+        basic_mp4: true,
+        settings: Settings {
+            clip,
+            request: ankhimate_render::sequence::SequenceRequest {
+                animation,
+                width: 1280,
+                height: 720,
+                fps: 30,
+            },
+            background: state.session.export.video_settings.settings.background,
+            executable: state.session.export.ffmpeg_path.clone(),
+            ..Default::default()
+        },
+        review: None,
+    };
+    state.session.export.video = true;
+    state.session.focus_tab = Some(crate::ui::Tab::Export);
 }
 #[derive(Debug)]
 struct Review {
@@ -130,14 +163,30 @@ pub fn ui(ui: &mut egui::Ui, state: &mut AppState, theme: &crate::theme::Theme) 
     if let Some(clip) = v.settings.clip.and_then(|id| state.doc.animations.get(id)) {
         v.settings.request.animation.clone_from(&clip.name);
     }
-    ui.heading("Video");
+    ui.heading(if v.basic_mp4 { "Video MP4" } else { "Video" });
     ui.label("External FFmpeg required. Configure Settings → Video, or leave its path empty to use PATH.");
+    match video_export::locate(&v.settings.executable) {
+        Ok(path) => {
+            ui.label(format!(
+                "FFmpeg: found {} — encoder checked on export",
+                path.display()
+            ));
+        }
+        Err(_) => {
+            ui.colored_label(
+                egui::Color32::YELLOW,
+                "FFmpeg: not found — choose ffmpeg.exe in Settings → Video",
+            );
+        }
+    }
     ui.hyperlink_to("Official FFmpeg downloads", video_export::DOWNLOAD);
     ui.add_enabled_ui(!running, |ui| {
-        ui.horizontal(|ui| {
-            ui.selectable_value(&mut v.settings.format, Format::Mp4, "MP4");
-            ui.selectable_value(&mut v.settings.format, Format::Gif, "Animated GIF");
-        });
+        if !v.basic_mp4 {
+            ui.horizontal(|ui| {
+                ui.selectable_value(&mut v.settings.format, Format::Mp4, "MP4");
+                ui.selectable_value(&mut v.settings.format, Format::Gif, "Animated GIF");
+            });
+        }
         egui::ComboBox::from_id_salt("video_clip")
             .selected_text(
                 v.settings
@@ -166,33 +215,63 @@ pub fn ui(ui: &mut egui::Ui, state: &mut AppState, theme: &crate::theme::Theme) 
             v.settings.request.animation.clone_from(&clip.name);
         }
         egui::Grid::new("video_settings").show(ui, |ui| {
-            ui.label("FPS");
-            ui.add(egui::DragValue::new(&mut v.settings.request.fps).range(
-                1..=if v.settings.format == Format::Gif {
-                    100
+            if v.basic_mp4 {
+                ui.label("Resolution");
+                let mut size = (v.settings.request.width, v.settings.request.height);
+                egui::ComboBox::from_id_salt("mp4_resolution")
+                    .selected_text(if size == (1920, 1080) {
+                        "1920 × 1080 (1080p)"
+                    } else {
+                        "1280 × 720 (720p)"
+                    })
+                    .show_ui(ui, |ui| {
+                        ui.selectable_value(&mut size, (1280, 720), "1280 × 720 (720p)");
+                        ui.selectable_value(&mut size, (1920, 1080), "1920 × 1080 (1080p)");
+                    });
+                (v.settings.request.width, v.settings.request.height) = size;
+                ui.end_row();
+                ui.label("FPS");
+                egui::ComboBox::from_id_salt("mp4_fps")
+                    .selected_text(format!("{} FPS", v.settings.request.fps))
+                    .show_ui(ui, |ui| {
+                        for fps in [24, 30, 60] {
+                            ui.selectable_value(
+                                &mut v.settings.request.fps,
+                                fps,
+                                format!("{fps} FPS"),
+                            );
+                        }
+                    });
+                ui.end_row();
+            } else {
+                ui.label("FPS");
+                ui.add(egui::DragValue::new(&mut v.settings.request.fps).range(
+                    1..=if v.settings.format == Format::Gif {
+                        100
+                    } else {
+                        240
+                    },
+                ));
+                ui.end_row();
+                ui.label(if v.settings.format == Format::Mp4 {
+                    "Width (even)"
                 } else {
-                    240
-                },
-            ));
-            ui.end_row();
-            ui.label(if v.settings.format == Format::Mp4 {
-                "Width (even)"
-            } else {
-                "Width"
-            });
-            ui.add(egui::DragValue::new(&mut v.settings.request.width).range(2..=8192));
-            ui.end_row();
-            ui.label(if v.settings.format == Format::Mp4 {
-                "Height (even)"
-            } else {
-                "Height"
-            });
-            ui.add(egui::DragValue::new(&mut v.settings.request.height).range(2..=8192));
-            ui.end_row();
+                    "Width"
+                });
+                ui.add(egui::DragValue::new(&mut v.settings.request.width).range(2..=8192));
+                ui.end_row();
+                ui.label(if v.settings.format == Format::Mp4 {
+                    "Height (even)"
+                } else {
+                    "Height"
+                });
+                ui.add(egui::DragValue::new(&mut v.settings.request.height).range(2..=8192));
+                ui.end_row();
+            }
             ui.label("Opaque background");
             ui.color_edit_button_srgb(&mut v.settings.background);
             ui.end_row();
-            if v.settings.format == Format::Mp4 {
+            if v.settings.format == Format::Mp4 && !v.basic_mp4 {
                 ui.label("Encoder");
                 egui::ComboBox::from_id_salt("mp4_encoder")
                     .selected_text(v.settings.encoder.name())
@@ -234,7 +313,25 @@ pub fn ui(ui: &mut egui::Ui, state: &mut AppState, theme: &crate::theme::Theme) 
                 ui.end_row();
             }
             ui.label("Content cycles");
-            ui.add(egui::DragValue::new(&mut v.settings.cycles).range(1..=1_000_000));
+            if v.basic_mp4 {
+                egui::ComboBox::from_id_salt("mp4_cycles")
+                    .selected_text(format!(
+                        "{} time{}",
+                        v.settings.cycles,
+                        if v.settings.cycles == 1 { "" } else { "s" }
+                    ))
+                    .show_ui(ui, |ui| {
+                        for cycles in 1..=3 {
+                            ui.selectable_value(
+                                &mut v.settings.cycles,
+                                cycles,
+                                format!("{cycles} time{}", if cycles == 1 { "" } else { "s" }),
+                            );
+                        }
+                    });
+            } else {
+                ui.add(egui::DragValue::new(&mut v.settings.cycles).range(1..=1_000_000));
+            }
             ui.end_row();
         });
         if crate::system_open::available() {
@@ -254,6 +351,7 @@ pub fn ui(ui: &mut egui::Ui, state: &mut AppState, theme: &crate::theme::Theme) 
         }
     }
     ui.label("Default skin • Normal blending • physics refused • no audio • common camera");
+    ui.label("New files only: existing videos are never replaced. Choose an unused filename.");
     let validation = v.settings.count(&state.doc);
     match &validation {
         Ok(n) => {
@@ -751,3 +849,7 @@ mod final_controls_interactions {
         assert!(review.report.allowed(true));
     }
 }
+
+#[cfg(test)]
+#[path = "video_t8105_tests.rs"]
+mod t8105_tests;

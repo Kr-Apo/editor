@@ -18,6 +18,30 @@
 > **Legend:** `Deps:` tasks that must be merged first. `∥` = tasks in the same group that can run
 > in parallel with each other. ★ = suitable for a smaller/less capable agent.
 
+## T-811 — Next Alpha release candidate
+
+This local checkpoint supersedes stale availability claims below while preserving
+historical criteria. It does not authorize publication or certify every model/GPU.
+
+| Task | Status and actual qualification |
+|---|---|
+| T-602 / T-810.5 | ✅ CPU MP4/GIF and simple MP4 implemented; Rust/process tests. Maintainer reports H.264 1080p/60 FPS/2 s/120 frames, cancel and no-overwrite. New ZIP GUI pending. |
+| T-604 / T-810 | 🟡 Core/Pixi/Phaser common native v2 subset; numeric regressions and 125 T-811 headless pixel cases qualified on one configuration; advanced constraints/GPU breadth excluded. |
+| T-801 | 🟡 Candidate documentation reconciled, Jade is the sole sample; final screenshots/review pending. |
+| T-802 | 🟡 Local portable Windows ZIP and manifests prepared; new candidate extraction/startup and clean-PC test pending. |
+| T-805 / T-805.1 | ✅ Native opt-in chat and confirmed commands implemented; automated tests and targeted maintainer Qwen/NInfer Jade workflow. No general model or artistic certificate. |
+| T-806 | 🟡 Consented viewport vision implemented; synthetic six-provider tests and reported Qwen/NInfer Jade scenario. Other model combinations unqualified. |
+| T-807 | ✅ Controlled native region assembly, Setup-geometry preservation and history; targeted maintainer Jade slot/bone reassignment reported. |
+| T-808 | ✅ Bounded existing-mesh reads/weights/normalization/smoothing, approval/Undo/save; reported Jade v4/v5 weight scenario. Linked/FFD/bind mutation exclusions remain. |
+| T-809 | 🟡 Six multimodal envelopes/capability/budget safeguards tested; context exhaustion observed manually, targeted reads/shorter conversations used. |
+| T-811 | 🟡 Consolidated local candidates only; final manual checklist and publication approval pending. |
+| Autonomous autorig / localization / web editor / second viewport / advanced runtime constraints / full Spine parity / macOS-Linux release / universal GPU performance / advanced tangent numerics | ⏸ Outside this alpha acceptance; not marked complete. |
+
+Evidence levels: automated Rust/Node; actual headless WebGL; maintainer reports;
+unqualified cases; known limits. See [readiness](RELEASE_READINESS.md),
+[features](FEATURES.md) and [limitations](KNOWN_LIMITATIONS.md). Qwen's modified
+Jade project was not saved and is not distributed. Previous archives remain intact.
+
 ## Alpha checkpoint — M007.2 (2026-10-16)
 
 This status review supersedes stale implementation claims below; original task IDs,
@@ -868,6 +892,12 @@ tolerance); runs headless in CI; a 60-frame export of the sample completes in a 
 > **T-601 stays 🟡.**
 
 ### ✅ T-602 Video export via ffmpeg *(was T-502)*
+
+> **T-810.5:** [Windows MP4 quick workflow](EXPORT-MP4.md) adds the named
+> `export.video_mp4` File → Export entry, selected-clip initialization and simple
+> 720p/1080p, 24/30/60 FPS, 1–3 cycle controls over the existing T-602 worker.
+> No renderer/encoder duplication or runtime changes. Existing videos remain
+> create-only; basic CPU/process tests do not qualify manual video playback.
 **Deps:** T-601 · **Refs:** PLAN §0, §5 F-9
 - Locate `ffmpeg` (config setting → PATH auto-detect → friendly error with a download link; never
   bundle or link — PLAN §0 allows process spawn only). Pipe frames over stdin (rawvideo) → MP4
@@ -1134,6 +1164,34 @@ changes always prompts; layout survives restart.
 ---
 
 ## Phase 8 — Release
+
+### 🟡 T-805 — Native conversational assistant (development MVP)
+
+The opt-in native panel implements OpenAI Responses, Anthropic Messages,
+DeepSeek, Ollama and LM Studio adapters, plus the T-805.1 NInfer local-compatible
+profile, streaming/Stop, manual/discovered model
+IDs, Windows Credential Manager keys, bounded metadata reads and explicitly
+approved native animation/key edits. A batch is one document Undo/Redo step;
+session navigation retains its existing semantics. See [the English usage guide](native-ai.md).
+T-805.1 adds a fixed composer, settings window, observable execution phases,
+correlated native results, bounded invalid-call correction and the embedded
+[expert manual](ai/ANKHIMATE-AI.md). Protocol mocks and isolated Jade native-edit
+qualification are covered; cloud qualification remains pending (no key supplied).
+The maintainer's existing local Qwen endpoint is qualified separately; that is
+not certification of every NInfer/backend/model combination. This is not part of frozen
+RC2 and does not implement autonomous rigging, image tools or arbitrary scripts.
+
+### 🟡 T-806 — Viewport vision and first native rigging tools
+
+Local development implementation extends T-805.1: per-image preview/consent,
+bounded canvas-only egui capture, NInfer/LM Studio multimodal transport, and
+Setup-only typed bone.create/setup/rename proposals using native commands and
+one undoable transaction. Existing-bone reparenting, mesh/weight/FFD authoring
+and autonomous rigging remain excluded. The [guide](native-ai-vision.md) gives
+the exact privacy/coordinate contract and maintainer test steps. Synthetic image,
+mock HTTP and native Save/Undo/Redo tests qualify code paths; **real viewport,
+vision model and artistic rigging quality await maintainer testing**. No GUI or
+live-inference test is claimed, and frozen RC2 is unchanged.
 
 ### 🟡 T-801 ★ Samples + documentation *(was T-602)*
 **Deps:** Phase 3, Phase 5 · **Refs:** PLAN §3.3
@@ -1549,3 +1607,33 @@ tint and blend modes (T-505), curve editor (T-704), embeddable MIT/Apache runtim
 
 Two entries above are already true today and are the reason T-908 exists: an advantage the user
 cannot find is worth nothing.
+
+## T-807 — Controlled native character assembly 🟡
+
+Local typed region transforms, single-entry slot/bone association with checked FK
+Setup world preservation, and safe complete Setup draw order. Native confirmation,
+one Undo lot, ID remaps, bounded corrections, save/reopen tests. Meshes/weights
+read-only; shared-slot reassignment, constrained/nonrepresentable conversions
+refused. [Contract and manual acceptance](native-ai-assembly.md).
+GUI, artistic placement and Qwen/NInfer acceptance of T-806/T-807 remain pending
+with the maintainer. No public package or runtime/format change.
+
+## T-808 — Guarded mesh weight assistance 🟡
+
+Targeted paginated mesh reads, exact existing-influence weight edits, native
+normalization and bounded one-bone smoothing; explicit confirmation and one
+Undo lot. Valid binds, topology, assets and FFD indices preserved. Linked/shared,
+constrained, ambiguous or invalid targets refused. Geometry/FFD and influence
+addition/removal stay read-only. [Contract](native-ai-weights.md).
+Headless qualification only; maintainer GUI/artistic/Qwen acceptance pending.
+
+
+## T-809 — Multimodal provider transport and bounded context 🟡
+
+Six native image envelopes, exact-destination user-declared capabilities,
+per-image unknown-model choice, resolution profiles and request/byte budgets.
+Required schemas and opaque continuations retained; bounded same-Send read cache,
+paged metadata, sanitized errors and no automatic paid retry. Native approvals,
+receipts and Undo/Redo unchanged. [Contract and capability matrix](native-ai-multimodal.md).
+Deterministic HTTP/SSE/NDJSON qualification only. Maintainer GUI/live-model
+acceptance A–F and T-806/T-807/T-808 artistic acceptance remain pending.

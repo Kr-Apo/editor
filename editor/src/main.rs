@@ -1,5 +1,8 @@
 #![cfg_attr(all(windows, not(debug_assertions)), windows_subsystem = "windows")]
 
+pub mod ai;
+#[cfg(test)]
+mod ai_tests;
 pub mod app;
 pub mod app_state;
 pub mod autosave;

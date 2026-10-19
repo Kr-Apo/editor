@@ -302,6 +302,7 @@ impl AnkhimateApp {
         };
 
         app.open_initial(open);
+        app.state.ai.load_settings();
 
         app
     }
@@ -458,6 +459,7 @@ impl AnkhimateApp {
         let events = tiles.insert_pane(Tab::Events);
         let constraints = tiles.insert_pane(Tab::Constraints);
         let export = tiles.insert_pane(Tab::Export);
+        let ai = tiles.insert_pane(Tab::Ai);
 
         // The slot editor tabs with the viewport, so opening a piece replaces the
         // rig on screen the way a smart object replaces the document. The UV
@@ -467,7 +469,7 @@ impl AnkhimateApp {
         let uv_editor = tiles.insert_pane(Tab::UvEditor);
         let canvas_tab = tiles.insert_tab_tile(vec![canvas, slot_editor, uv_editor]);
         let weights = tiles.insert_pane(Tab::Weights);
-        let inspector_tab = tiles.insert_tab_tile(vec![inspector, weights]);
+        let inspector_tab = tiles.insert_tab_tile(vec![inspector, weights, ai]);
         // Browsers share the upper-right card. Properties remains visible below
         // them, while the viewport owns most of the horizontal workbench.
         let library_tab =
@@ -631,6 +633,8 @@ impl eframe::App for AnkhimateApp {
     // is deliberately deferred out of the core-remediation tasks (T-10x).
     #[allow(deprecated)]
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        self.state.ai.vision.receive(ctx, self.state.revision);
+        self.state.poll_ai();
         self.theme.apply(ctx);
         crate::ui::motion::configure(ctx, self.config.reduced_motion);
 
@@ -911,6 +915,19 @@ impl eframe::App for AnkhimateApp {
                                                 Some(FileAction::Import(importer.id().to_string()));
                                             ui.close();
                                         }
+                                    }
+                                });
+                                ui.separator();
+                                ui.menu_button("Export", |ui| {
+                                    if operator_button(
+                                        ui,
+                                        &self.operators,
+                                        &self.config.keymap,
+                                        &self.state,
+                                        "export.video_mp4",
+                                        None,
+                                    ) {
+                                        menu_operator = Some("export.video_mp4");
                                     }
                                 });
                                 ui.separator();

@@ -121,6 +121,33 @@ impl EditCommand for DeleteBone {
             }
         }
         doc.skeleton.rebuild_update_order();
+        // Weight tables on other slots survive removal of this bone. Restore
+        // their references, including derived binds, before broadcasting IDs
+        // to command inverses. No coefficient/order or FFD index is changed.
+        for skin in doc.skeleton.skins.values_mut() {
+            for attachment in skin.entries.values_mut() {
+                match attachment {
+                    ankhimate_core::attachment::Attachment::Mesh(mesh) => {
+                        for w in mesh.weights.iter_mut().flatten() {
+                            if w.bone == self.target {
+                                w.bone = id;
+                            }
+                        }
+                        if let Some(bind) = mesh.inverse_bind_matrices.remove(&self.target) {
+                            mesh.inverse_bind_matrices.insert(id, bind);
+                        }
+                    }
+                    ankhimate_core::attachment::Attachment::BoundingBox(bounds) => {
+                        for w in bounds.weights.iter_mut().flatten() {
+                            if w.bone == self.target {
+                                w.bone = id;
+                            }
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
         // The restored bone has a new key; tell the rest of the history.
         self.remap.remap_bone(self.target, id);
         self.target = id;

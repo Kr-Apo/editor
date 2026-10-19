@@ -110,6 +110,19 @@ pub fn ui(
     //   Animate — accent border (red while auto-key is armed, the universal
     //             "recording" cue), clip name + frame in the corner.
     draw_mode_chrome(ui, rect, state);
+    let route = state.ai.image_route();
+    state.ai.vision.canvas(
+        ui.ctx(),
+        crate::ai::vision::FrameSpec {
+            rect: rect.intersect(ui.clip_rect()),
+            pixels_per_point: ui.ctx().pixels_per_point(),
+            revision: state.revision,
+            camera: state.session.camera,
+            playhead: state.session.playhead,
+            setup: state.session.work_mode == crate::session::WorkMode::Setup,
+        },
+        route,
+    );
     draw_selection_chrome(ui, rect, state);
 
     // 8. Name whatever the cursor is over (T-913). Last, so the label is above

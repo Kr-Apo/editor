@@ -636,7 +636,17 @@ pub fn export(
                             .map(|image| composite(&image, settings.background))
                             .map_err(|e| e.to_string())
                     },
-                    |done| progress("Encoding", done, count),
+                    |done| {
+                        progress(
+                            if done == count {
+                                "Finalizing"
+                            } else {
+                                "Encoding"
+                            },
+                            done,
+                            count,
+                        )
+                    },
                 )?;
                 stopped(cancel)?;
                 check_mp4(&stage.path)?;
@@ -669,5 +679,8 @@ pub fn export(
 }
 #[path = "video_export/gif.rs"]
 pub mod gif;
+#[cfg(test)]
+#[path = "video_export/t8105_tests.rs"]
+mod t8105_tests;
 #[cfg(test)]
 pub(crate) mod tests;

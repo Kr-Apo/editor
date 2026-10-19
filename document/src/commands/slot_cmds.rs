@@ -468,6 +468,37 @@ impl EditCommand for SetSlotBone {
         Some(WorkMode::Setup)
     }
 
+    fn apply_remap(&mut self, remap: &super::IdRemap) {
+        self.bone = remap.bone(self.bone);
+        self.before_bone = self.before_bone.map(|b| remap.bone(b));
+        if let Some(entries) = &mut self.before_attachments {
+            for (_, _, attachment) in entries {
+                match attachment {
+                    ankhimate_core::attachment::Attachment::Mesh(mesh) => {
+                        for weights in &mut mesh.weights {
+                            for w in weights {
+                                w.bone = remap.bone(w.bone);
+                            }
+                        }
+                        mesh.inverse_bind_matrices =
+                            std::mem::take(&mut mesh.inverse_bind_matrices)
+                                .into_iter()
+                                .map(|(b, m)| (remap.bone(b), m))
+                                .collect();
+                    }
+                    ankhimate_core::attachment::Attachment::BoundingBox(bounds) => {
+                        for weights in &mut bounds.weights {
+                            for w in weights {
+                                w.bone = remap.bone(w.bone);
+                            }
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
@@ -727,5 +758,41 @@ mod tests {
 
         history.undo(&mut doc);
         assert_eq!(doc.skeleton.slots[slot].bone, root);
+    }
+    #[test]
+    fn move_slot_undo_uses_restored_bone_id_after_delete_undo() {
+        use crate::commands::bone_cmds::DeleteBone;
+        let (mut doc, old) = doc_with_bone();
+        let target = doc.skeleton.add_bone(Bone {
+            name: "target".into(),
+            parent: None,
+            length: 1.0,
+            local_transform: Transform::default(),
+            inherit: Default::default(),
+            color: Bone::default_color(),
+        });
+        let slot = doc.skeleton.add_slot(Slot::new("accessory".into(), old));
+        let skin = doc.skeleton.default_skin;
+        doc.skeleton.skins[skin].set(slot, "art", region("art"));
+        let mut history = History::default();
+        history.push(
+            Box::new(SetSlotBone::keeping_world(&doc.skeleton, slot, target)),
+            &mut doc,
+        );
+        history.push(Box::new(DeleteBone::new(old)), &mut doc);
+        history.undo(&mut doc);
+        let restored = doc
+            .skeleton
+            .bones
+            .iter()
+            .find(|(_, b)| b.name == "root")
+            .unwrap()
+            .0;
+        assert_ne!(old, restored);
+        history.undo(&mut doc);
+        assert_eq!(
+            doc.skeleton.slots[slot].bone, restored,
+            "Association inverse kept a dead bone ID"
+        );
     }
 }

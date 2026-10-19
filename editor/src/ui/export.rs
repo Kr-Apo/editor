@@ -84,6 +84,7 @@ pub fn ui(
             .clicked()
         {
             state.session.export.video = true;
+            state.session.export.video_settings.basic_mp4 = false;
         }
         if ui
             .selectable_label(

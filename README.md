@@ -8,49 +8,50 @@ Ankhimate organization. Original MIT OR Apache-2.0 licensing, copyrights and
 third-party attribution requirements are preserved. Naming identifies upstream
 origin; no upstream trademark license or endorsement is claimed.
 
-Ankhimate is an open-source editor for 2D skeletal animation, with a separate
-TypeScript runtime for games. This first experimental alpha distributes a
-**Windows x64 editor and a PixiJS 8 / WebGL2 runtime**.
+Ankhimate is a native Windows editor for 2D skeletal animation, with separate
+TypeScript game adapters. **T-811 is a local next-alpha candidate, not a release.**
+Proposed versions: Editor/core/Phaser/PixiJS **0.2.0-alpha.1**, subject to review.
+The [existing public RC2](https://github.com/Kr-Apo/ankhimate/releases/tag/alpha-2026.10.18-rc2)
+is unchanged and does not contain the new AI or simplified MP4 workflow.
 
-**[Download the Windows + PixiJS alpha](https://github.com/Kr-Apo/ankhimate/releases/tag/alpha-2026.10.18-rc2)** ·
-**[Get started](docs/alpha/GETTING_STARTED.md)** ·
-**[Runtime repository](https://github.com/Kr-Apo/ankhimate-runtime)**
+## Create, animate, export
 
-The distributed Windows executables are unsigned. Compatibility with every
-project, GPU or browser is not guaranteed. Source features and runtime features
-have different scopes; check the [compatibility matrix](docs/alpha/RUNTIME_COMPATIBILITY.md)
-before exporting a rig.
+- Rig bones and image parts; use Setup/Animate, curves, slots, skins, meshes,
+  weight painting and FFD, with native Undo/Redo and save/recovery safeguards.
+- Import PSD/images; export native v2/atlas, PNG/JPEG/WebP sequences and transparent
+  PNG spritesheets using the existing deterministic CPU renderer.
+- **File → Export → Video MP4…**: clip, 720p/1080p, 24/30/60 FPS, 1–3 cycles,
+  opaque background, progress and cancel. Requires separately installed FFmpeg
+  with libx264. Existing videos are refused. Advanced MP4/GIF remain available.
+- Use the opt-in native AI assistant for bounded reads and approved animation,
+  Setup rigging, region assembly and weight corrections. Vision requires explicit
+  capture consent; actual provider/model capabilities and context limits matter.
 
-## Try Jade Sentinel
+## Try the candidate
 
-1. Download and extract the complete RC2 ZIP. Verify its SHA-256 against the release.
-2. Run `Editor/Ankhimate.exe` and open `Examples/Jade-Sentinel/Sentinelle.ankh`.
-   Keep its adjacent `.assets` folder. Save a separate copy before editing.
-3. In Animate, play `idle` or `attack`. Use Data / atlas and the Ankhimate runtime
-   preset to export native v2 into a new folder inside the extracted archive.
-4. Review the export preflight, then publish only if its diagnostics are acceptable.
-5. Run `Start-Demo.exe`, keep its console open, and load your export in the browser.
+Extract the complete portable Windows ZIP after receiving it from the maintainer.
+Run `Editor/Ankhimate.exe`, open a **copy** of `Examples/Jade-Sentinel/Sentinelle.ankh`
+with its assets, and play `idle` or `attack`. Save As before editing. Export native
+v2 into a new directory, then run `Start-Demo.exe` to view it through the bundled
+local PixiJS demonstration, without Node/Rust or internet downloads.
 
-The bundled demo needs a desktop WebGL2 browser, but no Node.js, npm, Rust or
-internet download. The launcher serves only the extracted folder on loopback.
-See [Getting Started](docs/alpha/GETTING_STARTED.md) for the exact workflow.
+Jade Sentinel is the only official alpha sample: procedural art, weighted meshes,
+FFD, two clips and events. The maintainer's unsaved Qwen test rig is not included.
+The binary is unsigned. New-archive Windows and interactive GPU checks remain
+required; no macOS/Linux/mobile, universal GPU or performance certification.
 
-Jade Sentinel is the **only official alpha sample**. It uses original procedural
-art, weighted meshes, FFD, two clips and events. Older examples and the historical
-Crapaud demonstrator remain development/regression material, not additional
-official samples or claims of runtime qualification.
+## Runtime and evidence
 
-## Qualified game-runtime subset
+[Core, PixiJS 8.17.0 and Phaser 3.90.0](https://github.com/Kr-Apo/ankhimate-runtime)
+share the documented native v2 subset. T-811 adds 125 bounded headless WebGL pixel
+comparisons (104 exact) to the Rust/Node numeric evidence, on one ANGLE/NVIDIA
+configuration. One measured clipping contour difference remains inside the frozen
+edge tolerance. Review [features](docs/FEATURES.md) and
+[limitations](docs/KNOWN_LIMITATIONS.md); constraints, physics, linked meshes,
+rotated atlases and non-Normal composition are outside the common profile.
 
-Native runtime v2, bones, regions, rigid/weighted meshes, compatible FFD,
-Normal blending, light/static dark tint, compatible skins, sequential polygon
-clipping, looping, events and distinct-clip crossfades are qualified within the
-documented limits. Interrupted crossfades can produce a visible pose jump.
-
-Constraints, linked meshes, Add/Multiply/Screen, WebGPU, WebGL1 and mobile are
-outside the qualified PixiJS alpha profile. Phaser remains available in the
-[runtime sources](https://github.com/Kr-Apo/ankhimate-runtime/tree/main/phaser) with its historical tests; it is
-not an officially qualified distributed runtime for this alpha.
+Editor screenshots: final authorized captures are pending maintainer approval.
+No generated screenshot is presented as the application.
 
 ## Build the editor from source
 
@@ -58,25 +59,24 @@ Install the pinned Rust toolchain (`rust-toolchain.toml`: 1.95.0) and the native
 build tools for your host. Windows builds need the MSVC C++ build tools and SDK.
 
 ```sh
-git clone https://github.com/Kr-Apo/ankhimate.git
+git clone --recurse-submodules https://github.com/Kr-Apo/ankhimate.git
 cd ankhimate
 cargo build --locked --release -p ankhimate-editor
 cargo run --locked -p ankhimate-editor
 ```
 
 Builds on other hosts do not establish a qualified Linux or macOS distribution.
-The separately versioned distribution is `alpha-2026.10.18-rc2`; the editor crates remain 0.1.0.
+This local candidate proposes editor 0.2.0-alpha.1; supporting Rust crates retain their existing versions.
 See the runtime repository for TypeScript builds. No npm publication is implied.
 
 ## Documentation
 
-- [Alpha documentation index](docs/alpha/README.md)
-- [PixiJS integration and public APIs](docs/alpha/PIXIJS_INTEGRATION.md)
-- [Native runtime v2](docs/alpha/FORMAT_V2.md)
-- [Troubleshooting](docs/alpha/TROUBLESHOOTING.md)
-- [Release notes](docs/alpha/RELEASE_NOTES.md)
-- [AI integration context](docs/alpha/AI_INTEGRATION_CONTEXT.md) and [llms.txt](llms.txt)
-- [Authoring architecture](docs/ARCHITECTURE_PLAN.md) and [task status](docs/TASKS.md)
+- [Features](docs/FEATURES.md) and [known limitations](docs/KNOWN_LIMITATIONS.md)
+- [AI assistant, consent and manual evidence](docs/AI_ASSISTANT.md)
+- [MP4 guide](docs/EXPORT-MP4.md)
+- [Release readiness](docs/RELEASE_READINESS.md) and [changelog](CHANGELOG.md)
+- [Historical RC2 getting started](docs/alpha/GETTING_STARTED.md)
+- [Architecture](docs/ARCHITECTURE_PLAN.md), [tasks](docs/TASKS.md) and [llms.txt](llms.txt)
 
 ## Contribute and report problems
 

@@ -58,6 +58,7 @@ pub enum Tab {
     Events,
     Constraints,
     Export,
+    Ai,
     /// A panel a plugin contributes, by its dotted id.
     Plugin(String),
 }
@@ -68,7 +69,7 @@ impl Tab {
     /// One list rather than a menu that has to be edited whenever a pane is
     /// added — a View menu missing the pane you are looking for is worse than no
     /// View menu, because it reads as "that panel does not exist".
-    pub const ALL: [Tab; 15] = [
+    pub const ALL: [Tab; 16] = [
         Tab::Canvas,
         Tab::SlotEditor,
         Tab::UvEditor,
@@ -84,6 +85,7 @@ impl Tab {
         Tab::DrawOrder,
         Tab::Skins,
         Tab::Export,
+        Tab::Ai,
     ];
 
     /// What the tab says.
@@ -120,6 +122,7 @@ impl Tab {
             Tab::Events => "Events",
             Tab::Constraints => "Constraints",
             Tab::Export => "Export",
+            Tab::Ai => "AI Assistant",
             Tab::Plugin(_) => return None,
         })
     }
@@ -186,6 +189,7 @@ impl Tab {
             Tab::Assets => crate::ui::icons::ASSETS,
             Tab::Skins => crate::ui::icons::SKIN,
             Tab::Export => crate::ui::icons::EXPORT,
+            Tab::Ai => crate::ui::icons::PLUGIN,
             // One glyph for every plugin panel. A per-panel icon would mean a
             // plugin naming one from our set, which pins the icon font as a
             // public contract for the sake of a decoration.
@@ -451,6 +455,13 @@ impl AppBehavior<'_> {
                             export::ui(ui, self.state, self.plugins, self.theme);
                         });
                     });
+            }
+            Tab::Ai => {
+                let mut assistant = std::mem::take(&mut self.state.ai);
+                egui::Frame::NONE
+                    .inner_margin(margin)
+                    .show(ui, |ui| assistant.ui(ui, self.state));
+                self.state.ai = assistant;
             }
             Tab::SlotEditor => {
                 egui::Frame::NONE.inner_margin(margin).show(ui, |ui| {

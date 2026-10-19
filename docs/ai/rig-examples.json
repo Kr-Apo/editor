@@ -1,0 +1,5 @@
+[
+ {"expected":"valid","plan":{"summary":"Accessory under torso, local estimate","actions":[{"op":"bone.create","name":"accessory","parent":"torso","position":[10,20],"rotation_degrees":15,"length":8},{"op":"bone.setup","bone":"accessory","position":[12,20],"rotation_degrees":10,"scale":[1,1]},{"op":"bone.rename","bone":"accessory","name":"sceptre"}]}},
+ {"expected":"bone_not_unique","plan":{"summary":"Invalid parent","actions":[{"op":"bone.create","name":"accessory","parent":"absent","position":[0,0],"rotation_degrees":0,"length":5}]}},
+ {"expected":"bone_exists","plan":{"summary":"Invalid duplicate","actions":[{"op":"bone.create","name":"torso","parent":null,"position":[0,0],"rotation_degrees":0,"length":1}]}}
+]

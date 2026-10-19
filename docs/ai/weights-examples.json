@@ -1,0 +1,106 @@
+[
+  {
+    "valid": true,
+    "plan": {
+      "summary": "Correct a named row with native normalization",
+      "actions": [
+        {
+          "op": "mesh.set_weights",
+          "skin": "default",
+          "slot": "body",
+          "attachment": "art",
+          "vertices": [
+            {
+              "index": 0,
+              "influences": [
+                {
+                  "bone": "root",
+                  "weight": 0.6
+                },
+                {
+                  "bone": "torso",
+                  "weight": 0.4
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "valid": true,
+    "plan": {
+      "summary": "Normalize explicit vertices",
+      "actions": [
+        {
+          "op": "mesh.normalize_weights",
+          "skin": "default",
+          "slot": "body",
+          "attachment": "art",
+          "vertices": [
+            0,
+            1
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "valid": true,
+    "plan": {
+      "summary": "Mild native neighbour smoothing",
+      "actions": [
+        {
+          "op": "mesh.smooth_weights",
+          "skin": "default",
+          "slot": "body",
+          "attachment": "art",
+          "vertices": [
+            0,
+            1
+          ],
+          "bone": "root",
+          "strength": 0.2,
+          "iterations": 2
+        }
+      ]
+    }
+  },
+  {
+    "valid": false,
+    "reason": "Topology indices must exist",
+    "plan": {
+      "summary": "Invalid vertex refused",
+      "actions": [
+        {
+          "op": "mesh.normalize_weights",
+          "skin": "default",
+          "slot": "body",
+          "attachment": "art",
+          "vertices": [
+            999
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "valid": false,
+    "reason": "No implicit ownership fallback",
+    "plan": {
+      "summary": "Missing skin refused",
+      "actions": [
+        {
+          "op": "mesh.normalize_weights",
+          "skin": "absent",
+          "slot": "body",
+          "attachment": "art",
+          "vertices": [
+            0
+          ]
+        }
+      ]
+    }
+  }
+]

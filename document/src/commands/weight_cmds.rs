@@ -160,6 +160,7 @@ pub struct SetWeights {
     weights: Vec<Vec<VertexWeight>>,
     before: Option<Vec<Vec<VertexWeight>>>,
     label: &'static str,
+    preserve_bindings: bool,
 }
 
 impl SetWeights {
@@ -177,7 +178,15 @@ impl SetWeights {
             weights,
             before: None,
             label,
+            preserve_bindings: false,
         }
+    }
+    /// For validated edits which keep every vertex's ordered influence IDs.
+    /// The caller must verify that the existing inverse binds are valid and
+    /// that neither geometry, setup frames nor influence membership changes.
+    pub fn preserving_bindings(mut self) -> Self {
+        self.preserve_bindings = true;
+        self
     }
 }
 
@@ -191,7 +200,9 @@ impl EditCommand for SetWeights {
             self.before = Some(mesh.weights.clone());
         }
         mesh.weights = self.weights.clone();
-        mesh.inverse_bind_matrices.clear();
+        if !self.preserve_bindings {
+            mesh.inverse_bind_matrices.clear();
+        }
     }
 
     fn revert(&mut self, doc: &mut Document) {
@@ -200,7 +211,9 @@ impl EditCommand for SetWeights {
             mesh_mut(doc, self.skin, self.slot, &self.name),
         ) {
             mesh.weights = before;
-            mesh.inverse_bind_matrices.clear();
+            if !self.preserve_bindings {
+                mesh.inverse_bind_matrices.clear();
+            }
         }
     }
 
@@ -216,6 +229,18 @@ impl EditCommand for SetWeights {
 
     fn requires_mode(&self) -> Option<WorkMode> {
         Some(WorkMode::Setup)
+    }
+
+    fn apply_remap(&mut self, remap: &super::IdRemap) {
+        for row in self
+            .weights
+            .iter_mut()
+            .chain(self.before.iter_mut().flatten())
+        {
+            for w in row {
+                w.bone = remap.bone(w.bone);
+            }
+        }
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
