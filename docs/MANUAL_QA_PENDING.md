@@ -4,7 +4,7 @@ All **local T-813–T-816 GUI results remain PENDING_MANUAL / PENDING MANUAL REV
 This register requests no action now. The maintainer chose to continue development
 before grouped tests. No editor/browser/inference session was run by T-817.
 
-Use the **T-819 cumulative executable** for the grouped campaign; older binaries
+Use the **T-820 cumulative executable** for the grouped campaign; older binaries
 are retained for targeted comparisons, not substitutes. Internal version remains
 0.2.0-alpha.1 and cannot identify a candidate by itself. Check the SHA before use.
 
@@ -65,3 +65,15 @@ all retained T-813–T-818 checklists. Native egui tests are not desktop qualifi
 No test is requested now and no previous manual gate is marked PASS. Previous
 binaries, including T-818 SHA dcbc852f0d39670acb82ca0fbc844dd264d683a1d17478d23cf8178bc9a3dec0,
 remain available for comparison. Source/destination fixtures are disposable copies.
+
+## T-820 — cumulative main candidate, PENDING_MANUAL
+
+Artifact: `outputs/T820-Bezier-Linking/Ankhimate-T820-dev.exe`.
+Use its exact delivery CHECKPOINT.json / WINDOWS-BUILD.json SHA, not the unchanged
+0.2.0-alpha.1 version string. Previous T-813–T-819 binaries/reports/checklists remain.
+The 20-step linking checklist covers central-key selection, modes, real pointer
+gestures, unequal duration/amplitude, flat/overshoot/refusal cases, numeric
+driver/Apply/Cancel, three Undo/Redo, Setup/Animate and Save/Reload with the mode
+reset to Broken. Combine it with all prior cumulative qualification steps.
+No checklist is marked PASS, and no action is requested during development.
+In-memory egui tests are not desktop, DPI/theme, artistic or playback evidence.

@@ -1,5 +1,16 @@
 # Feature inventory — exact T-816 product, T-817 documentary audit
 
+## Local T-820 update — 2026-10-20
+
+**T-820: COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for bounded single-junction
+Bezier linking. Broken/Aligned/Mirrored are session editing modes, not new project
+metadata. See [contract](bezier-tangent-linking.md). T-704/T-912 remain PARTIAL:
+normalized overlay, graph marquee and broader manual qualification remain open.
+T-813–T-820 manual Windows qualification is deferred; no GUI/GPU/inference run.
+This is not a public release, and no subsequent development task is authorized.
+Older checkpoint sections below retain their historical scope.
+
+
 ## Local T-819 update — 2026-10-20
 
 **LOCAL_CANDIDATE / PENDING_MANUAL**. Explicit reviewed cross-project region
@@ -30,9 +41,9 @@ T-813–T-816: **PENDING MANUAL REVIEW**. No GUI, inference, browser or GPU run 
 
 ## Reading this inventory
 
-134 **entries**, consisting of 106 ID records (101 historical
-IDs plus T-804/T-812/T-817/T-818/T-819 context) and 28 linked scope refinements.
-These are not 134 independent nonoverlapping product features. Aggregates
+135 **entries**, consisting of 107 ID records (101 historical
+IDs plus T-804/T-812/T-817/T-818/T-819/T-820 context) and 28 linked scope refinements.
+These are not 135 independent nonoverlapping product features. Aggregates
 and their refinements overlap; counts are always reported separately.
 
 Implementation: **COMPLETE** = the explicitly bounded functional scope is implemented;
@@ -719,7 +730,7 @@ not the current availability matrix. The current [tasks](TASKS.md),
 - Implementation: [`editor/src/ui/timeline/graph.rs`](../editor/src/ui/timeline/graph.rs), [`editor/src/ui/inspector/tangents.rs`](../editor/src/ui/inspector/tangents.rs).
 - Test/reference suites: [`editor/src/ui/timeline/t814_tests.rs`](../editor/src/ui/timeline/t814_tests.rs)
 - Example test symbols (suite references, not a coverage claim): `t814_dopesheet_selection_reaches_numeric_inspector`.
-- Contradictory check / remaining historical criteria: No aligned/mirrored handle linking, normalized overlay or graph marquee
+- Contradictory check / remaining historical criteria: T-820 adds local bounded linking; normalized overlay, graph marquee and global qualification remain
 - Latest relevant checkpoint: T-812 integration; audited exact T-816 source.
 - Availability split: Scoped T-813/T-814/T-815/T-816 improvements are LOCAL_CANDIDATE; the earlier public baseline is separate.
 - Recommended action: Work only on the explicit remainder; preserve existing paths. Priority: P1/P2 targeted remainder; see roadmap.
@@ -777,7 +788,7 @@ not the current availability matrix. The current [tasks](TASKS.md),
 - Implementation: [`editor/src/ui/timeline/graph.rs`](../editor/src/ui/timeline/graph.rs), [`editor/src/ui/inspector/tangents.rs`](../editor/src/ui/inspector/tangents.rs).
 - Test/reference suites: [`editor/src/ui/timeline/t814_tests.rs`](../editor/src/ui/timeline/t814_tests.rs)
 - Example test symbols (suite references, not a coverage claim): `t814_dopesheet_selection_reaches_numeric_inspector`.
-- Contradictory check / remaining historical criteria: No tied handles/normalize/marquee; extreme sampling overflow shown as gaps; GUI pending
+- Contradictory check / remaining historical criteria: T-820 adds local tied handles; normalize/marquee and manual qualification remain; extreme sampling gaps unchanged
 - Latest relevant checkpoint: T-812 integration; audited exact T-816 source.
 - Availability split: Scoped T-813/T-814/T-815/T-816 improvements are LOCAL_CANDIDATE; the earlier public baseline is separate.
 - Recommended action: Work only on the explicit remainder; preserve existing paths. Priority: Retain scoped implementation.
@@ -785,15 +796,14 @@ not the current availability matrix. The current [tasks](TASKS.md),
 <a id="cap-02"></a>
 ### CAP-02 — Linked tangent modes
 
-**ABSENT / NOT_TESTED / NOT_DISTRIBUTED** · Origin: T-704 / T-912.
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** · Origin: T-704 / T-912 / T-820.
 
-- Delivered scope: No aligned/mirrored/broken handle-link state or UI identified
-- Entry point: Existing surface described in code, or no entry point for absent scope.
-- Implementation: [`editor/src/ui/timeline/graph.rs`](../editor/src/ui/timeline/graph.rs), [`editor/src/ui/inspector/tangents.rs`](../editor/src/ui/inspector/tangents.rs).
-- Test/reference suites: No dedicated executed test identified for this absent/unknown scope; static search only.
-- Contradictory check / remaining historical criteria: Independent handles and numeric Apply already exist; no sampler change required by default
-- Latest relevant checkpoint: Exact T-816 source / accepted historical evidence.
-- Recommended action: Retain the existing subset; no implementation in this audit. Priority: See linked historical task remainder.
+- Delivered scope: Broken plus Aligned/Mirrored on one selected scalar junction with two compatible Bezier segments; numeric driver and graph drag share geometry.
+- Entry point: Existing Properties Bezier tangents and Graph Editor.
+- Implementation: [native math](../document/src/tangent_linking.rs), [native command](../document/src/commands/tangent_cmds.rs), [session policy](../editor/src/tangent_linking.rs).
+- Tests: [native regression suite](../document/src/tangent_linking/tests.rs), [editor regression suite](../editor/src/tangent_linking/tests.rs), [graph gestures](../editor/src/ui/timeline/graph/t820_tests.rs).
+- Contract: [seconds/native-value metric](bezier-tangent-linking.md); flat representability and shortest-arc rotation limitations are explicit. No automatic conversion, multi-junction linking or persistent per-key mode.
+- Latest checkpoint: T-820 local candidate; GUI remains pending. T-704/T-912 broader criteria stay PARTIAL.
 
 <a id="cap-03"></a>
 ### CAP-03 — Graph marquee and normalized overlay
@@ -2033,3 +2043,12 @@ in [manual QA](MANUAL_QA_PENDING.md).
 - Default-skin region/sequence bytes and compatible bone animation are supported;
   advanced rig/project merge is not. GUI qualification stays deferred.
 - Prior source branches, binaries, historical oracles and releases remain intact.
+
+<a id="t-820"></a>
+### T-820 — Bezier tangent linking
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** · Origin: T-704 / T-912 / CAP-02.
+
+Bounded single-key junction linking, exact native Undo/Redo and unchanged
+Save/Reload fields. [Contract](bezier-tangent-linking.md), [graph rules](graph-editor.md).
+No public distribution or GUI claim. Preserve T-813–T-819; T-821 not started.

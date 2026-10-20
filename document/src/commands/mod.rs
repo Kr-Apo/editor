@@ -43,6 +43,7 @@ pub mod pose_cmds;
 pub mod psd_cmds;
 pub mod skin_cmds;
 pub mod slot_cmds;
+pub mod tangent_cmds;
 pub mod weight_cmds;
 
 use crate::doc::Document;

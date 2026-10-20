@@ -106,6 +106,11 @@ impl Draft {
     }
 }
 pub fn ui(ui: &mut egui::Ui, state: &mut AppState) {
+    crate::tangent_linking::mode_ui(ui, state);
+    if crate::tangent_linking::mode(state) != crate::tangent_linking::Mode::Broken {
+        linked_ui(ui, state);
+        return;
+    }
     let id = ui.id().with("numeric_bezier_draft");
     let current = state
         .session
@@ -162,4 +167,171 @@ pub fn ui(ui: &mut egui::Ui, state: &mut AppState) {
         }
     });
     ui.ctx().data_mut(|d| d.insert_temp(id, draft));
+}
+
+fn linked_ui(ui: &mut egui::Ui, state: &mut AppState) {
+    use crate::tangent_linking::{Numeric, Side};
+    let id = ui.id().with("linked_bezier_draft");
+    let stored = ui.ctx().data(|d| d.get_temp::<Numeric>(id));
+    let mut draft = match stored.filter(|d| d.valid(state)) {
+        Some(d) => d,
+        None => match Numeric::new(state, Side::Incoming) {
+            Ok(d) => d,
+            Err(e) => {
+                ui.label(e);
+                return;
+            }
+        },
+    };
+    let editable = crate::tangent_linking::editable(state, &draft.junction.addr).is_ok();
+    ui.group(|ui|{
+        ui.label(egui::RichText::new("Bezier tangents — linked junction").strong());
+        ui.label(format!("Central key {} at {}s. Incoming belongs to this key; outgoing belongs to the next segment.",draft.junction.index,draft.junction.keys[1].time));
+        ui.label("Metric: seconds / native value units. Session mode; not saved per key.");
+        let old=draft.side;
+        ui.horizontal(|ui|{
+            ui.label("Driver:");
+            ui.selectable_value(&mut draft.side,Side::Incoming,"Incoming");
+            ui.selectable_value(&mut draft.side,Side::Outgoing,"Outgoing");
+        });
+        if old!=draft.side && let Ok(reset)=Numeric::new(state,draft.side){draft=reset;}
+        let pair=draft.pair();
+        if let Ok([ankhimate_core::animation::Interp::Bezier{in_handle,..},ankhimate_core::animation::Interp::Bezier{out_handle,..}])=pair{
+            let offset=if draft.side==Side::Incoming{2}else{0};
+            let v=if offset==2{out_handle}else{in_handle};
+            draft.fields[offset]=v.x.to_string();draft.fields[offset+1]=v.y.to_string();
+        }
+        egui::Grid::new("linked_bezier_numbers").show(ui,|ui|{
+            for (i,label) in ["Incoming X","Incoming Y","Outgoing X","Outgoing Y"].into_iter().enumerate(){
+                ui.label(label);
+                let driver=(i<2)==(draft.side==Side::Incoming);
+                ui.add_enabled(driver && editable,egui::TextEdit::singleline(&mut draft.fields[i]).desired_width(100.0));
+                ui.end_row();
+            }
+        });
+        if let Err(e)=draft.pair(){ui.colored_label(ui.visuals().error_fg_color,e);}
+        ui.horizontal(|ui|{
+            if ui.add_enabled(editable && draft.pair().is_ok(),egui::Button::new("Apply tangents")).clicked() && let Err(e)=draft.apply(state){state.session.set_status(e);}
+            if ui.button("Cancel tangent edits").clicked() && let Ok(reset)=Numeric::new(state,draft.side){draft=reset;}
+        });
+    });
+    ui.ctx().data_mut(|d| d.insert_temp(id, draft));
+}
+
+#[cfg(test)]
+mod t820_tests {
+    use crate::{
+        app_state::AppState,
+        tangent_linking::{self, Mode, tests::fixture},
+    };
+    use eframe::egui;
+    fn frame(ctx: &egui::Context, s: &mut AppState, events: Vec<egui::Event>) -> egui::FullOutput {
+        ctx.run_ui(
+            egui::RawInput {
+                screen_rect: Some(egui::Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    egui::vec2(1000., 900.),
+                )),
+                events,
+                ..Default::default()
+            },
+            |ui| super::ui(ui, s),
+        )
+    }
+    fn find(out: &egui::FullOutput, text: &str) -> egui::Pos2 {
+        out.shapes
+            .iter()
+            .find_map(|s| {
+                if let egui::Shape::Text(t) = &s.shape {
+                    (t.galley.text() == text).then_some(t.pos + t.galley.size() * 0.5)
+                } else {
+                    None
+                }
+            })
+            .unwrap_or_else(|| panic!("Missing {text}"))
+    }
+    fn click(ctx: &egui::Context, s: &mut AppState, pos: egui::Pos2) {
+        frame(ctx, s, vec![egui::Event::PointerMoved(pos)]);
+        for pressed in [true, false] {
+            frame(
+                ctx,
+                s,
+                vec![egui::Event::PointerButton {
+                    pos,
+                    button: egui::PointerButton::Primary,
+                    pressed,
+                    modifiers: Default::default(),
+                }],
+            );
+        }
+    }
+    #[test]
+    fn t820_linked_numeric_real_typing_apply_and_cancel() {
+        for apply in [false, true] {
+            let (mut s, _, _) = fixture();
+            tangent_linking::choose(&mut s, Mode::Mirrored).unwrap();
+            let before = ankhimate_document::snapshot::snapshot(&s.doc);
+            let ctx = egui::Context::default();
+            frame(&ctx, &mut s, vec![]);
+            let out = frame(&ctx, &mut s, vec![]);
+            let p = find(&out, "0.75");
+            click(&ctx, &mut s, p);
+            frame(
+                &ctx,
+                &mut s,
+                vec![
+                    egui::Event::Key {
+                        key: egui::Key::A,
+                        physical_key: None,
+                        pressed: true,
+                        repeat: false,
+                        modifiers: egui::Modifiers {
+                            ctrl: true,
+                            command: true,
+                            ..Default::default()
+                        },
+                    },
+                    egui::Event::Text("0.8".into()),
+                ],
+            );
+            assert!(ankhimate_document::snapshot::snapshot(&s.doc) == before);
+            assert!(!s.history.can_undo());
+            let out = frame(&ctx, &mut s, vec![]);
+            assert!(
+                out.shapes
+                    .iter()
+                    .any(|sh| matches!(&sh.shape,egui::Shape::Text(t)if t.galley.text()=="0.8"))
+            );
+            click(
+                &ctx,
+                &mut s,
+                find(
+                    &out,
+                    if apply {
+                        "Apply tangents"
+                    } else {
+                        "Cancel tangent edits"
+                    },
+                ),
+            );
+            assert_eq!(s.history.undo_depth(), usize::from(apply));
+            if apply {
+                assert!(ankhimate_document::snapshot::snapshot(&s.doc) != before);
+                s.undo();
+                assert!(ankhimate_document::snapshot::snapshot(&s.doc) == before);
+            } else {
+                assert!(ankhimate_document::snapshot::snapshot(&s.doc) == before);
+            }
+        }
+    }
+    #[test]
+    fn t820_link_modes_are_visible_before_authoring() {
+        let mut state = crate::app_state::AppState::default();
+        let ctx = eframe::egui::Context::default();
+        let out = ctx.run_ui(Default::default(), |ui| super::ui(ui, &mut state));
+        for label in ["Broken", "Aligned", "Mirrored"] {
+            assert!(out.shapes.iter().any(|s| matches!(&s.shape, eframe::egui::epaint::Shape::Text(t) if t.galley.text().contains(label))), "Missing tangent mode: {label}");
+        }
+        assert!(!state.history.can_undo());
+    }
 }

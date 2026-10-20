@@ -47,6 +47,7 @@ pub mod rebind;
 pub mod rig_ops;
 pub mod shape_ops;
 pub mod snapshot;
+pub mod tangent_linking;
 pub mod transfer;
 mod work_mode;
 

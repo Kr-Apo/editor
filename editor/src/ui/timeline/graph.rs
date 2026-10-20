@@ -59,6 +59,7 @@ pub fn ui(
     style: super::Style<'_>,
 ) {
     let mut selection = crate::key_selection::read(state, anim);
+    let link_mode = crate::tangent_linking::mode(state);
     // Clipped to the sheet: the curve sampler walks every pixel of the plot and
     // the handle interactions allocate their own rects, so without this both
     // spill left over the row names.
@@ -278,6 +279,7 @@ pub fn ui(
                 hi,
                 color,
                 &mut selection,
+                link_mode,
             ) {
                 interp_edit = Some(edit);
             }
@@ -380,31 +382,40 @@ pub fn ui(
     if let Some(edit) = pending {
         apply_edit(state, anim, &animation, edit);
     }
+    let capture_id = ui.id().with("graph_tangent_capture");
     if let Some(edit) = interp_edit {
-        if !state.session.is_animating() {
-            return;
-        }
-        if let TimelineAddr::Bone { bone, .. } = edit.addr
-            && state.session.is_bone_locked(bone)
-        {
-            return;
-        }
-        let refs = vec![KeyRef {
-            addr: edit.addr.clone(),
-            index: edit.index,
-        }];
-        state.dispatch(Box::new(
-            ankhimate_document::commands::key_cmds::SetInterp::new(
+        use crate::tangent_linking::Gesture;
+        if edit.started {
+            crate::key_selection::set(state, anim, selection.clone());
+            match Gesture::begin(
+                state,
                 anim,
-                vec![KeyRef {
+                KeyRef {
                     addr: edit.addr,
                     index: edit.index,
-                }],
-                edit.interp,
-            )
-            .with_gesture(edit.gesture),
-        ));
-        crate::key_selection::set(state, anim, refs);
+                },
+                edit.side,
+                edit.gesture,
+            ) {
+                Ok(g) => {
+                    ui.ctx().data_mut(|d| d.insert_temp(capture_id, g));
+                }
+                Err(e) => {
+                    ui.ctx().data_mut(|d| d.remove::<Gesture>(capture_id));
+                    state.session.set_status(e);
+                }
+            }
+        }
+        if let Some(mut gesture) = ui.ctx().data(|d| d.get_temp::<Gesture>(capture_id)) {
+            if let Err(e) = gesture.update(state, edit.moved) {
+                state.session.set_status(e);
+            }
+            ui.ctx().data_mut(|d| d.insert_temp(capture_id, gesture));
+        }
+    }
+    if ui.input(|i| i.pointer.primary_released()) {
+        ui.ctx()
+            .data_mut(|d| d.remove::<crate::tangent_linking::Gesture>(capture_id));
     }
 }
 
@@ -413,7 +424,9 @@ struct InterpEdit {
     addr: TimelineAddr,
     /// The key the easing belongs to — the one that *ends* the segment.
     index: usize,
-    interp: Interp,
+    moved: glam::Vec2,
+    side: crate::tangent_linking::Side,
+    started: bool,
     gesture: u64,
 }
 
@@ -474,6 +487,7 @@ fn bezier_handles(
     hi: f64,
     color: egui::Color32,
     selection: &mut Vec<KeyRef>,
+    link_mode: crate::tangent_linking::Mode,
 ) -> Option<InterpEdit> {
     let mut edit = None;
     for window in 0..keys.len().saturating_sub(1) {
@@ -538,6 +552,16 @@ fn bezier_handles(
             if !rect.intersects(hit) || hit.center().x < rect.left() {
                 continue;
             }
+            let linked = link_mode != crate::tangent_linking::Mode::Broken;
+            // Only the two handles surrounding the selected junction are editable
+            // in linked mode. Other handles remain visible, without converting them.
+            if linked
+                && !(selection.len() == 1
+                    && selection[0].addr == *addr
+                    && selection[0].index == if which == 0 { a.index } else { b.index })
+            {
+                continue;
+            }
             let response = ui.interact(
                 hit,
                 ui.id()
@@ -553,14 +577,21 @@ fn bezier_handles(
                 index: b.index,
             };
             if response.drag_started() {
-                *selection = vec![kref.clone()];
+                if !linked {
+                    *selection = vec![kref.clone()];
+                }
                 use std::sync::atomic::{AtomicU64, Ordering};
                 static NEXT: AtomicU64 = AtomicU64::new(1);
                 ui.ctx()
                     .data_mut(|d| d.insert_temp(token_id, NEXT.fetch_add(1, Ordering::Relaxed)));
             }
             let gesture = ui.ctx().data(|d| d.get_temp::<u64>(token_id)).unwrap_or(0);
-            let Some(p) = (selection.contains(&kref) && response.dragged())
+            let selected_handle = if linked {
+                true
+            } else {
+                selection.contains(&kref)
+            };
+            let Some(p) = (selected_handle && response.dragged())
                 .then(|| response.interact_pointer_pos())
                 .flatten()
             else {
@@ -585,19 +616,17 @@ fn bezier_handles(
                 continue;
             }
             let moved = glam::vec2(nx, ny);
-            let (out, inn) = if which == 0 {
-                (moved, inn)
-            } else {
-                (out, moved)
-            };
             edit = Some(InterpEdit {
                 addr: addr.clone(),
                 index: b.index,
                 gesture,
-                interp: Interp::Bezier {
-                    out_handle: out,
-                    in_handle: inn,
+                moved,
+                side: if which == 0 {
+                    crate::tangent_linking::Side::Outgoing
+                } else {
+                    crate::tangent_linking::Side::Incoming
                 },
+                started: response.drag_started(),
             });
         }
     }
@@ -959,3 +988,6 @@ mod tests {
         assert!(at.x.is_finite() && at.y.is_finite(), "{at:?}");
     }
 }
+
+#[cfg(test)]
+mod t820_tests;

@@ -253,6 +253,7 @@ pub struct Session {
     // ── Playback / animation ─────────────────────────────────────────────
     pub active_animation: Option<AnimationId>,
     pub key_selection: crate::key_selection::KeySelection,
+    pub tangent_linking: crate::tangent_linking::LinkState,
     /// Playhead position in seconds.
     pub playhead: f32,
     pub playing: bool,
@@ -486,6 +487,7 @@ impl Session {
             weight_clipboard: None,
             active_animation: None,
             key_selection: Default::default(),
+            tangent_linking: Default::default(),
             playhead: 0.0,
             playing: false,
             looping: true,

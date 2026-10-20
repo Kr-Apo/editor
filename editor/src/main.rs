@@ -25,6 +25,7 @@ pub mod renderer;
 pub mod session;
 pub mod spritesheet_export;
 pub mod system_open;
+pub mod tangent_linking;
 pub mod theme;
 pub mod transfer;
 pub mod ui;

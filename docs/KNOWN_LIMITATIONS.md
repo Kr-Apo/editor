@@ -91,3 +91,15 @@ contains runtime-excluded IK: exporting constraints does not bake their poses.
 Weight locks are session-only. There is no Normalize brush mode. No new graphic,
 GPU, inference or artistic qualification is claimed. See
 [First rig](first-rig-in-10-minutes.md) and [capabilities](rigging-capabilities.md).
+
+## T-820 local Bezier-linking candidate
+
+Single scalar junction only; Broken/Aligned/Mirrored are session editing modes,
+not saved per-key constraints. Both neighbors must already be Bezier. The metric
+is seconds/native scalar value units, not zoom-dependent screen lengths. Flat
+vertical targets, impossible X/overflow, endpoints and shortest-arc rotation
+joins with raw adjacent delta >=180 degrees refuse. Multi-key numeric Broken
+editing remains; multi-junction linking, normalized overlay and graph marquee
+remain outside this candidate. No new sampler, format or runtime field.
+Cumulative T-813–T-820 manual qualification is pending; no GUI/GPU/inference run.
+See [contract](bezier-tangent-linking.md) and [graph rules](graph-editor.md).

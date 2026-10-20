@@ -1,5 +1,16 @@
 # Ankhimate — operational tasks and evidence
 
+## Local T-820 update — 2026-10-20
+
+**T-820: COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for bounded single-junction
+Bezier linking. Broken/Aligned/Mirrored are session editing modes, not new project
+metadata. See [contract](bezier-tangent-linking.md). T-704/T-912 remain PARTIAL:
+normalized overlay, graph marquee and broader manual qualification remain open.
+T-813–T-820 manual Windows qualification is deferred; no GUI/GPU/inference run.
+This is not a public release, and no subsequent development task is authorized.
+Older checkpoint sections below retain their historical scope.
+
+
 ## Local T-819 update — 2026-10-20
 
 **LOCAL_CANDIDATE / PENDING_MANUAL**. Explicit reviewed cross-project region
@@ -125,11 +136,11 @@ The matrix is an operational summary; the archive retains all original criteria.
 | [T-210](FEATURE_INVENTORY.md#t-210) — Keyed-value affordances in the inspector | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Does not add IK key dots or every future property; no whole-app accessibility certificate |
 | [T-211](FEATURE_INVENTORY.md#t-211) — Pose tools | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Arbitrary numeric retime dialog and broader original UI acceptance remain |
 | [T-703](FEATURE_INVENTORY.md#t-703) — Onion skinning | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Tint/alpha hardcoded; key-mode/boundary coverage, theme controls, performance and desktop qualification… |
-| [T-704](FEATURE_INVENTORY.md#t-704) — Curve editor refinement | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | No aligned/mirrored handle linking, normalized overlay or graph marquee |
+| [T-704](FEATURE_INVENTORY.md#t-704) — Curve editor refinement | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | T-820 adds local single-junction linking; normalized overlay, graph marquee and broad GUI qualification remain |
 | [T-814](FEATURE_INVENTORY.md#t-814) — Shared key selection | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE | Broader T-704 stays partial; combined graph edits retain existing granularity; GUI pending |
 | [T-905](FEATURE_INVENTORY.md#t-905) — Non-destructive timeline offset | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Not arbitrary per-track/per-selection offsets for slots/constraints/deforms |
 | [T-906](FEATURE_INVENTORY.md#t-906) — Timeline markers | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Not runtime event callbacks; no fresh desktop certification |
-| [T-912](FEATURE_INVENTORY.md#t-912) — Graph editor ergonomics review | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | No tied handles/normalize/marquee; extreme sampling overflow shown as gaps; GUI pending |
+| [T-912](FEATURE_INVENTORY.md#t-912) — Graph editor ergonomics review | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | T-820 adds local tied handles; normalize/marquee and GUI pending; extreme sampling overflow remains shown as gaps |
 
 ### Meshes
 
@@ -224,6 +235,7 @@ The matrix is an operational summary; the archive retains all original criteria.
 | [T-817](FEATURE_INVENTORY.md#t-817) — Operational inventory | COMPLETE | AUTOMATED | LOCAL_CANDIDATE | Documentary audit only; no product or graphical acceptance added |
 | [T-818](FEATURE_INVENTORY.md#t-818) — Bounded global diagnostics | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE | Read-only rules/cache/badge/list/navigation implemented; larger T-702 framing and latency criteria remain open |
 | [T-819](FEATURE_INVENTORY.md#t-819) — Safe cross-project region subtree transfer | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE | Bounded region/image/internal IK-Transform/bone-key workflow; no universal merge or world-pose retargeting |
+| [T-820](FEATURE_INVENTORY.md#t-820) — Bezier tangent linking | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE | Single scalar junction, adjacent Bezier segments, session Broken/Aligned/Mirrored; no normalize overlay or graph marquee |
 
 ## 4. Completed bounded scopes — retain, do not redevelop
 
@@ -253,7 +265,7 @@ exclude unqualified runtimes, platforms, artist quality and extended task promis
 | T-605 / T-701 / T-707 | Profiles/specification, safe refusal, keymap/autosave/recovery | Authentic legacy migration, hostile resource limits, original settings/panic/update/feedback criteria; maintain writer guarantees |
 | T-702 | Export integrity/fidelity preflight plus local T-818 diagnostics | Preserve publication checks. Global selection is implemented; universal framing, bounded worst-case latency and GUI qualification remain open |
 | T-703 | Ghost passes, selected-only, frame/key steps | Theme/opacity controls, more boundary coverage and visual/performance qualification |
-| T-704 / T-912 | Graph selection/framing/overshoot and exact numeric tangents | Handle linking/normalize/marquee; T-814 numeric fields are already done |
+| T-704 / T-912 | Graph selection/framing/overshoot and exact numeric tangents | Normalize/marquee and global qualification; T-820 adds bounded linking locally; T-814 numeric fields retained |
 | T-708 / T-902 | Gizmos, region pivots, exact mesh/UV/path/polygon fields | Universal point coverage, expressions and neighbour snapping; T-815 fields are already done |
 | T-901 / T-903 / T-905 / T-907 | Bone rename, session isolation, per-bone offsets, carry-children | Other entity rename/regex, optional filters, per-track offset scope, remembered carry preference |
 | T-909 | Same-document Copy/Paste plus reviewed T-819 source-project transfer | Advanced meshes/FFD/skins/constraints/events and universal retargeting remain outside the bounded local candidate |
@@ -341,3 +353,14 @@ Tests cover collision/reuse, source/destination staleness, native IDs, metadata,
 curves, rejection, three Undo/Redo cycles and real Save/Reload/native v2 export.
 Advanced types refuse instead of partially succeeding. T-909 remains partial.
 See [manual register](MANUAL_QA_PENDING.md); T-820 is proposed, not started.
+
+## T-820 checkpoint (local, not released)
+
+Exact parent T-819: `90dbb71cc5daec8a0cc89aacde865e8eab9a2f85`.
+Native editing uses existing normalized handles and sampler; one targeted native
+timeline command updates both neighboring segments. The common geometry is
+seconds/native scalar units; impossible/flat/nonfinite/stale/locked cases refuse.
+No persisted mode, automatic keys, implicit Linear/Stepped conversion or new sampler.
+Numeric Apply is isolated, Cancel preserves history, pointer gestures merge only
+within their captured lease/token. See [linking](bezier-tangent-linking.md).
+Cumulative T-813–T-820 manual review remains pending. T-821 is not started.

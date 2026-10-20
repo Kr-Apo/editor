@@ -98,8 +98,8 @@ whose keys have predecessors. Easing belongs to the **ending** key of the segmen
 Out X/Y and In X/Y are segment-normalized control points, not seconds, degrees,
 slopes or world coordinates. X must be finite and in [0,1]; Y must be finite but
 may be negative or exceed 1. A flat segment has no value span; changing its Y
-handles alone cannot deform its constant value. Broken/aligned/mirrored handle
-modes and per-channel normalization are not added.
+handles alone cannot deform its constant value. T-814 did not add linked modes or per-channel normalization. T-820 now adds the
+bounded session linking described below; normalization remains deferred.
 
 Values use round-trippable f32 text. Typing changes only a draft. **Apply tangents**
 validates all four values, current selection/revision and locks before dispatching
@@ -135,4 +135,43 @@ snapping policy or shortcut: the existing `snap: frames` badge and Alt `free` re
 Automated command, selection, round-trip and in-memory egui regressions exercise
 these paths. No desktop session, screenshot, playback observation or GUI Windows
 qualification was performed. T-813 and T-814 remain **PENDING MANUAL REVIEW**.
-T-704's broader normalize/tie-mode/graph marquee requirements remain deferred.
+T-704's normalized overlay and graph marquee remain deferred. T-820's scoped
+linked editing is described below and is not a broader GUI qualification.
+
+## 6. Session linking at a central key (T-820)
+
+Select one central scalar key B with Bezier segments A→B and B→C. Choose text
+buttons **Broken / Aligned / Mirrored** in the existing tangents inspector.
+Choosing a mode does not modify handles. The next valid edit applies it.
+Aligned retains the opposite length captured at gesture/draft start; Mirrored
+uses equal opposite vectors in seconds/native-value Euclidean geometry, not
+pixels or two unrelated normalized segments. See [full contract](bezier-tangent-linking.md).
+
+B.in is on the preceding segment; B.out is actually stored in C.interp.out.
+In linked mode, numeric fields explicitly show Incoming and Outgoing around B.
+Choose a Driver; only its two fields are editable. The opposite fields preview
+the calculated result read-only. Changing driver abandons the draft. Apply
+authors both segments in one isolated native operation; Cancel authors nothing.
+Broken keeps the historical four Out/In fields on one segment and multi-key Apply.
+
+Only B's incoming and outgoing graph handles are draggable while linked. A
+continuous gesture keeps its initial opposite length, publishes both Interps
+together, and merges under one unique token. A stale capture stops; restart the
+gesture after Undo, external edits, clip/document changes or sorting. Separate
+drags and numeric applies are separate Undo entries. No-op edits do not dispatch.
+
+Mode is session-only and resets to Broken when its selection/data/revision/
+document/clip lease is invalidated, on Undo/Redo and reopen. Own linked edits
+rebind the same selection and preserve the mode. It is not stored per key and
+does not turn existing animation into a continuously constrained runtime curve.
+
+End keys, multi-selection, Linear/Stepped neighbors, impossible normalized X,
+nonfinite/overflow values and flat segments needing a vertical handle refuse
+linked editing; there is no implicit conversion/clamping. Both-flat horizontal
+joins are supported. Overshoot Y is preserved. Rotation joins spanning a raw
+adjacent delta >=180 degrees are refused because raw graph geometry and shortest
+arc sampling can disagree. Core sampling remains unchanged, including its extreme
+overflow/gap limitation. Setup and locked/missing targets cannot author changes.
+
+All T-820 desktop Windows checks remain **PENDING MANUAL REVIEW**. Existing
+automated egui pointer/text tests are headless state/command evidence only.

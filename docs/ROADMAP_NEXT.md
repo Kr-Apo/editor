@@ -1,5 +1,16 @@
 # Next roadmap — proposals after T-817 review
 
+## Local T-820 update — 2026-10-20
+
+**T-820: COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for bounded single-junction
+Bezier linking. Broken/Aligned/Mirrored are session editing modes, not new project
+metadata. See [contract](bezier-tangent-linking.md). T-704/T-912 remain PARTIAL:
+normalized overlay, graph marquee and broader manual qualification remain open.
+T-813–T-820 manual Windows qualification is deferred; no GUI/GPU/inference run.
+This is not a public release, and no subsequent development task is authorized.
+Older checkpoint sections below retain their historical scope.
+
+
 ## Local T-819 update — 2026-10-20
 
 **LOCAL_CANDIDATE / PENDING_MANUAL**. Explicit reviewed cross-project region
@@ -64,16 +75,14 @@ Historical IDs: **T-909 / T-209** · Priority **P1** · Effort: Medium/high; spl
 
 ## T-820 — Linked Bezier handle editing modes
 
-Historical IDs: **T-704 / T-912** · Priority **P2** · Effort: Medium.
-
-- **Verified gap:** CAP-02: independent/numeric handles exist; no aligned/mirrored link behavior.
-- **Already done — preserve:** Reuse T-814 selection/drafts/SetInterp and existing free handles; do not rebuild numeric tangents.
-- **Bounded work:** Explicit independent/aligned/mirrored editing policy for suitable scalar segments, using correct normalized units and ending-key ownership; handle flat/zero-duration cases by refusal or explicit semantics.
-- **Dependencies:** T-814 native SetInterp, current context leases and exact fields.
-- **Regression risk:** Medium: normalized handles do not directly encode geometric slope for unequal time/value spans.
-- **Measurable acceptance:** Red tests for missing link behavior; unequal segment durations/value ranges/flat segments and overshoots covered; changing one handle respects chosen mathematical policy; no sampler change by default; one gesture/Apply Undo, stale-context refusal; saved curves preserve current wire format.
-- **Runtime boundary:** Existing Bezier handles only; validate sampled exported curves without promising new runtime features.
-- **Migration boundary:** Prefer session-only edit policy; stop for review if persistent link semantics are required.
+Historical IDs: **T-704 / T-912 / CAP-02**. Local authorized implementation:
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for one scalar junction.
+Broken is preserved; Aligned/Mirrored operate across neighboring segment Interps
+using seconds/native-value geometry, a session-only mode, one native command
+and guarded gesture tokens. Numeric Apply/Cancel and multi-key Broken editing
+remain. See [bounded contract](bezier-tangent-linking.md).
+T-704/T-912 remain PARTIAL: normalize overlay, graph marquee and complete manual
+qualification are separate. No format, evaluator, runtime or export changes.
 
 ## T-821 — Editable existing FFD keys in the dopesheet
 
@@ -148,3 +157,8 @@ Review the local transfer candidate; cumulative manual T-813–T-819 qualificati
 remains deferred. T-820 linked Bezier handles is the next proposed development
 mission, not started or authorized by this checkpoint. Advanced T-909 transfer
 requires separate scope review; no universal retargeting claim is added.
+
+## After T-820
+
+Stop for maintainer review of the local candidate. Cumulative manual T-813–T-820
+qualification remains deferred. T-821 is a proposal only, not started/authorized.
