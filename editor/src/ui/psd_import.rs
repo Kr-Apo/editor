@@ -12,6 +12,8 @@ use ankhimate_formats::psd_tags::{self, Tags};
 use eframe::egui;
 use std::collections::HashSet;
 
+mod path_resolution;
+
 /// Shared routing for the main window and a torn-off viewport. Never import a
 /// mixed drop partly as images while a PSD decision is still pending.
 pub fn dropped_path(
@@ -50,6 +52,7 @@ pub struct PendingPsd {
     pub reimport: bool,
     pub reimport_report: Option<ankhimate_document::psd_reimport::Report>,
     pub preservation_error: Option<String>,
+    pub path_resolution: path_resolution::Resolution,
     /// Tags read off each node's name, parallel to `nodes`.
     ///
     /// Parsed once when the file is staged rather than per frame: the tree
@@ -133,6 +136,7 @@ impl PendingPsd {
             reimport: false,
             reimport_report: None,
             preservation_error: None,
+            path_resolution: Default::default(),
         }
     }
 
@@ -268,6 +272,7 @@ pub fn ui(ctx: &egui::Context, state: &mut AppState, theme: &crate::theme::Theme
                             .on_hover_text("Keep existing bones, images and animations");
                     });
                     if pending.reimport {
+                        path_resolution::ui(ui, state, &mut pending);
                         if let Some(error) = &pending.preservation_error {
                             ui.colored_label(ui.visuals().error_fg_color, error);
                         }
@@ -294,16 +299,23 @@ pub fn ui(ctx: &egui::Context, state: &mut AppState, theme: &crate::theme::Theme
                             .add_enabled(
                                 layers > 0
                                     && (!pending.reimport
+                                        || !pending.path_resolution.open
+                                        || path_resolution::ready(&pending))
+                                    && (!pending.reimport
                                         || (pending.preservation_error.is_none()
                                             && pending
                                                 .reimport_report
                                                 .as_ref()
                                                 .is_some_and(|r| r.conflicts.is_empty()))),
-                                egui::Button::new(if pending.reimport {
-                                    "Update images"
-                                } else {
-                                    "Import"
-                                }),
+                                egui::Button::new(
+                                    if pending.reimport && pending.path_resolution.open {
+                                        "Apply path mapping and image batch"
+                                    } else if pending.reimport {
+                                        "Update images"
+                                    } else {
+                                        "Import"
+                                    },
+                                ),
                             )
                             .clicked()
                         {
@@ -543,6 +555,9 @@ pub(crate) fn run_import(state: &mut AppState, pending: &PendingPsd) -> Result<S
     if pending.reimport {
         if let Some(error) = &pending.preservation_error {
             return Err(error.clone());
+        }
+        if pending.path_resolution.open {
+            return path_resolution::apply(state, pending);
         }
         let (command, report) =
             ankhimate_document::psd_reimport::ReimportPsd::prepare(&state.doc, &pending.bytes)?;

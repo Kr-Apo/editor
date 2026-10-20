@@ -116,3 +116,18 @@ or scalar tangent linking. Locks use existing slot/influence bone locks; no new
 per-mesh/slot lock model. Complete-mesh/track captures have data-proportional cost,
 not a claimed interactive performance budget. See [FFD key editing](ffd-key-editing.md).
 Manual T-813–T-821 qualification stays pending; old runtimes/releases unchanged.
+
+## Local T-822 PSD mapping boundary
+
+[Explicit path resolution](psd-path-resolution.md) handles one unique simple region,
+with exactly one unresolved missing image path in the source inventory. Multiple
+missing image paths are conservatively refused because legacy provenance lacks
+PSD file/layer UUIDs. A renamed group with multiple missing images is not resolved
+in bulk. The user explicitly selects both sides; pixel similarity is not identity.
+Changed tags/legacy semantics, skin overrides, shared art, meshes/links, target FFD,
+sequences, flattened/hidden/undecodable art and conflicting provenance refuse.
+The entire existing exact-path update batch is reviewed and included atomically.
+No Photoshop effects/masks, universal persistent source identity or GUI certification
+is claimed. An identical-content file replacement is accepted as the same snapshot;
+there is no filesystem reservation against edits occurring after the final read.
+T-302 remains PARTIAL; all T-813–T-822 manual checklists remain pending.

@@ -1,5 +1,17 @@
 # Feature inventory — exact T-816 product, T-817 documentary audit
 
+## Local T-822 update — 2026-10-20
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for one explicit missing-image
+→ added-layer mapping on a unique simple region. No default pairing or fuzzy
+matching. See [PSD path resolution](psd-path-resolution.md). The existing exact-path
+batch is disclosed and remains all-or-nothing. Other missing image provenance,
+shared/overridden/mesh/linked/FFD/sequence/flattened targets and semantic tag changes
+refuse. T-302 stays PARTIAL. T-813–T-822 manual qualification is deferred; this
+local checkpoint does not certify Windows interaction, art or Photoshop effects.
+Earlier checkpoint sections retain their historical scope. No public operation,
+runtime, renderer, format, writer or version change.
+
 ## Local T-821 update — 2026-10-20
 
 **COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for editing one existing owned

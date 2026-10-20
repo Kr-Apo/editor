@@ -94,7 +94,8 @@ not read the PSD again. Existing texture caches are invalidated on update/Undo/R
 | Same decoded RGBA/dimensions, even different PNG encoding | Unchanged; no redundant update/Undo step |
 | Dimensions change, one simple region owns the image | Scale region width/height by new/old image dimensions; preserve authored pixel scale, pivot, offset, rotation, local scale and UVs |
 | Same leaf name in different nested groups | Distinct full paths; never match by leaf name or pixel resemblance |
-| Rename, reparent or tag change affecting a raw path | Added + missing; no guessed reassignment |
+| Rename/reparent affecting a raw path | Added + missing; optional [explicit simple-region resolution](psd-path-resolution.md), never guessed reassignment |
+| Tag change affecting semantics | Refused by explicit resolution; no structural conversion |
 | Added layer | Report for manual import; do not create bones/slots automatically |
 | Missing layer | Keep existing image, attachment, bone, slot, keys and constraints |
 | Duplicate source/document paths or literal path separators in names | Refuse the entire update |
@@ -148,3 +149,24 @@ add/delete reconciliation remain outside the completed subset, so T-302 stays pa
 - Historical checked-in PSD fixtures now cover flat, simple and nested imports.
   T-302's new tests extend these with modified RAW-channel copies; Photoshop effects,
   adjustments and masks remain outside this qualification.
+
+## Explicit path-change resolution (local T-822)
+
+Inside the same Update preview choose **Resolve path change…**. Select the old
+missing image and the actual added full path separately, then **Prepare path
+mapping**. Neither candidate is preselected, even when unique. Review full paths,
+asset/skin/slot/region, decoded-pixel comparison, image and authored region sizes,
+provenance and every included exact-path update. **Apply path mapping and image
+batch** confirms one native transaction. **Cancel path mapping** clears only the
+mapping draft; Cancel/Escape cancels the whole preview without a document edit.
+
+Same decoded pixels retain original encoded bytes and AssetId; provenance still
+changes undoably. Resize reuses the preceding T-302 policy. Plan/document revision,
+exact native snapshot, source bytes and path, mode and affected bone locks are
+rechecked; the native author-source preservation guard remains in the app. PSDs
+are read only. Source edits require reloading/repreparing. Undo/Redo need no source
+file. Save As persists the same asset names and the new raw path, so a second
+exact-path refresh recognizes it. See [full contract](psd-path-resolution.md).
+
+This bounded local addition does not complete T-302 or qualify Photoshop effects,
+complex art, global source identity or deferred Windows/manual review.

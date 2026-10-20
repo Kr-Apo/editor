@@ -88,3 +88,14 @@ not visually qualified artwork. Actual mouse comfort, skin/clip changes,
 playback, dialogs, DPI/theme and geometry display remain for human review.
 All prior binaries/evidence remain untouched. No manual result is pre-marked PASS
 and no action is requested now. In-memory egui events are automated evidence only.
+
+## T-822 — cumulative main candidate, PENDING_MANUAL
+
+Artifact: `outputs/T822-PSD-Path-Resolution/Ankhimate-T822-dev.exe`.
+Check the exact CHECKPOINT.json / WINDOWS-BUILD.json SHA. Internal version remains
+0.2.0-alpha.1. Follow its 26-step mapping checklist on disposable PSD/project
+copies, plus all cumulative T-813–T-821 checks. Prepare/Cancel/Apply, source edits,
+locks/mode, three Undo/Redo, resize and Save As/reopen/second exact-path refresh
+require human review. No manual result is pre-marked PASS; no action is requested
+now. Headless egui events and CPU texture-upload bytes are automated evidence,
+not Windows, GPU, DPI/theme or artistic qualification. All old binaries remain.

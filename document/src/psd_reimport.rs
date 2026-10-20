@@ -4,6 +4,9 @@ use ankhimate_core::attachment::Attachment;
 use ankhimate_formats::psd::{self, ImportOptions, ReimportReport};
 use std::collections::{BTreeMap, BTreeSet};
 
+mod path_change;
+pub use path_change::{PathChange, PathPreview};
+
 #[derive(Clone, Debug, Default)]
 pub struct Report {
     pub layers: ReimportReport,
@@ -37,6 +40,7 @@ impl Report {
 }
 
 /// Prepared immediately before dispatch. Owns both states; redo never reads a file.
+#[derive(Clone)]
 pub struct ReimportPsd {
     other: Box<Document>,
 }
