@@ -1,1738 +1,295 @@
-﻿# Ankhimate — Agent Task List
-
-> Companion to [ARCHITECTURE_PLAN.md](ARCHITECTURE_PLAN.md) (referenced below as **PLAN §n**).
-> Each task is designed to be handed to one AI agent as a single PR-sized work unit.
->
-> **Rules for every agent:**
-> - Read PLAN §0 (license), §2 (target data model), and the §-refs listed on your task before coding.
-> - **Never** copy, translate, or closely paraphrase source code from another animation editor
->   (several are GPL-3.0). Feature behavior only, clean-room (PLAN §0).
-> - `cargo test && cargo clippy --workspace -- -D warnings && cargo fmt --check` must pass at the
->   end of the task. Do not break the editor build even if your task is core-only.
-> - New decisions that deviate from the PLAN require an ADR file in `docs/adr/` and a note in the
->   PR description.
-> - Types/signatures in the PLAN are normative; keep names unless the PLAN marks them *(suggestion)*.
-> - From T-207 onward: **every new editing surface must declare its behavior in both work modes**
->   (Setup / Animate). A PR that adds an edit path without stating its mode semantics is incomplete.
->
-> **Legend:** `Deps:` tasks that must be merged first. `∥` = tasks in the same group that can run
-> in parallel with each other. ★ = suitable for a smaller/less capable agent.
-
-## T-811 — Next Alpha release candidate
-
-This local checkpoint supersedes stale availability claims below while preserving
-historical criteria. It does not authorize publication or certify every model/GPU.
-
-| Task | Status and actual qualification |
-|---|---|
-| T-602 / T-810.5 | ✅ CPU MP4/GIF and simple MP4 implemented; Rust/process tests. Maintainer reports H.264 1080p/60 FPS/2 s/120 frames, cancel and no-overwrite. New ZIP GUI pending. |
-| T-604 / T-810 | 🟡 Core/Pixi/Phaser common native v2 subset; numeric regressions and 125 T-811 headless pixel cases qualified on one configuration; advanced constraints/GPU breadth excluded. |
-| T-801 | 🟡 Candidate documentation reconciled, Jade is the sole sample; final screenshots/review pending. |
-| T-802 | 🟡 Local portable Windows ZIP and manifests prepared; new candidate extraction/startup and clean-PC test pending. |
-| T-805 / T-805.1 | ✅ Native opt-in chat and confirmed commands implemented; automated tests and targeted maintainer Qwen/NInfer Jade workflow. No general model or artistic certificate. |
-| T-806 | 🟡 Consented viewport vision implemented; synthetic six-provider tests and reported Qwen/NInfer Jade scenario. Other model combinations unqualified. |
-| T-807 | ✅ Controlled native region assembly, Setup-geometry preservation and history; targeted maintainer Jade slot/bone reassignment reported. |
-| T-808 | ✅ Bounded existing-mesh reads/weights/normalization/smoothing, approval/Undo/save; reported Jade v4/v5 weight scenario. Linked/FFD/bind mutation exclusions remain. |
-| T-809 | 🟡 Six multimodal envelopes/capability/budget safeguards tested; context exhaustion observed manually, targeted reads/shorter conversations used. |
-| T-811 | 🟡 Consolidated local candidates only; final manual checklist and publication approval pending. |
-| Autonomous autorig / localization / web editor / second viewport / advanced runtime constraints / full Spine parity / macOS-Linux release / universal GPU performance / advanced tangent numerics | ⏸ Outside this alpha acceptance; not marked complete. |
-
-Evidence levels: automated Rust/Node; actual headless WebGL; maintainer reports;
-unqualified cases; known limits. See [readiness](RELEASE_READINESS.md),
-[features](FEATURES.md) and [limitations](KNOWN_LIMITATIONS.md). Qwen's modified
-Jade project was not saved and is not distributed. Previous archives remain intact.
-
-## Alpha checkpoint — M007.2 (2026-10-16)
-
-This status review supersedes stale implementation claims below; original task IDs,
-requirements and future work remain historical acceptance targets, not a claim of 1.0.
-Evidence and code references: [alpha-validation.md](alpha-validation.md).
-
-| Tasks | Current disposition |
-|---|---|
-| T-001, T-003, T-101–T-108, T-201–T-208, T-211, T-301, T-304–T-307 | Implemented; exercised by workspace regressions. Historical checkmarks do not certify every OS or UX acceptance. |
-| T-002 | CI configuration present; this local run does not certify remote Linux/Windows CI or warning-free `-D warnings`. |
-| T-209 | Partial: editable dopesheet key blocks now copy/paste by value in one Undo, including row mapping. T-209.3 adds explicit-row mirrored bone key offsets in the existing PasteKeys transaction. Slots, read-only tracks and events are excluded from mirror; complex track editing remains open. Normal/mirrored multibone pose paste is one Undo/Redo transaction (T-209.2); auto-key-off previews keep their existing policy. |
-| T-210 | Complete: per-property key dots, context reverts, Setup resets and slot-colour previews; covered by automated egui/AccessKit and command regressions. |
-| T-302 | Partial: initial flat/simple/nested imports plus exact-path region-image reimport preserve rig/animation IDs, Undo/Redo and Save As. Complex/shared/sequence updates and automatic add/delete reconciliation are refused or manual. |
-| T-303 | Removed/replaced by optional community importers (T-1003), not a built-in promise. |
-| T-401–T-405 | Implemented; targeted mesh/FFD/clipping cases validated. FFD drag fixed by M007.1b1; no general FFD dopesheet/complex clipping qualification. |
-| T-501–T-507 | Rust functionality present; alpha target fidelity is limited by [alpha-scope.md](alpha-scope.md). T-503 physics is excluded from native TypeScript playback. T-507 image assignment is regions only (M007.1b3). |
-| T-601 | Partial against original task: PNG sequence/spritesheet UI and files validated in M004, using shared CPU rendering instead of a second GPU renderer. T-601.1 adds JPEG (explicit opaque background) and lossless RGBA WebP sequences. T-601.2 adds opt-in global pixel bounds, per-frame trim/reconstruction and sequence padding. T-601.3 adds multi-clip checkboxes/counts and new-directory batch publication. General background controls, physics stepping and full original performance/viewport qualification remain open. |
-| T-602 | Functional acceptance complete (T-602.1–T-602.3): CPU rawvideo → external FFmpeg MP4/GIF, libx264 and qualified software libx264rgb, CRF/target kbit/s, background/cycles, progress/cancel, Windows opt-in association-open after publication. Default MP4/GIF bytes preserved. Native opening tested by injected opener only; RGB player limits, bounded diagnostics and publication/crash limits documented in [MP4](mp4-export.md) / [GIF](gif-export.md). No generic player/platform guarantee. |
-| T-603a–T-603d | Implemented and validated in M001/M004/M005: v2 scalar axes, escaping, staged publication, rollback and preflight. |
-| T-603e | Partial preset library; no invented Godot support. |
-| T-604 | Original in-workspace Rust runtime approach superseded by external runtimes. Pinned TypeScript/Phaser example validated in M003/M005/M006; no general runtime parity claim. |
-| T-605 | 🟡 Field inventory, authentic v1 profile round trips and version gate verified. Authentic v0 fixture/migration unqualified; no format change. |
-| T-701 | Partial overall; Settings/persisted keymap and isolated timed autosave/recovery are implemented. M001c/c.1 and M005.1 qualify save lifecycle and shortcuts. Remaining original settings and acceptance breadth stay open. |
-| T-702 | Partial overall; diagnostics and export integrity/fidelity consent validated in M005.2/M006.1. Not every original rule, navigation gesture or large-rig timing is certified. |
-| T-703, T-704, T-708, T-709 | Implemented in part; full onion/graph/viewport/accessibility acceptance remains open. Bone-name context menu issue persists; use its icon. |
-| T-705 | Not implemented; localization deferred after alpha. |
-| T-706 | Partial measurements only; no general 500-bone/60-FPS guarantee. Broader optimization deferred after alpha. |
-| T-707 | Partial: sidecar recovery implemented; panic-time emergency dump/update/feedback package not completed. |
-| T-801 | Partial: usable samples, PSD and pinned Phaser guide; not all original sample types, GIFs or documentation assertions are complete. |
-| T-802 | Partial: local Windows x64 ZIP procedure validated; no signed public release, installer or macOS/Linux artifact qualification. New ZIP needs a manual smoke test. |
-| T-803 | Not implemented; browser editor deferred after alpha. WASM core check is not a web editor. |
-| T-901–T-913 | Several commands/UI surfaces exist (rename, isolation, markers, offsets, detached panels, physics harness, hover labels); complete per-task UX acceptance not requalified. Deferred remainder, with T-910 second viewport open and T-912/T-814 numeric tangents pending manual review. |
-| T-1001–T-1003 | Implemented and covered by existing workspace suites; external marketplace/community functionality is outside the supported alpha walkthrough. |
-
-M001–M007 evidence is summarized in alpha-validation; M007.0 and M006.1 remain
-preserved checkpoints. Public distribution waits for the final candidate review.
-
-## Revision note (this pass)
-
-- Phases 0–2 shipped (T-001 … T-206) and are kept verbatim below for reference; amendments added
-  where the mode split changes them.
-- **New foundational task T-207 — Setup mode / Animate mode.** It is the spine of the editor UX and
-  every later task references it. Nothing in Phase 3+ should be built before it lands.
-- Phase 2 gained T-208 … T-211 (animation manager, clipboard, keyed-value affordances, pose tools).
-- Former Phase 5 (export + polish) was split and renumbered so a **Phase 5 "Rig power"** could hold
-  the constraint/animation-depth work that a production system needs and the old list omitted
-  (transform/path/physics constraints, events, animatable visibility, IK completeness).
-- New numbering: **3xx** assets & import · **4xx** mesh & deform · **5xx** rig power ·
-  **6xx** export & runtime · **7xx** production polish · **8xx** release. Old T-4xx/T-5xx/T-6xx
-  numbers are re-mapped where noted on the task (`was T-…`).
-
----
-
-## Phase 0 — Groundwork
-
-### ✅ T-001 ★ License + repo hygiene
-**Deps:** none · **Refs:** PLAN §0, §3.3
-- Add `LICENSE-MIT` + `LICENSE-APACHE` at workspace root; `license = "MIT OR Apache-2.0"` in every
-  crate's `Cargo.toml`. *(If the maintainer has chosen differently, stop and ask.)*
-- Add `README.md` stub (project pitch, build instructions from PLAN), `CONTRIBUTING.md` stub.
-- Pin `egui_tiles = "*"` in `editor/Cargo.toml` to the exact version currently in `Cargo.lock`.
-- Add `rust-toolchain.toml` (stable, pinned minor).
-**Accept:** workspace builds. *(Dependency-licence checking was dropped — see ADR 005.)*
-
-### ✅ T-002 ★ CI skeleton
-**Deps:** T-001 · **Refs:** PLAN §3.3
-- `.github/workflows/ci.yml`: fmt-check, clippy `-D warnings`, `cargo test --workspace` on
-  Linux + Windows; build-only job `cargo check -p ankhimate-core --target wasm32-unknown-unknown`.
-- Cache with `Swatinem/rust-cache`.
-**Accept:** CI green on a no-op PR.
-
-### ✅ T-003 ★ ADR seed
-**Deps:** none · **Refs:** PLAN §2, §6
-- Create `docs/adr/template.md` and ADRs 001–005 summarizing decisions already made in the PLAN:
-  001 slotmap IDs, 002 Affine2 math (no Mat4 decompose in hot path), 003 skin/attachment
-  resolution model, 004 binary `.ankh` with external assets, 005 licensing/clean-room policy.
-**Accept:** 5 ADRs exist, each ≤1 page, each linking the PLAN section it records.
-
----
-
-## Phase 1 — Core remediation (PLAN §4)
-
-> Order within this phase matters: T-101 → T-102 → T-103 → (T-104 ∥ T-105) → T-106 → T-107 → T-108.
-
-### ✅ T-101 Stable entity IDs (R1)
-**Deps:** T-001 · **Refs:** PLAN §1.2 D1, §2.1, §2.3
-- New `core/src/ids.rs` with `new_key_type!` for `BoneId, SlotId, SkinId, AnimationId, ConstraintId`.
-- `Skeleton.bones: SlotMap<BoneId, Bone>`; `Bone.parent: Option<BoneId>`; replace every `usize`
-  bone/constraint reference in `core` with typed IDs.
-- `Skeleton.update_order: Vec<BoneId>` + `rebuild_update_order()` (topological, deterministic
-  tie-break by name). `Skeleton::remove_bone(id)` reparents children and returns a removal report.
-**Accept:** unit tests — delete middle bone keeps other bones' identity valid; update order is
-topological regardless of insertion order; editor runs.
-
-### ✅ T-102 Affine2 transform math (R2)
-**Deps:** T-101 · **Refs:** PLAN §1.2 D2, §2.2
-- `core/src/transforms.rs`: `Affine2` with `compose`, `mul`, `transform_point`, `invert`,
-  `decompose`. `Bone.inherit: Inherit {rotation, scale, reflect}` honored in the world pass.
-  All `Mat4`/`Quat` removed from `skeleton.rs`. Mesh inverse binds are `Affine2`.
-**Accept:** property tests — compose∘decompose∘compose stable (ε<1e-4); hand-computed child
-position under a (2,1)-scaled rotated parent; IK tests still pass.
-
-### ✅ T-103 Pose extraction + evaluate() skeleton (R3)
-**Deps:** T-102 · **Refs:** PLAN §1.2 D7, §2.6
-- `core/src/pose.rs` with `Pose` per PLAN §2.6 and `evaluate(skel, anims, out)` (4-stage pipeline).
-- `Bone.world_transform` and all `#[serde(skip)]` derived fields deleted. Core is `std::time`-free.
-**Accept:** identical inputs → identical poses; viewport renders as before.
-
-### ✅ T-104 ∥ Constraint system + correct IK blending (R4)
-**Deps:** T-103 · **Refs:** PLAN §1.2 D3, §2.5
-- `core/src/constraints.rs`: `Constraint` enum + ordered application in `evaluate` stage 3.
-- Solver outputs **local** rotations; `local_rot += wrap_angle(solved - current) * mix`; FK re-run
-  for chain bones + descendants. Chain length 1 (aim) and 2. `softness`/`stretch` fields reserved.
-**Accept:** mix=0.5 across ±π produces no flip; reachable/unreachable tests preserved; descendants
-follow.
-
-### ✅ T-105 ∥ Skin layer (R5)
-**Deps:** T-101 · **Refs:** PLAN §1.2 D4, §2.4
-- `core/src/skin.rs`: `Skin { name, entries: HashMap<(SlotId, String), Attachment> }`;
-  `Skeleton.skins` + `default_skin`; `Slot.attachment: Option<String>`; free `resolve(...)` with
-  default-skin fallback; `Session.active_skin`.
-**Accept:** fallback to default skin; swapping active skin swaps rendering without touching slots.
-
-### ✅ T-106 Animation model + sampling (R6)
-**Deps:** T-103, T-104, T-105 · **Refs:** PLAN §1.2 D5, §2.7, §2.3
-- `core/src/animation.rs` per PLAN §2.7: `Animation`, `Timeline` enum, `Key<T>`,
-  `Interp {Linear, Stepped, Bezier}`. Binary search + sequential cache; shortest-arc rotation;
-  bezier via documented solve. `evaluate` stage 2 complete (bone/slot/draw-order/IkMix/Deform).
-  Multi-animation mixing by `alpha`.
-**Accept:** golden curve tests; draw-order offset case; α=0.5 mix across ±π.
-
-### ✅ T-107 Editor Document/Session split + command undo (R7)
-**Deps:** T-106 · **Refs:** PLAN §1.2 D6/D7, §3.2
-- `editor/src/doc.rs`, `editor/src/session.rs`; `EditCommand` trait (apply/revert/merge/label) +
-  `History { cap: 200 }`; commands in `bone_cmds.rs`, `slot_cmds.rs`, `key_cmds.rs`.
-- Drags write `Session.preview_locals`; the Document is mutated by one merged command on mouse-up.
-**Accept:** create 3 bones, pose, delete one, undo×4 restores exactly; history holds commands.
-
-> **Amendment (T-207):** `editor/src/state.rs` still exists as a compatibility shim. T-207 finishes
-> its removal — `AppState` becomes `{ doc, session, pose, history }` and nothing else.
-
-### ✅ T-108 `formats` crate + .ankh v1 save/load (R8)
-**Deps:** T-107 · **Refs:** PLAN §1.2 D8, §6.1
-- Crate `formats/`: binary Ankh v1 plus readable/minified JSON profiles, external
-  content-addressed images, entities keyed by **name**, and rename-on-collision
-  in core. File▸Open/Save/Save-As via `rfd`.
-**Accept:** round-trip golden test on `samples/minimal.ankh`; unknown top-level fields survive.
-
----
-
-## Phase 2 — Animation MVP
-
-> Shipped: T-201 → (T-202 ∥ T-203 ∥ T-205) → T-204; T-206.
-> New in this pass: **T-207 → (T-208 ∥ T-209 ∥ T-210 ∥ T-211)**.
-
-### ✅ T-201 Dopesheet panel (F-5)
-**Deps:** T-108 · **Refs:** PLAN §5 F-5, §3.2
-- `editor/src/ui/timeline/{mod,sheet,ruler,tree,model}.rs`. Rows grouped `bone ▸ property` /
-  `slot ▸ property`, fold/unfold, synced scroll, frame ruler at `Document.meta.fps`, playhead
-  scrub, diamond keys, drag/drag-off-delete/ctrl-click/shift-range/box-select/context menu,
-  zoom 0.1–3.0. All edits via `key_cmds.rs`.
-**Accept:** every interaction undoable with correct labels; scrubbing updates the viewport live.
-
-### ✅ T-202 Playback + auto-key (F-8)
-**Deps:** T-201 · **Refs:** PLAN §5 F-8, §7.3
-- Transport bar (play/pause, loop, FPS, frame step, jump key, start/end); wall-clock playhead in
-  editor only; `Session.auto_key` + red viewport border; locked bones never record.
-**Accept:** pose@0 → auto-key → pose@12 → play interpolates and loops.
-
-> **Amendment (T-207):** `auto_key` stops being a free-floating toggle. In Animate mode it defaults
-> **on**; in Setup mode it is not applicable and is hidden. The toggle survives as an "auto-key off"
-> escape hatch inside Animate mode (manual keying via `K`).
-
-### ✅ T-203 Bezier interpolation UI (F-6)
-**Deps:** T-201 · **Refs:** PLAN §5 F-6, §2.7
-- Presets in the key context menu (Linear, Stepped, Ease In/Out/In-Out, Sine In-Out, Snap); applies
-  to a multi-selection as one command; stepped drawn square, bezier diamond+dot.
-**Accept:** Ease In-Out visibly changes motion; undo reverts interp.
-
-### ✅ T-204 Draw-order animation UI
-**Deps:** T-201 · **Refs:** PLAN §2.3, §2.6
-- Draw-order panel listing `Pose.draw_order` at the playhead; drag to reorder writes a `DrawOrder`
-  key with auto-key on, edits `Skeleton.draw_order` with it off.
-**Accept:** front/back arm swap mid-animation; setup order untouched; undo works both ways.
-
-> **Amendment (T-207):** the "auto-key on/off" branch becomes the mode branch — Setup edits
-> `Skeleton.draw_order`, Animate writes `DrawOrder` keys. Same behavior, discoverable rule.
-
-### ✅ T-205 Slot timelines UI (color + attachment swap)
-**Deps:** T-201 · **Refs:** PLAN §2.7
-- Slot inspector: keyable color picker, keyable attachment dropdown (stepped) over the active skin.
-**Accept:** blink (alpha keys) + mouth swap replay after save/load.
-
-### ✅ T-206 ★ Hierarchy panel UX (F-12)
-**Deps:** T-107 · **Refs:** PLAN §5 F-12
-- `editor/src/ui/tree.rs`: drag-and-drop reparent (onto = child, between = sibling) with
-  `ReparentBoneCommand` preserving world pose; visibility eye, lock padlock, fold, inline rename,
-  cascade delete with child count.
-**Accept:** reparenting a posed bone leaves the pose identical; locked bone ignores viewport drags.
-
-> **Amendment (T-207):** reparent / create / delete / rename are **structural** — Setup mode only.
-> In Animate mode the rows stay visible and selectable but structural affordances are disabled with
-> a "switch to Setup to edit the rig" tooltip.
-
----
-
-### ✅ T-207 Setup mode / Animate mode (the editing-context split)
-**Deps:** T-107, T-202, T-204 · **Refs:** PLAN §2.6, §3.2, §7 · **ADR:** [0006-work-modes](adr/0006-work-modes.md)
-
-> **Shipped.** `Session.work_mode`, `editor/src/edit_router.rs`,
-> `EditCommand::requires_mode` + `History::push_in_mode`, mode switch in the toolbar
-> (`Tab`), mode chrome in the viewport, `state.rs` → `app_state.rs`. Two defects found
-> and fixed on the way: posing at `t = 0` with auto-key on used to overwrite the setup
-> pose instead of keying, and the hierarchy panel mutated `draw_order`/created slots
-> outside the command system (neither undoable nor mode-gated).
-
-The single largest UX gap versus Spine/Spriter, and the rule that makes every later feature
-unambiguous: *the same gesture means "define the rig" in Setup and "animate the rig" in Animate.*
-
-**Model**
-- `Session.work_mode: WorkMode { Setup, Animate }` (default `Setup`). Rename the existing
-  `EditorMode` (Select / CreateBone / WeightPaint) to `Tool` — it is a tool selector, not a mode,
-  and the name collision is the reason the split was never obvious in the UI.
-- Setup mode always evaluates with **no animation applied** (`evaluate(skel, &[], &mut pose)`),
-  regardless of playhead. The playhead is not lost — it is simply not applied.
-- Animate mode requires `Session.active_animation`; entering it with none prompts to create one
-  (T-208) rather than silently doing nothing.
-
-**Edit routing (the normative part).** Add `editor/src/edit_router.rs`. Every viewport/inspector
-edit calls the router, never a command constructor directly:
-
-```rust
-pub enum EditIntent {
-    BoneLocal { bone: BoneId, value: Transform },   // pose gesture or numeric field
-    SlotColor { slot: SlotId, value: [f32; 4] },
-    SlotAttachment { slot: SlotId, value: Option<String> },
-    DrawOrder { order: Vec<SlotId> },
-    Deform { slot: SlotId, attachment: String, verts: Vec<Vec2> },   // T-404
-    IkMix { constraint: ConstraintId, value: f32 },
-}
-
-/// Setup  → mutates Skeleton setup data via the corresponding *setup* command.
-/// Animate → writes/updates keys on `session.active_animation` at `session.playhead`
-///           via the corresponding *key* command (offsets from setup, PLAN §2.7).
-pub fn route(intent: EditIntent, doc: &mut Document, session: &Session) -> Box<dyn EditCommand>;
-```
-
-- Animate-mode routing creates the timeline on demand **and** a `t=0` setup-equal key first when
-  missing (existing T-202 rule, moved into the router so every intent inherits it).
-- With `auto_key = false` in Animate mode the router returns a *preview-only* result: the pose is
-  overridden for display, nothing is committed until the user presses `K` (key selected) or
-  `Shift+K` (key all changed properties).
-
-**Structural gate.** `EditCommand` gains `fn requires_mode(&self) -> Option<WorkMode>` (default
-`None` = allowed in both). Structural commands — create/delete/reparent/rename bone, create/delete
-slot, skin add/remove, constraint add/remove, asset import, mesh topology change — return
-`Some(Setup)`. `History::push` rejects a mode-violating command with a status-bar message instead of
-mutating; this makes the invariant testable rather than a UI convention.
-
-**UI**
-- Mode switch in the toolbar: two segmented buttons (`SETUP` / `ANIMATE`), shortcut `Tab`.
-- Animate mode: 2px accent viewport border (replaces T-202's red auto-key border), the animation
-  name + frame shown in the viewport corner, timeline panel expanded; Setup mode collapses the
-  timeline to its header and greys the transport.
-- Setup mode: the rig draws in setup pose with a "SETUP POSE" watermark chip so a user can never
-  mistake it for frame 0 of an animation.
-- Tool availability per mode: Create Bone = Setup only; Weight Paint = Setup only; Select/Transform
-  = both; Mesh edit (T-401) = Setup for topology, Animate for deform (T-404).
-- Inspector fields show a **key affordance** in Animate mode only (T-210).
-
-**Accept:**
-- Unit: routing a `BoneLocal` intent in Setup produces `SetBoneTransformCommand`; in Animate at
-  t=0.4 produces a key command on the active animation and leaves `Skeleton` byte-identical
-  (assert setup skeleton equality before/after).
-- Unit: a structural command pushed in Animate mode is rejected and the document is unchanged.
-- Unit: Setup-mode evaluation with a non-zero playhead equals `evaluate(skel, &[], …)`.
-- Manual: pose a bone in Setup, switch to Animate, pose again at frame 12, switch back — the Setup
-  pose is exactly what was authored, not the animated value.
-- `editor/src/state.rs` deleted; `AppState` holds only `{ doc, session, pose, history }`.
-
-### ✅ T-208 ∥ Animation manager
-**Deps:** T-207 · **Refs:** PLAN §2.7, §5 F-8
-
-> **Shipped.** `Animation.looping` in core + schema (defaults true, so older files keep the
-> behavior they had); `RenameAnimation` (refuses a taken name rather than making one clip
-> unreachable on disk), `DuplicateAnimation` (deep copy, `_2` suffix), `SetAnimationMeta`
-> (duration + loop, merged per drag), reusing the existing `DeleteAnimation`. UI is a `⋯` menu
-> beside the clip picker: name, duration **in frames**, Loops, Duplicate, Delete. Duplicating
-> selects the copy; deleting the last clip drops back to Setup mode.
->
-> Duration is authored in frames because that is the unit the ruler, the dopesheet and the user
-> share — seconds are the storage detail.
->
-> Note: the transport's loop button stays a *preview* toggle, independent of the clip's `looping`
-> flag, which is authoring intent for the runtime. Worth revisiting if that split confuses anyone.
-- Animation list panel (dockable, or a combo + manager modal): create, rename, duplicate, delete,
-  reorder; per-animation `duration` (seconds, displayed as frames at project fps) and a loop hint
-  flag used by the runtime (T-604).
-- Duration edit is non-destructive: shortening keeps out-of-range keys but T-702 flags them.
-- Selecting an animation sets `Session.active_animation` and switches to Animate mode.
-- `AnimationCommands` in `commands/anim_cmds.rs`; duplicate performs a deep clone with a fresh name.
-**Accept:** create → key → duplicate → edit the copy leaves the original untouched (asserted in a
-test); delete + undo restores every timeline; save/load round-trips all animations and durations.
-
-### 🟡 T-209 ∥ Clipboard: copy / paste / duplicate
-**Deps:** T-207 · **Refs:** PLAN §3.2
-
-> **Bones and poses shipped.** `document/src/clipboard.rs` (`Clipboard`, `BoneClip`, `PoseClip`),
-> `PasteBones` command, `AppState::{copy_selection, copy_pose, paste, duplicate_selection}`,
-> Edit-menu entries and Ctrl+C / Ctrl+Shift+C / Ctrl+V / Ctrl+Shift+V / Ctrl+D.
-> * Copying a bone takes its **whole subtree** plus its slots and their skin entries — pasting half
->   a limb would be worse than refusing. Skins are matched by name on paste.
-> * Poses are captured by **bone name**, so undo/redo id churn cannot land a pose on the wrong bone.
-> * Pasting a pose routes through the mode: a setup edit in Setup, keys at the playhead in Animate —
->   which is exactly the copy-frame-A-to-frame-B workflow.
-> * Paste-mirrored negates X translation, rotation and shear; scale is untouched, because mirroring
->   means "the same pose facing the other way", not a reflection of the art.
->
-> **Key blocks shipped:** dopesheet context menus now expose **Copy selected keys** and
-> **Paste keys at playhead**, via the named operators `anim.copy_selected_keys` and
-> `anim.paste_keys_at_playhead`. `Clipboard::Keys(KeyClip)` captures full owned values, source
-> times, interpolations/Bezier handles and named tracks; transient `KeyRef` indices are never
-> the clipboard payload. Selection is scoped to the animation. Without selected destination key
-> rows, paste resolves original named tracks; otherwise it maps selected key rows in visible row
-> order, with matching property/axis and row count required. There is no separate empty-row
-> selection tool. Ambiguous/missing targets or invalid data refuse the whole block.
-> `PasteKeys` reuses the existing exact-time sorted insertion/replacement policy, extends duration
-> like AddKey, and restores all timelines and duration in **one Undo**. Negative/nonfinite times
-> and precision collapse are refused rather than clamped; f32 time arithmetic is retained.
-> Bone scalar tracks (all axes), slot RGBA, visibility and attachment keys retain their complete
-> values and interpolation. No global shortcuts were added: text fields and bone/pose clipboard
-> bindings keep their existing priority. T-210 pending edits survive paste/Undo/Redo; untouched
-> components follow the new animation sample rather than masking pasted keys.
->
-> **Still open (retain 🟡):** draw order, IK/transform constraints and FFD remain read-only
-> dopesheet rows without editable addresses; events live in a separate lane. They are explicitly
-> excluded/refused, never flattened to scalar keys. T-209.3 implements mirrored key blocks for
-> bone transform offsets only; slot/complex track mirroring remains excluded. Existing pose
-> mirroring is preserved. The original "every paste is one Undo" criterion is
-> satisfied for key blocks and bones; **T-209.2** also makes every authored multibone pose paste
-> (normal or mirrored) one Undo/Redo transaction in Setup and Animate. The earlier four-step
-> observation on the four-bone arm is fixed, with exact numeric results retained. Twenty-seven
-> T-209 regressions cover
-> document snapshots, three Undo/Redo cycles, save/reopen, types/curves, mapping/refusals,
-> pointer-operated egui menus, operator shadowing, text focus and existing clipboard behavior.
-> **T-209.2 (2026-10-17):** a pose resolves all names and validates destination
-> locks, values and mode before any write. Missing/ambiguous/duplicate targets,
-> invalid active clips or invalid pose data refuse the whole paste, including
-> previews, without clearing redo. Existing router commands execute inside one
-> `PastePose`/`Group`, never merge with drags or adjacent pastes, and redo owns
-> the values independently of the clipboard. Undo restores timelines, setup data
-> and any clip-duration growth. Auto-key off still creates session previews only,
-> without keys or an artificial history entry; existing T-210 previews keep the
-> same policy. Tests compare the complete document through three Undo/Redo cycles,
-> the legacy numeric result, menu/shortcut dispatch and Save/reopen with assets/skins.
-> At this checkpoint key-block mirroring remained an audit proposal; T-209.3 below adds the
-> bone-offset subset. T-209 stays 🟡.
-
-> **T-209.3 (2026-10-17):** **Paste Keys Mirrored (Offsets)** in the dopesheet
-> context menu reuses `KeyClip`, visible selected destination key-row order and
-> `PasteKeys`. Explicit compatible bone destination rows are required: no fallback
-> by name/suffix, no automatic left/right mapping. Translate X, Rotate and Shear
-> X/Y negate; Translate Y and Scale X/Y retain their values. Times, order, units,
-> Linear/Stepped/Bezier and normalized handles (including overshoot) are retained.
-> Offsets are mirrored, not absolute local/setup poses; asymmetric setups are
-> deliberately not compensated. Invalid/mixed/read-only/locked targets refuse
-> before writing or clearing Redo. One Undo/Redo; T-210 previews are rebased by
-> the existing PasteKeys hook. Normal paste and global shortcuts are unchanged.
-> See [keyframe clipboard contract](keyframe-clipboard.md) for angular boundary
-> measurements and exclusions. No slot, FFD, constraint, draw-order, event,
-> image or automatic retargeting mirror is introduced. T-209 remains 🟡.
-
-- `document/src/clipboard.rs` with a typed payload enum: `Bones(subtree)`, `Keys(KeyClip)`
-  (owned values + named tracks), `Pose(PoseClip)`.
-- Setup mode: copy/paste a bone subtree (deep clone of bones, slots, skin entries for those slots;
-  names deduped `_2`), paste-as-child-of-selection; `Ctrl+D` duplicates in place.
-- Animate mode: copy/paste selected keys (paste at playhead, preserving relative times; cross-bone
-  paste maps by row order); **paste mirrored** (negate X translate, negate rotation) as an explicit
-  menu entry — the single most-requested walk-cycle tool.
-- Copy/paste **pose** between animations or frames (`Ctrl+Shift+C` / `Ctrl+Shift+V`).
-**Accept:** paste-mirrored on a 4-bone arm produces the mirrored pose (numeric test); every paste is
-one undo step; clipboard payloads survive an animation delete without dangling ids (resolve by name).
-
-### ✅ T-210 ∥ ★ Keyed-value affordances in the inspector
-**Deps:** T-207 · **Refs:** PLAN §7
-
-> **Dots shipped.** `edit_router::{KeyState, key_state, bone_key_value}` plus a dot on every
-> keyable inspector row (four bone transform channels + slot colour), shown in Animate mode only:
-> empty outline = no timeline, hollow ring = timeline but unkeyed here, filled = keyed at the
-> playhead, amber = posed but uncommitted. Click keys the value the viewport is showing;
-> alt-click removes the key that is here. `bone_key_value` is shared with the timeline's set-key so
-> the two can never disagree about what "key this" means.
->
-> **Completed (T-210):** right-click a bone transform/axis or slot-colour indicator for
-> **Revert to setup value** (local property only; normal auto-key routing, including exact setup
-> returns from M007.1b2) or **Revert to animated value** (discard only that pending property;
-> never remove a stored key). Auto-key off holds bone/colour previews until the dot or `K` keys
-> them. Indicators distinguish pending properties rather than flagging every channel on a bone.
-> Setup shows a plain reset button and **Reset to default** context action: position/rotation/shear
-> zero, scale one, slot colour white with alpha one. These explicit property resets are separate
-> Undo steps and preserve every other field and animation. Revert/setup values remain local even
-> when the transform display is World. Twenty regressions in
-> `editor/src/ui/inspector/key_control_tests.rs` cover actual egui pointer menus/clicks, AccessKit,
-> four states, both auto-key modes, no parasite keys, Undo/Redo and save/reopen round trips.
-- In Animate mode every keyable inspector field gets a state dot: **empty** (no timeline),
-  **hollow** (timeline exists, not keyed at playhead), **filled** (keyed here), **amber** (value
-  differs from the sampled animation value = unkeyed edit pending).
-- Click = key this property at playhead; alt-click = delete the key; right-click menu = "revert to
-  setup value", "revert to animated value".
-- Setup mode shows a plain "reset to default" affordance instead.
-**Accept:** dot states are covered by a unit test over a fabricated timeline; keying via the dot and
-via the dopesheet produce the identical command.
-
-### ✅ T-211 ∥ Pose tools
-**Deps:** T-207 · **Refs:** PLAN §2.6
-
-> **Shipped** as a top-level **Pose** menu, acting on the selection or the whole rig when nothing
-> is selected. `SetPoseAsSetup` and `ResetBones` (bone_cmds), `RetimeAnimation` (scale/offset) and
-> `ClearBoneAnimation` (key_cmds).
-> * Baking writes what the *viewport* shows, in-flight drag preview included — pose until it looks
->   right, then make that the rest pose.
-> * Reset clears rotation/scale/shear but **keeps position**: a bone's offset from its parent is
->   rig structure, and collapsing the skeleton onto the origin is never what "reset" means.
-> * Retime snapshots the timelines instead of inverting the mapping — a key clamped at zero cannot
->   be un-clamped, so an arithmetic inverse would silently lose keys a negative offset pushed off
->   the start.
-> * Clearing drops only *bone* timelines for the selection; a slot's colour animation is not the
->   bone's to take away.
->
-> Menu offers fixed retimes (half/double speed, ±1 frame) rather than a numeric field; an arbitrary
-> factor wants a small dialog, which is worth doing once the settings modal exists (T-701).
-- Setup mode: "set current pose as setup pose" (bakes the visible pose into `Skeleton`, with a
-  confirm), "reset bone/selection/skeleton to setup".
-- Animate mode: key-all-changed (`Shift+K`), "clear animation from selected bones", "offset all keys
-  of the selection by N frames", "scale animation timing by factor" (retiming, one command).
-**Accept:** retiming a 30-frame animation by 2.0 doubles every key time and the duration; undo
-restores exactly; setup bake is a single undoable command.
-
----
-
-## Phase 3 — Assets & import pipeline
-
-> T-301 → (T-302 ∥ T-303 ∥ T-305 ∥ T-306); T-304 anytime after T-108.
-> This phase unblocks everything visual: today the editor renders bones and gizmos only.
-
-### ✅ T-301 Asset database + image drop-import
-**Deps:** T-108, T-207 · **Refs:** PLAN §3.2, §6.1
-
-> **Shipped.** `core/src/assets.rs` (`AssetDb`, `ImageAsset`), `assets` in the `.ankh` schema +
-> container binding, `editor/src/commands/asset_cmds.rs`, a textured sprite pipeline in the wgpu
-> renderer, viewport drop-import, and an Assets panel.
->
-> Three decisions differ from the sketch below, each deliberate:
-> * **Attachments reference assets by name, not `AssetId`.** Names are already the on-disk
->   reference (ADR 0004); an id in memory and a name on disk would need a resolution pass on every
->   load and give two sources of truth. `RenameAsset` rewrites referencing attachments.
-> * **The GPU texture cache is keyed by a content hash, not `AssetId`.** Slotmap keys are recycled
->   when a document closes, so an id-keyed cache draws the previous project's pixels into the new
->   one. Hashing also de-duplicates identical images.
-> * **Sharing one asset between attachments** is not possible yet — "Attach" re-imports the pixels
->   under a uniquified name. Real sharing wants an id-carrying attachment, which lands with T-401.
->
-> Not done here, deliberately deferred: texture eviction on document change (memory only —
-> T-706), thumbnail grid layout and search (the panel is a list), asset reload/relink (T-306).
-- `Document.assets: AssetDb` — `SlotMap<AssetId, ImageAsset { name, bytes, size, source_path:
-  Option<PathBuf> }>`; images stored verbatim in the `.ankh` zip under `images/` (no re-encode);
-  `formats` schema gains an `assets` array keyed by name + a `Region.texture` → asset-name link.
-- Editor renderer: GPU texture cache keyed by `AssetId`, uploaded lazily, evicted on document
-  change; extend `renderer/custom_renderer.rs` to draw region attachments (textured quads) sorted by
-  `Pose.draw_order`, with per-slot tint from `Pose.slot_colors` and premultiplied alpha.
-- Drag-and-drop PNG/JPG/WebP onto the canvas (Setup mode only): creates asset + slot on the selected
-  bone (or root) + region attachment in the default skin, positioned at the drop point.
-- Assets panel: thumbnail grid, search, rename, delete-with-usage-count warning, drag onto a bone
-  row or the canvas to attach.
-**Accept:** drop 3 PNGs → 3 textured slots render in draw order; save/reopen preserves bytes
-(hash-compared in a test) and pixels; deleting an in-use asset warns and is undoable; dropping in
-Animate mode is refused with the mode hint.
-
-### 🟡 T-302 ∥ PSD import (F-2)
-**Deps:** T-301 · **Refs:** PLAN §5 F-2, §0
-- `formats/src/psd.rs` using the `psd` crate. Our documented mapping (`docs/psd-import.md`):
-  layer group → bone (nested → hierarchy); image layer → slot + region attachment placed from layer
-  bounds; layer named `$pivot` in a group → that bone's origin; group prefix `$ik ` → IK constraint
-  scaffold over the chain; top-level group `@skin:<name>` → entries land in skin `<name>`.
-- Import modal: preview tree with per-group include checkboxes, "flatten group to one attachment"
-  toggle, target-scale field, and a summary of what will be created.
-- **Re-import over an existing document**: match by layer path → replace asset
-  bytes and attachment size, keep bones/animations. Report added/removed/changed layers.
-**Accept:** checked-in CC0 test PSD imports to the documented structure (bone/slot/skin counts
-asserted); the whole import is one undoable command; re-import of a modified PSD keeps animations
-intact (pose-diff test).
-**Done:** `formats/src/psd.rs` with the documented mapping, the preview modal with per-row include
-and per-group flatten, and `ImportPsd` as one undoable command. Mapping functions unit-tested;
-end-to-end validated by hand against grouped, nested, offset and negative-bounds files.
-**M007.2 status:** `tagged_rig.psd` plus eight minimal group fixtures now exist.
-M003.1 covers import Replace/Merge and history; M007.1b4 adds 14 regressions and
-real-source comparisons (16 bones / 44 slots/images becomes 16 / 18 / 18).
-**T-302 checkpoint:** opt-in image refresh in the existing preview matches unique raw
-layer paths, detects decoded RGBA/dimension changes and preserves bone/slot/asset IDs,
-authored transforms/pivots, skins, keys, curves and constraints. One Undo/Redo transaction;
-added/missing layers are reported without creation/deletion. Any ambiguous, shared,
-mesh/FFD, sequence, hidden-modified or unrepresentable operation blocks the batch.
-Save As/reopen, three cycles, texture upload data and conservative native-source
-preservation checks are covered headlessly. No schema/runtime or initial-import rewrite.
-**Still partial:** general complex attachment refresh, automatic added/deleted-layer
-reconciliation, and full Photoshop effects/masks qualification are not delivered. Negative bounds metadata is tested; off-canvas pixel
-resampling and Photoshop effects/masks are not newly qualified.
-
-### ❌ T-303 — foreign armature importer *(removed)*
-Built and then deleted. Ankhimate's format is `.ankh`; carrying an importer for another editor's
-container meant maintaining a second format, its sample fixtures, and its licence questions for a
-migration path nobody had asked for. The document model and the import-summary plumbing it exercised
-are kept and reused by T-302.
-
-If a foreign importer is ever wanted again, it belongs behind a feature flag with its own fixtures,
-and the clean-room rule from ADR 005 applies: formats are read from sample **data files**, never from
-another tool's source.
-
-### ✅ T-304 ∥ ★ Startup window (part of F-15)
-**Deps:** T-108 · **Refs:** PLAN §5 F-15
-- On launch with no project: centered panel — New Project, Open, recent files (persisted to the
-  platform config dir via `directories`), sample projects from `samples/`, and links to docs.
-- Recents show name, path, and last-opened; missing files are greyed with a "locate" action.
-**Accept:** recents survive restart; opening a sample works from a clean checkout; a deleted recent
-does not crash the launcher.
-
-### ✅ T-305 ∥ ★ Atlas / spritesheet import modal (F-18) *(was T-404)*
-**Deps:** T-301 · **Refs:** PLAN §5 F-18
-- Import a sheet: grid slicer (rows/cols/margin/spacing) **or** manual rect list with numeric
-  L/T/W/H fields and drag handles on a zoomable preview; auto-name cells (`sheet_00`…) with inline
-  rename; each cell is cropped into its own `ImageAsset` for v1.
-- Detect-cells helper: flood-fill on alpha to propose rects, user accepts/edits.
-**Accept:** a 4×4 sheet imports into 16 assets with pixel-exact crops (golden test); manual rects
-round-trip through the modal; cancel leaves the document untouched.
-**Done:** grid and rect modes share one `cells()`, so preview, count and import cannot disagree.
-Detect-cells is a 4-connected alpha flood fill with a floor of alpha 8 — an antialiased halo of 1-3
-welds neighbouring frames into one blob, and there is a test that fails at floor zero.
-
-### ✅ T-306 ∥ Asset relink + external-source workflow
-**Deps:** T-301 · **Refs:** PLAN §6.1
-- Track `source_path` per asset. "Reload from source" (single/all) and "Relink…" when the path is
-  gone; a status-bar badge counts stale assets (source mtime newer than the embedded bytes).
-- Optional per-project setting "watch sources" (poll on window focus, not a filesystem watcher —
-  keeps the dependency surface small).
-**Accept:** editing a PNG on disk and pressing Reload updates the viewport without touching the rig;
-relinking a moved file clears the stale badge; unit test on the staleness rule.
-
----
-
-### ✅ T-307 Attachment inspector — per-attachment properties
-**Deps:** T-301 · **Refs:** PLAN §2.4
-
-> **On-canvas mode shipped too.** `Session::edit_target` (`EditTarget::{Bone, Attachment}`) with an
-> "Edit on canvas" toggle in the Attachment section: the transform tools then drive the artwork via
-> the pivot crosshair — translate/rotate/scale about the pivot, Alt-drag to move the pivot itself
-> (art staying put), quad outlined while active. Explicit rather than inferred from the selection,
-> because "drag the bone" and "drag the art" are the same gesture and a stray slot click must not
-> change what it means. Setup-only; `Deform` keys (T-404) are how the same geometry is animated.
->
-> Unlike bone drags this writes each frame instead of staging a preview — `SetRegionProps` merges,
-> so the drag is still one undo step, and it matches what the inspector spinboxes already do.
->
-> `commands/attachment_cmds.rs`
-> (`SetRegionProps` merged per drag, `RenameAttachment`, `DuplicateAttachment`,
-> `RemoveAttachment`, `owning_skin`) plus the Properties▸Attachment section: name, rotate, offset,
-> scale, size, **pivot**, reset-to-image-size, duplicate, remove. Edits land in the skin the
-> attachment *resolved from* — active, else default — so changing a value never silently forks an
-> override into a skin the user is not looking at.
->
-> **Pivot** (`RegionAttachment.pivot`, normalized, `(0,0)` bottom-left, default centre): the point
-> the image rotates and scales around. Quad placement moved into
-> `RegionAttachment::local_corners()` so the viewport, exporter and runtime cannot disagree about
-> it. Changing the pivot compensates the offset, so the art does not jump while you hunt for the
-> right point, and a crosshair marks the pivot on canvas for the selected slot. Nine-point presets
-> (corners/edges/centre) beside the numeric fields.
->
-> **Still to do:** the viewport mode where the transform tools drive the attachment instead of the
-> bone. That is a second interaction surface (gizmo retargeting + a way to say which of the two you
-> mean), not a variation on the panel, so it is left as its own piece of work.
-
-Region attachments carry their own transform (`local_offset`, `local_rotation`, `local_scale`,
-`width`/`height`, `uv_rect`) and nothing can edit it: art can only be moved by moving its bone,
-which drags the rig around to fix a placement problem. This is the gap between "images render" and
-"images can be authored".
-
-- Inspector section for the **selected slot's resolved attachment**, in the active skin: name
-  (renameable), offset X/Y, rotation, scale X/Y, size, and a "reset to image size" action that
-  restores `width`/`height` from the asset's pixels.
-- Editing writes to the attachment **in the active skin** (never the slot, never another skin) via
-  `commands/attachment_cmds.rs`; drag-merged like the bone transform so one gesture is one undo step.
-- Slot-level properties that are not the attachment stay in the slot section: name, bone, color.
-- Attachment actions: rename (rewrites the slot's `attachment` name and any `SlotAttachment` keys
-  that referenced it), duplicate under a new name in the same slot, remove from this skin.
-- **On-canvas**: with a slot selected and no bone gizmo active, the transform tools operate on the
-  attachment instead of the bone — the Spine "you are moving the image, not the rig" mode. Viewport
-  shows the attachment's own axes so the target of a drag is never ambiguous.
-- Setup-only for the transform (it is rig data, not animation); `Deform` timelines (T-404) are how
-  the same geometry is animated.
-
-**Accept:** nudging an attachment moves only that art, leaving bone and pose byte-identical
-(asserted); rename updates the slot and its attachment keys and survives save/load; "reset to image
-size" restores the imported dimensions after a manual resize; every edit is one undo step.
-
----
-
-## Phase 4 — Mesh & deform
-
-> (T-401 → T-402 ∥ T-403) → T-404 → T-405.
-
-### ✅ T-401 Mesh attachment editing UI
-**Deps:** T-301, T-207 · **Refs:** PLAN §2.4
-
-> **Core editing shipped.** `MeshAttachment::from_region` (quad with the region's exact corners and
-> UVs, so converting is invisible until a vertex moves), `editor/src/meshgen.rs` (Delaunay via
-> `spade`), `commands/mesh_cmds.rs` (`ConvertToMesh`, `EditMesh` with move/add/remove/retriangulate),
-> canvas vertex editing with wireframe + handles, and a Mesh section in the inspector.
-> Mesh attachments now **render textured** — the sprite pipeline takes an index list instead of
-> assuming a quad, so regions and meshes share one path.
->
-> **A design note worth keeping:** the first triangulation pass tried to read the vertex list as an
-> outline and trim triangles outside it. That is unsound — nothing distinguishes a perimeter vertex
-> from an interior one, and adding a vertex inside a quad makes the list a *valid* pentagon with a
-> notch, so the filter correctly carved away a triangle the user wanted. Concavity needs a real
-> contour, which the tracer (T-402) supplies — or a user does, by pinning an edge. The hull remains
-> the default; a pinned edge is the override.
->
-> **Now complete.** Box-select landed on Ctrl+drag (a bare drag grabs a vertex in a dense mesh,
-> which is exactly when a box is wanted). Manual edges are `MeshAttachment.edges`, honoured by a
-> constrained Delaunay pass and toggled with `C` — Delaunay maximises the smallest angle, which
-> happily bridges a notch, and a pinned edge is how a user says "not there". The UV pane
-> (`ui/uv.rs`) drags where each vertex samples the texture, with a reset that re-projects from the
-> mesh's current bounds.
->
-> **Deliberately not done:** sharing one asset between attachments (the T-301 deviation). It wants
-> an id-carrying attachment, which is a schema change, and belongs with the skin work in T-507
-> rather than bolted onto mesh editing.
-- "Convert to mesh" on a region attachment (command): 4-vertex quad with the same UVs.
-- Mesh edit mode (Setup): wireframe overlay, drag vertices (snap modifier), add vertex on edge
-  (click), delete vertex (`X`), rectangle-select vertices, edges recomputed via constrained
-  triangulation (`spade`), manual edge add/remove for hulls the auto-triangulation gets wrong.
-- Minimum-validity guards with clear messages (a mesh needs ≥3 vertices / ≥1 triangle).
-- Edits write to the attachment **in the active skin** via commands; UV editing pane beside the
-  texture (drag verts in UV space, "reset UVs to bounds").
-**Accept:** quad → pentagon round-trips through save/load; every vertex operation is one undo step;
-topology edits are refused in Animate mode with the mode hint.
-
-### ✅ T-402 ∥ Auto mesh tracing (F-3)
-**Deps:** T-401 · **Refs:** PLAN §5 F-3, §0
-- `editor/src/meshgen.rs`: alpha threshold → marching-squares outline (outer **and** inner contours)
-  → Douglas-Peucker simplify (tolerance slider) → constrained Delaunay → drop triangles whose
-  sampled texels are fully transparent. Optional interior point grid (density slider) and an
-  outward padding value so edge texels are not clipped.
-- "Trace from image" in mesh mode with live preview and a vertex/triangle-count readout; applying is
-  one command that replaces the topology (and remaps existing weights by nearest-vertex, warning
-  that deform keys for this attachment will be invalidated — offer to delete or keep them).
-**Accept:** unit test on a checked-in donut PNG (inner contour preserved); a 512² sprite traces in
-<100 ms release; tracing a weighted mesh does not silently drop weights.
-
-### ✅ T-403 ∥ Weight painting + bind compensation (F-4)
-**Deps:** T-401, T-102 · **Refs:** PLAN §5 F-4
-- Port `ui/canvas/tools/weight_paint.rs` to the post-T-101 model (BoneId, skin-resolved mesh,
-  commands with stroke merging). Brush modes add / subtract / smooth / replace, radius + strength +
-  falloff curve, per-bone color overlay, "show weights as heat map" toggle, normalize on stroke end.
-- Auto-bind helpers: bind selected vertices to selected bone with rigid weight; **heat/distance
-  auto-weight** for the whole mesh against the bone chain (documented formula, deterministic).
-- Bind compensation: when a vertex's bone set changes, recompute inverse binds so the deformed
-  position at the current pose is unchanged.
-**Accept:** painting never visibly jumps the mesh (pose-diff test across a rebind); one stroke = one
-undo step; auto-weight on the sample arm produces smooth falloff (numeric test on a few vertices).
-
-### ✅ T-404 Deform (FFD) timelines *(was T-405)*
-**Deps:** T-401, T-106, T-207 · **Refs:** PLAN §2.7 `Timeline::Deform`, §2.6 `Pose.deforms`
-- In Animate mode, vertex edits in mesh mode route (T-207) to `Deform` keys — offsets from the setup
-  vertices; renderer applies `Pose.deforms` before weight skinning (setup + deform → skin).
-- Dopesheet row per deformed attachment; deform keys are interpolatable (linear/bezier) and mix
-  across animations by alpha.
-- Guard: a deform timeline is invalidated if the attachment's vertex count changes (T-402) —
-  detected on load and reported by T-702.
-**Accept:** waving-flag animation from 3 deform keys; mixes correctly with bone motion; save/load
-round-trip; vertex-count mismatch surfaces as a diagnostic rather than a panic.
-
-### ✅ T-405 Clipping attachments (masking)
-**Deps:** T-401 · **Refs:** PLAN §2.4 (`ClippingAttachment`)
-- `Attachment::Clipping { vertices, end_slot }` in core + schema; the renderer masks the slot range;
-  authoring is `ui/canvas/tools/clip_edit.rs` with the same gestures as mesh editing; runtime
-  (T-604) will reuse `core::clipping` directly.
-- **Not a stencil pass.** The editor renders inside egui's own render pass, which has no
-  depth-stencil attachment — taking one would mean rendering the viewport to a private texture
-  first. `core::clipping` cuts the triangles instead (ear-clip the polygon, Sutherland-Hodgman each
-  piece, interpolate UVs at the cut). That is exact rather than sampled, costs nothing at draw
-  time, and is what the runtime has to do anyway: it emits triangle batches to whatever renderer
-  the game brought, and cannot assume a stencil buffer exists there either. One implementation,
-  two consumers, no way for them to disagree about where a mask's edge falls.
-**Accept:** a character behind a clipped window renders masked in the editor and in the runtime
-example; disabling the clipping attachment restores the full draw.
-
----
-
-## Phase 5 — Rig power (constraints & animation depth)
-
-> Everything here is what separates "keyframes work" from "professional rig". All ∥ except T-504
-> which touches the IK solver T-104 wrote.
-
-### ✅ T-501 ∥ Transform constraint
-**Deps:** T-104 · **Refs:** PLAN §2.5
-- `Constraint::Transform { target: BoneId, bones: Vec<BoneId>, offsets: Transform, mix_rotate,
-  mix_translate, mix_scale, mix_shear, local: bool, relative: bool }`, applied in
-  `constraint_order`. Per-mix timelines (`TransformConstraintMix`).
-- Inspector: pick target, mix sliders, offset, local/relative toggles, delete. Listed on the
-  **driven** bone rather than the target — "why is this bone moving on its own" is the question a
-  rigger asks, and the answer is whichever constraints write to it.
-- This is also the first constraint authoring UI of any kind; IK constraints had none.
-**Accept:** a "look at" setup — head follows a target bone with mix 0.5 — matches hand-computed
-angles; constraint order changes the result deterministically; save/load round-trip.
-
-### ✅ T-502 ∥ Path attachment + path constraint
-**Deps:** T-401 · **Refs:** PLAN §2.5
-- `Attachment::Path { vertices, closed, constant_speed }` authored with the clip polygon tools,
-  which already had the right gestures — a path is simply an *open* ring.
-- **Deferred:** bezier control points. The stored shape is the flattened polyline, because a curve
-  nobody can measure is no use to a constraint and flattening at author time means the editor and
-  the runtime walk identical geometry. Bezier handles would be an authoring convenience over the
-  same data, and belong with the curve editor (T-704).
-- `Constraint::Path { slot, bones, position, spacing, mix_rotate, mix_translate }`. The mode enums
-  collapsed into `PathAttachment::constant_speed` (distance spacing vs vertex-index spacing) — two
-  behaviours, and naming them as modes implied more than exist.
-- **Deferred:** `PathPosition`/`PathSpacing` timelines. Position is the one worth animating (it is
-  what slides a tread); it lands with the next timeline pass.
-- Covers mesh "pathing" binds as a strictly more general feature (tails, treads, belts,
-  vines following a spline).
-**Accept:** a 5-bone tail follows a curved path with even spacing; animating path position slides
-the chain along the curve; unit test on arc-length sampling at constant speed.
-
-### ✅ T-503 ∥ Physics constraint (F-13)
-**Deps:** T-104 · **Refs:** PLAN §2.5, §2.6 determinism rule
-- `Constraint::Physics { bone, inertia, strength, damping, mass, wind, gravity, mix, x/y/rotate/
-  scale channels }` — sway/bounce for hair, tails, cloth, chains.
-- **Determinism:** `evaluate` stays pure. Physics state lives in a caller-owned
-  `PhysicsState` passed in (`evaluate_with(skel, anims, &mut physics, dt, out)`); `evaluate` with no
-  physics state applies the constraint's rest result. Editor advances it per frame; exporters
-  advance it at export fps; the runtime owns one per instance. Document in ADR `0007-physics.md`.
-- Editor: "reset physics", a global pause, and simulate-in-Setup toggle so a rigger can tune values
-  without an animation.
-**Accept:** a 4-bone tail settles to rest in <2 s with damping 0.5 (numeric test); two runs with the
-same dt sequence produce identical output; export at 30 fps and playback at 30 fps match.
-
-### ✅ T-504 IK completeness
-**Deps:** T-104, T-207 · **Refs:** PLAN §2.5, §5 F-1
-- Implement the reserved `softness` and `stretch` fields; chains longer than 2 via FABRIK
-  (documented iteration count/tolerance, deterministic).
-- **`bend_direction` applies to FABRIK too.** A chain of 3+ bones has infinitely many solutions;
-  reaching the target does not pick one. A rig authored with every rotation at zero starts perfectly
-  straight — on the boundary — where the fold side is decided by floating-point noise. The chain is
-  nudged off-axis before iterating and mirrored afterwards if it still landed on the wrong side.
-- Keyable IK properties beyond mix: `bend_direction` (stepped), `softness`, `stretch` — timelines
-  `IkBendDirection`, `IkSoftness` (other editors key constraint direction and IK mode; we cover
-  both with typed timelines).
-- Editor: select a chain (shift-click in the Hierarchy) → "Create IK target" makes the target bone
-  at the chain's tip and the constraint, as one undoable step. Inspector section per constraint:
-  target picker, mix, softness, stretch + limit, flip bend.
-- **Deferred:** viewport target/chain overlays and the T-210 key dots on these fields. The
-  constraint is authorable and animatable without them; they are polish, and belong with T-708.
-**Accept:** a 3-bone chain reaches its target within tolerance in ≤N iterations (test); stretch
-extends bone length only up to the configured limit; flipping bend direction mid-animation produces
-a stepped, flip-free result.
-
-### ✅ T-505 ∥ Slot & bone presentation depth
-**Deps:** T-301, T-207 · **Refs:** PLAN §2.3, §2.7
-- Slot `blend_mode` (Normal / Additive / Multiply / Screen) honored by the renderer and exporters;
-  `dark_color` (two-color tinting) plumbed through schema → pose → renderer → runtime.
-- **Animatable visibility:** `Timeline::SlotVisible { slot, keys: Vec<Key<bool>> }` (stepped) plus
-  `Pose.slot_visible`. Covers a `Hidden` keyframe element without overloading alpha.
-- Bone group color already in the schema — surface it in the tree/viewport (colored bone widgets,
-  inherited by children unless overridden).
-**Accept:** additive-blended flash effect renders identically in editor and runtime; a visibility
-key hides a slot at frame 10 and back at 20 with no interpolation artifacts; round-trips.
-
-### ✅ T-506 ∥ Event timeline
-**Deps:** T-106 · **Refs:** PLAN §2.7 (`events`, post-v1 → promoted)
-- `Animation.events: Vec<EventKey { time, name, int_value, float_value, string_value }>` +
-  `Timeline::Event`; dopesheet row with named markers; runtime (T-604) reports events fired in a
-  frame window, including during crossfades and looping wraps.
-- Editor: a marker lane under the ruler — double-click to add, drag to retime, right-click to rename
-  or delete. Events belong to the *clip*, not to a bone, so they get their own lane rather than a row
-  in the dopesheet's group tree.
-- `core::animation::events_in_window(anim, from, to, looping)` is the runtime contract: half-open
-  `(from, to]`, wraps on loop, and fires every event once per lap when `dt` overshoots the clip.
-- **Deferred:** a document-level event *definition* list (name + default payload, reused across
-  clips). Events carry their payload inline today, which is enough to author and to fire; shared
-  definitions are a convenience that wants the diagnostics pass (T-702) to flag typo'd names.
-**Accept:** a footstep event fires exactly once per loop at the right time in a runtime unit test
-(including when dt overshoots the loop boundary); events survive save/load.
-
-### ✅ T-507 ∥ Skin manager + multi-skin composition
-**Deps:** T-105, T-301 · **Refs:** PLAN §2.4, §5 F-14
-- Skin panel: create/rename/delete/duplicate skins, per-slot attachment grid, drag an asset into a
-  (slot, skin) cell, "copy attachments from skin".
-- **Composition:** `Session.active_skins: Vec<SkinId>` (ordered, first match wins, default-skin
-  fallback last) so outfits combine, as tools with a global "style" switch cannot. `resolve()`
-  takes a slice; the single-skin call becomes a one-element slice.
-- **Deferred:** the per-slot attachment grid and drag-an-asset-into-a-cell. The panel manages skins
-  (create/rename/duplicate/delete/copy) and composition; per-cell assignment is the attachment
-  inspector'''s job today and a grid is a second way to do it. Runtime/export bake of a composed skin
-  lands with T-603.
-**Accept:** hat-skin + armor-skin active together render both, with the first winning on conflict
-(unit test on `resolve`); a skin rename updates every reference; export bakes the composed result.
-
----
-
-## Phase 6 — Export & runtime
-
-> T-601 → T-602; T-603 → T-604; T-605 last.
-
-### 🟡 T-601 Offscreen render + image / spritesheet / sequence export *(was T-501)*
-**Deps:** T-106, T-301 · **Refs:** PLAN §5 F-9
-- `export/`: headless wgpu render of evaluated poses at a chosen resolution/fps; PNG/JPG/WebP frames
-  via the `image` crate. Spritesheet packer (sprites-per-row) + per-frame sequences + a JSON sidecar
-  describing frame rects and timing.
-- Global-bounds toggle (union AABB over all exported frames so every sprite is the same size),
-  per-animation checkboxes with frame counts, background/clear color, padding, trim toggle.
-- Physics-bearing rigs (T-503) advance their state at export fps.
-**Accept:** exported sheet of the sample walk matches the viewport (golden image diff, small
-tolerance); runs headless in CI; a 60-frame export of the sample completes in a documented budget.
-
-> **M004/M007.2: implemented but partial against this original task.**
-> `ankhimate-render::Sequence::prepare` powers PNG sequences and deterministic
-> multi-page spritesheets, shared camera, metadata, progress/cancel and staged
-> publication. M004 validates 60 frames at 60 FPS, reconstructed pixels and
-> preservation on failures. CPU rendering replaces the proposed separate GPU
-> path. Default skin / Normal blending only; physics is explicitly refused.
-> **T-601.1:** sequence UI offers PNG / JPEG / WebP lossless using the same CPU
-> poses and staged publisher. JPEG requires an explicit opaque RGB background
-> (white default, quality 95); WebP preserves RGBA. Historical PNG/spritesheet
-> bytes and the existing metadata schema/version are retained. See
-> [image sequence formats](png-sequences.md). General background controls,
-> physics stepping and the full original performance/viewport-golden acceptance
-> remain open.
-> **T-601.2:** optional global pixel crop, per-frame transparent trim and image
-> padding, with versioned reconstruction offsets. PNG/WebP can reconstruct exact
-> RGBA bytes; JPEG crops before explicit background composition. Spritesheets
-> keep source-sized fixed cells, so trim does not reduce page count. Defaults
-> and the 207 historical files remain unchanged. See [rendered framing](rendered-framing.md).
-> **T-601.3:** per-animation checkboxes and frame counts, total batch count,
-> independent child exports + manifest and no-replace publication of a new directory.
-> Single mode defaults/metadata are unchanged. See [batch export](batch-export.md).
-> General background controls, physics stepping, advanced rendering, dense
-> packing and complete original performance/viewport qualification remain open.
-> **T-601 stays 🟡.**
-
-### ✅ T-602 Video export via ffmpeg *(was T-502)*
-
-> **T-810.5:** [Windows MP4 quick workflow](EXPORT-MP4.md) adds the named
-> `export.video_mp4` File → Export entry, selected-clip initialization and simple
-> 720p/1080p, 24/30/60 FPS, 1–3 cycle controls over the existing T-602 worker.
-> No renderer/encoder duplication or runtime changes. Existing videos remain
-> create-only; basic CPU/process tests do not qualify manual video playback.
-**Deps:** T-601 · **Refs:** PLAN §0, §5 F-9
-- Locate `ffmpeg` (config setting → PATH auto-detect → friendly error with a download link; never
-  bundle or link — PLAN §0 allows process spawn only). Pipe frames over stdin (rawvideo) → MP4
-  (encoder choice, bitrate/CRF, background color, loop cycles) and GIF (palettegen/paletteuse pass).
-- Progress dialog with cancel; "open after export".
-**Accept:** 2 s MP4 + GIF of the sample; cancel leaves no partial file; missing-ffmpeg path shows
-guidance and never panics; stderr from a failed encode is surfaced verbatim in the dialog.
-
-> **T-602.1 (2026-10-17): partial.** [MP4 contract](mp4-export.md): the shared CPU
-> `Sequence::prepare` supplies RGB24 frames to an external FFmpeg/libx264 process.
-> Configurable executable, explicit opaque background, CRF 0..51, integer cycles,
-> even dimensions, preflight, stderr drainage, cancellation/reaping and new-file
-> staging are implemented. MP4 only; no GIF, encoder choice/bitrate control or
-> open-after-export. Existing rendered image and batch pipelines stay unchanged.
-> T-602 remains 🟡 against its original combined acceptance.
-
-> **T-602.2 (2026-10-17): partial.** [Animated GIF contract](gif-export.md): two
-> complete CPU passes with `palettegen` / `paletteuse`, private palette PNG,
-> opaque RGB background and explicit play-once container behavior. Content cycles
-> are encoded frames, separate from container repeat. Centisecond delays are
-> measured, not advertised as exact fixed FPS. MP4/GIF select by session clip ID;
-> ambiguous legacy name-only calls refuse. Shared supervision/publication remain
-> authoritative. Encoder/bitrate choice and open-after-export still need follow-up;
-> T-602 stays 🟡. No GIF transparency or generic player timing guarantee.
-
-> **T-602.3 (2026-10-17): original functional acceptance complete.** MP4 now
-> offers CRF 0..51 (default 23) or single-pass target bitrate 64..100000 kbit/s,
-> explicitly reported in preflight, never together. libx264 remains default;
-> software libx264rgb is separately probed and real encode/decode-qualified,
-> with mandatory RGB H.264 player-compatibility consent and no fallback.
-> The 2 s sample MP4/GIF, supervised cancellation, missing-executable guidance,
-> failure diagnostics and no-overwrite publication are covered. Windows opt-in
-> Open after export uses a native UTF-16 association request once after complete
-> success, with separate open errors. It is tested with an injected opener;
-> no reader was launched, per T-602.3's test restriction. Other OSes hide it.
-> Default MP4 arguments/bytes, GIF palette/timing/bytes and all 207 historical
-> rendered-export references are preserved. No new renderer, audio, physics,
-> GIF transparency or universal player compatibility is claimed. T-601 stays 🟡.
-
-> **T-603 was split.** The original entry assumed one hardcoded runtime exporter.
-> It became a **user-authored format engine** instead: Ankhimate cannot know
-> which engine a rig is headed for, and the list of engines is not closeable, so
-> shipping exporters is a treadmill where the format a user needs is always the
-> one missing. `docs/export-plan.md` carries the full argument.
-
-### ✅ T-603a Atlas bake
-**Deps:** T-301 · **Refs:** PLAN §5 F-10
-- `export/src/atlas.rs`: trim, shelf pack, padding + extrude, power-of-two, multi-page →
-  `atlas.png` (+`_2`…) and a region table with trim offsets and original size.
-- CPU-only, no wgpu, so it runs headless in CI and in a future CLI exporter.
-- **Shelf, not MaxRects.** A few dozen lines whose output is trivially reproducible, against
-  perhaps 10% tighter packing for considerably more code to keep deterministic. Atlas density is
-  not this project's bottleneck; a packer that reorders between runs would make every export a
-  spurious diff.
-**Accept:** ✅ trim offsets reconstruct the source placement exactly; regions never overlap; every
-region lands inside its page; overflow opens a second page and loses nothing; the same assets pack
-to byte-identical pages regardless of insertion order; a fully transparent image degrades to 1×1
-rather than a zero-area rect; extrude duplicates the edge pixel outward.
-
-### ✅ T-603b Template engine + export runner
-**Deps:** T-603a · **Refs:** PLAN §2.6, §6
-- `template.rs` (Handlebars in **strict mode**, domain helpers, path confinement), `context.rs`
-  (the documented context — `docs/export-context.md`), `preset.rs`, `run.rs`.
-- **Strict mode is not a preference.** Default Handlebars renders a missing field as an empty
-  string, so a typo'd `{{nmae}}` produces a bone with no name and an export that looks fine until
-  an engine rejects it. Strict mode turns that into an error with template, line and column.
-- Presets persist in the project (`Project.export_presets`) as **opaque JSON**, so one written by a
-  newer editor round-trips through an older one intact.
-**Accept:** ✅ byte-identical across runs; a missing field errors with its location; per-animation
-templates emit exactly one file per clip; a path escaping the output directory aborts and writes
-nothing; a template failing mid-set leaves the directory untouched; two templates claiming one path
-is an error; a rig with zero animations exports.
-
-### ✅ T-603c Native runtime format, authored as a template
-**Deps:** T-603b
-- Ankhimate's own `skeleton.json` ships as a **preset**, not as Rust.
-- This was the gate, and it earned its place: writing the format as a template is what surfaced
-  that `{{#each}}` over an absent key is a strict-mode error, which is why the context now always
-  emits its collections empty rather than missing.
-**Accept:** ✅ renders valid JSON for a rig with a hierarchy, skins, an IK constraint and two clips;
-every shipped preset parses and renders; bones come out parents-first with `-1` for a root.
-
-### ✅ T-603d Export panel
-**Deps:** T-603b · **Refs:** T-207
-- Preset list, atlas options, template editor, **live preview through the real pipeline**, and a
-  context browser listing what a template can address at the cursor's scope.
-- Every edit is an `EditCommand` (`export_cmds.rs`) with `merge`, so typing a template body is one
-  undo step rather than one per keystroke.
-- The template buffer lives in `ui.data` while editing — a field rebuilt from the document each
-  frame swallows keystrokes, a trap this repo has already paid for once.
-**Accept:** ✅ compiles and is in the default layout; preview renders without writing; presets
-survive save/load. **Not verified in the running editor** — see the note below.
-
-### ✅ T-603e Preset library *(partial, deliberately)*
-**Deps:** T-603c · **Refs:** PLAN §0
-- Ships: **Ankhimate runtime**, **Generic JSON** (with a per-animation template), **Phaser 3 atlas**.
-- **No Godot preset, on purpose.** Godot's `SpriteFrames` on-disk `.tres` layout is not published:
-  the class reference documents a scripting API of methods, and the only official tutorial is
-  GUI-driven. Shipping one would mean guessing at a private serialization and calling it support —
-  and a preset that half-works is worse than none, because the user cannot tell which half. The
-  clean-room path to adding it is empirical: have Godot save a `.tres`, observe the output, write a
-  template from that.
-**Accept:** ✅ the Phaser preset's output matches the documented atlas shape (frame rect, `rotated`,
-`trimmed`, `spriteSourceSize`, `sourceSize`, `meta`).
-
-### 🟡 T-604 Runtime integration (original Rust approach superseded)
-**Deps:** T-603c · **Refs:** PLAN §3.1, §6.2
-**M007.2:** the bullets below record the historical Rust contract. The supported
-alpha walkthrough uses the pinned external TypeScript/Phaser snapshot; see
-[alpha-scope.md](alpha-scope.md). This is not physics compatibility.
-- External runtimes repository, Rust reference package: `Rig` (load), `AnimationState` (play / loop / crossfade / speed, event
-  dispatch, physics ownership), `build_batches` → `Vec<DrawBatch>` in draw order. No wgpu.
-- **Deliberately thin.** Crossfade is `evaluate()`'s existing alpha mixing, event windowing is
-  core's `events_in_window`, and skinning is `Pose::skinned_vertex` — which was *moved into core*
-  as part of this task, because the editor had its own copy. Two answers to "where does this vertex
-  go" is the worst bug this project can ship: the rig looks right in the tool and wrong in the game.
-**Accept:** ✅ runtime pose == a direct `evaluate` at the same time (measured at the bone *tip*, since
-rotating a bone never moves its own origin); a crossfade lands between its two clips and drops the
-outgoing one; an event fires exactly once across a loop boundary and once per lap; the same `dt`
-sequence gives the same pose.
-- `wasm32-unknown-unknown` was verified in the original Rust package; its CI now
-  belongs to the external runtimes repository.
-- **Deferred:** the `macroquad_player` example and `docs/runtime-guide.md`. The crate is tested
-  headlessly and its API is documented in place; a worked example wants a real exported rig to load,
-  which is the natural first task of the next session rather than a stub written blind.
-
-### 🟡 T-605 Format spec finalization + migration policy
-**Deps:** T-603 · **Refs:** PLAN §6, ADR 0004
-- `docs/format-spec.md` generated/verified against the shipped serialization (normative field
-  tables for `.ankh` and `.ankh.runtime`); document the unknown-field preservation rule and the
-  version-bump/migration procedure; add a migration test harness (`formats/tests/migrations.rs`)
-  with one checked-in file per historical version.
-**Accept:** every documented field exists in code (a test walks the schema types); a v0-style file
-fixture migrates and round-trips; CI fails if `CURRENT_VERSION` changes without a new fixture.
-- **T-605 checkpoint:** normative author/runtime tables, 33-type schema inventory, compiled
-  Serde cases, historical v1 fixtures (minimal, tentacle, Crapaud), all-profile save/reopen
-  and version/fixture/spec gates are implemented. Current ANKH v1 is distinct from the
-  removed ZIP prototype (authentic negative fixture retained). No authenticated v0 file
-  was found; its migration criterion remains unqualified and no synthetic v0 is claimed.
-  Unknown Extra members survive typed Serde only, not loaded-model save; opaque presets
-  do survive. This limitation is documented/tested, not changed by this task.
-
----
-
-## Phase 7 — Production polish
-
-> All ∥. None of these are optional for a 1.0 that competes with Spine/Spriter.
-> The cross-cutting interaction order, workbench layout, and measurable UX gates
-> are specified in [`ux-workbench-plan.md`](ux-workbench-plan.md).
-
-### 🟡 T-701 Settings, keymap, autosave *(was T-505)*
-**Deps:** T-108 · **Refs:** PLAN §5 F-15
-- `editor/src/config.rs`: `Config` serialized as RON to the platform config dir (`directories`) —
-  UI scale, theme + custom color overrides, grid gap/foreground toggle, pixel-art filtering mode,
-  bone widget size, non-selected bone translucency, gizmo ring radii, autosave interval, onion-skin
-  defaults, ffmpeg path, recent files, "skip startup window".
-- Keymap: **landed as a registry, not the `Action` enum this task specified.** An enum closes the
-  set at compile time, which forecloses the plugin work Phase 10 is built on — a plugin cannot add
-  a variant, and a keymap file naming one cannot survive that plugin being uninstalled. What
-  shipped instead: `commands/registry.rs` (`Operator` — stable dotted id, `enabled`, `invoke`, and
-  shadowing that chains rather than replaces), `commands/operators.rs` (21 built-ins registering
-  through the same door a plugin will), and `keymap.rs` (bindings naming operators by id, exact
-  modifier matching, per-binding `while_typing`, unknown ids kept rather than dropped).
-  Menus read label/shortcut/enabled from the operator, which removed three drifts the duplication
-  had already produced (see commit `3a09c69`).
-  **M007.2 correction:** Settings (`ui/settings.rs`), chord capture/conflicts,
-  reset and `Config.keymap` persistence are implemented. Exact-modifier Save /
-  Save As focus regressions were validated in M005.1. Keep this task partial:
-  the original settings list and every acceptance condition are not all closed.
-- Autosave: timer writes `<name>.ankh.autosave` beside the project (temp dir if unsaved); recovery
-  offer on startup when newer than the save.
-**Accept:** rebinding undo to `Ctrl+U` works and persists; kill the process mid-edit → relaunch
-offers recovery with intact data; corrupt config falls back to defaults with a status message.
-
-### 🟡 T-702 Diagnostics / warnings *(was T-506)*
-**Deps:** T-108 · **Refs:** PLAN §5 F-16
-- `editor/src/diagnostics.rs`, rules run debounced on document change: mesh vertex with zero total
-  weight, unbound vertex group, slot with a dangling attachment name, keys beyond duration, empty
-  animation, unused asset, duplicate draw-order entries, IK constraint with a missing target or a
-  chain spanning disjoint roots, deform timeline with a stale vertex count, empty skin.
-- Status-bar badge + popover list; clicking a row selects and frames the offender. Pre-export runs
-  the same rules as blocking warnings with continue-anyway.
-**Accept:** each rule has a unit test; the export modal surfaces an induced warning; the rule pass
-over a 500-bone rig stays under the documented debounce budget.
-
-### 🟡 T-703 ∥ ★ Onion skinning *(was T-504)*
-**Deps:** T-106, T-207 · **Refs:** PLAN §5 F-7
-- Transport toggle: evaluate at playhead ±1..k frames (k configurable 1–5), render ghost passes
-  tinted (past reddish, future greenish, from theme tokens) under the main pose; opacity falloff;
-  "only selected bones" option; key-based stepping option (previous/next key instead of ±frames).
-- Animate mode only.
-**Accept:** ghosts visible while scrubbing; off = zero extra evaluations (counter assertion in a
-debug build); ghost count matches k.
-
-### 🟡 T-704 ∥ Curve editor refinement *(was T-507)*
-**Deps:** T-203 · **Refs:** PLAN §5 F-6
-- `ui/timeline/graph.rs` exists — finish it: dopesheet ⇄ curve toggle, per-property value/time
-  curves with draggable bezier handles (merged commands), per-property color coding, fit-to-view,
-  value-axis numeric readout, multi-property overlay with a normalize toggle, handle-tie modes
-  (broken / aligned / mirrored), box-select on curve points.
-**Accept:** dragging a handle changes easing live during playback; undo restores handles exactly;
-switching modes preserves the selection.
-
-> **T-814 local checkpoint:** session key selection shared by dopesheet, graph and
-> inspector; numeric normalized Bezier controls use native undoable commands.
-> Revision-scoped selection, sorted-move rebasing, separate tangent gestures and
-> overflow-safe/stable gesture framing are regression-tested. Normalize overlay,
-> handle-tie modes and graph marquee remain deferred. **PENDING MANUAL REVIEW**;
-> this does not complete T-704 or Phase 7.
-
-### ⏸ T-705 ∥ Localization (i18n)
-**Deps:** T-701 · **Refs:** PLAN §7
-- `editor/src/i18n.rs`: string catalog keyed by dotted ids, loaded from embedded `en` plus optional
-  JSON files in the config dir; `t!("bone_panel.name")` macro; a fallback-to-English switch and a
-  "show keys" debug mode; language picker in Settings; paste-a-catalog import for translators.
-- Sweep the UI for literals (a CI lint or `xtask i18n-check` listing untranslated string literals in
-  `ui/`).
-**Accept:** switching language re-renders every panel; a catalog missing keys falls back cleanly;
-`xtask i18n-check` is green.
-
-### 🟡 T-706 ∥ Performance pass *(was T-508)*
-**Deps:** Phase 2, T-301 · **Refs:** PLAN §7.7
-- `xtask bench`: synthetic 500-bone / 200-slot rig; criterion benches for `evaluate` (<1 ms target),
-  sampling, and atlas packing. Renderer: instanced bone widgets, batch attachments by
-  (texture, blend mode), draw-order-stable sorting, texture cache reuse across frames.
-- Timeline UI virtualization (only visible rows/keys drawn) — required once rigs have hundreds of
-  timelines.
-**Accept:** bench trend report in CI (non-gating); 60 fps with the synthetic rig on an integrated
-GPU (recorded in the PR); scrolling a 300-row dopesheet stays above 60 fps.
-
-### 🟡 T-707 ∥ ★ Crash recovery, update check, feedback
-**Deps:** T-701 · **Refs:** PLAN §5 F-15
-- Panic hook writes a log next to the binary plus an emergency `.ankh` dump of the in-memory
-  document; on next launch, offer to open the log and recover the dump.
-- Optional update check against the releases API (off by default, explicit user action or an opt-in
-  setting; never auto-download).
-- "Send feedback" opens the issue tracker prefilled with version/OS — no telemetry, no silent
-  network calls (state this in the privacy note in `README.md`).
-**Accept:** an induced panic produces a recoverable dump; update check failure degrades to a
-message; a fresh install makes zero network requests until the user asks.
-
-### 🟡 T-708 ∥ Viewport interaction polish
-> **T-815 local checkpoint — PENDING MANUAL REVIEW:** existing numeric mesh/UV/
-> polygon fields now use exact f32 drafts, explicit Set/Add and Apply/Cancel;
-> Path reuses its existing point selection/EditPath command. Selection leases/
-> epochs prevent stale indices and drafts after target/revision changes. No new
-> geometry snapping, universal Frame Selection, pivot compensation or expression
-> evaluator. See [geometry editing](geometry-editing.md). Historical criteria
-> remain incomplete; T-813/T-814 are not retroactively manually qualified.
-
-**Deps:** T-207 · **Refs:** PLAN §7
-- Transform gizmo per tool (translate / rotate / scale / shear) with axis handles and rings, plus a
-  contextual edit bar: snap X/Y, rotation snap step, aspect-ratio lock, and **pivot editing mode**
-  (move/rotate/scale the attachment pivot rather than the bone — established editors have this and
-  we currently do not).
-- Grid rendering with configurable gap and front/back ordering, pixel-magnification mode for
-  pixel-art rigs, ruler-free world-coordinate readout, frame-selection (`F`), zoom-to-fit,
-  hide-others/isolate selection.
-- Numeric entry on drag (type a value while dragging), and shift/ctrl modifiers documented in one
-  place.
-**Accept:** pivot edits change rotation center visibly and are undoable; snapping produces exact
-multiples (numeric test on the transform helpers); every modifier is listed in the keymap UI.
-
-### 🟡 T-709 ∥ ★ Accessibility & window UX
-**Deps:** T-701 · **Refs:** PLAN §7
-- **UI control pass landed 2026-08-22:** ordinary controls now share a 28 px minimum height,
-  roomier padding, and a consistent vertical rhythm. Assets and animation actions are justified;
-  Assets, Skins, Animations, Export, Settings, and the Inspector use the bundled Lucide vocabulary
-  for semantic actions; common forms use stable label columns. Timeline transport and tool strips
-  deliberately retain their dense exact-size layout. This does not claim the keyboard-flow or
-  close-guard acceptance below.
-- UI scale honored everywhere (no hardcoded pixel fonts), keyboard focus traversal through panels,
-  tooltips on every icon-only button, colorblind-safe defaults for the weight heat map and
-  onion-skin tints, unsaved-changes guard on close, window geometry/dock layout persistence,
-  per-project title-bar path with a dirty marker.
-**Accept:** the whole create-bone → key → export flow is reachable by keyboard; closing with unsaved
-changes always prompts; layout survives restart.
-
----
-
-## Phase 8 — Release
-
-### 🟡 T-805 — Native conversational assistant (development MVP)
-
-The opt-in native panel implements OpenAI Responses, Anthropic Messages,
-DeepSeek, Ollama and LM Studio adapters, plus the T-805.1 NInfer local-compatible
-profile, streaming/Stop, manual/discovered model
-IDs, Windows Credential Manager keys, bounded metadata reads and explicitly
-approved native animation/key edits. A batch is one document Undo/Redo step;
-session navigation retains its existing semantics. See [the English usage guide](native-ai.md).
-T-805.1 adds a fixed composer, settings window, observable execution phases,
-correlated native results, bounded invalid-call correction and the embedded
-[expert manual](ai/ANKHIMATE-AI.md). Protocol mocks and isolated Jade native-edit
-qualification are covered; cloud qualification remains pending (no key supplied).
-The maintainer's existing local Qwen endpoint is qualified separately; that is
-not certification of every NInfer/backend/model combination. This is not part of frozen
-RC2 and does not implement autonomous rigging, image tools or arbitrary scripts.
-
-### 🟡 T-806 — Viewport vision and first native rigging tools
-
-Local development implementation extends T-805.1: per-image preview/consent,
-bounded canvas-only egui capture, NInfer/LM Studio multimodal transport, and
-Setup-only typed bone.create/setup/rename proposals using native commands and
-one undoable transaction. Existing-bone reparenting, mesh/weight/FFD authoring
-and autonomous rigging remain excluded. The [guide](native-ai-vision.md) gives
-the exact privacy/coordinate contract and maintainer test steps. Synthetic image,
-mock HTTP and native Save/Undo/Redo tests qualify code paths; **real viewport,
-vision model and artistic rigging quality await maintainer testing**. No GUI or
-live-inference test is claimed, and frozen RC2 is unchanged.
-
-### 🟡 T-801 ★ Samples + documentation *(was T-602)*
-> T-816 adds a no-code first-rig guide and validates the existing Tentacle sample.
-> No new artwork/sample collection or GIF; original acceptance remains open.
-**Deps:** Phase 3, Phase 5 · **Refs:** PLAN §3.3
-- 3 CC0 rigged samples in `samples/`: a simple 2-bone-limb character, a mesh/deform character, and
-  one PSD source demonstrating the import conventions. README with gifs; a "first rig in 10 minutes"
-  guide covering Setup → Animate explicitly; `docs/runtime-guide.md` cross-linked.
-**Accept:** every doc snippet compiles (doctest or `xtask docs-check`); each sample opens
-warning-free (T-702 clean) and plays.
-
-### 🟡 T-802 Release packaging *(was T-603)*
-**Deps:** T-701, T-801 · **Refs:** PLAN §3.3
-- `xtask package`: Windows (zip + optional `cargo-wix` installer), macOS (`.app` + dmg, notarization
-  documented), Linux (AppImage). GitHub Actions release workflow on tag; version from workspace
-  metadata shown in the title bar / About; changelog generated from the milestone.
-**Accept:** a tag push produces three platform artifacts; a fresh Windows VM passes the smoke script
-(open sample → play → export png).
-
-### ⏸ T-803 ∥ Web build (F-17, post-v1 gate)
-**Deps:** T-604 · **Refs:** PLAN §3.1, §5 F-17
-- Keep `core` + `runtime` wasm-clean in CI (already required). Editor wasm target: eframe web
-  backend, file access via the browser file picker + OPFS for recents/autosave, ffmpeg export
-  disabled with an explanatory message.
-- Ship the runtime example as a web demo page for the project site.
-**Accept:** the editor loads in a browser and can open a sample, rig, and animate; export paths that
-cannot work are disabled rather than broken.
-
----
-
-## Phase 9 — Beyond parity (T-9xx)
-
-> Phases 0–8 chase *parity*: the reference feature set, observed as behavior. This phase chases
-> *advantage*. Every task below answers a grievance that practitioners have filed against the
-> established editors — most of them sourced from EsotericSoftware's own public issue tracker
-> (`github.com/EsotericSoftware/spine-editor/issues`), where the complaint is on the record, dated,
-> and often years old without a fix.
->
-> **Why these and not others.** A feature nobody has asked for is a guess. Each task here cites the
-> evidence that someone wanted it and could not have it. Where an issue has sat open for most of a
-> decade (T-901's weight brush was filed in 2016; T-902's numeric vertex entry in 2016), that age is
-> itself the argument: it is not an oversight, it is a thing the incumbent has decided not to do, and
-> therefore a thing we can be better at without racing them.
->
-> **Two are already won.** Worth stating plainly so nobody re-litigates them:
-> - *N-bone IK.* The reference implementation caps IK chains at 2 bones and documents the cap as
->   deliberate ("nondeterministic and would be difficult to control"). `core/src/constraints.rs`
->   solves chains of any length with FABRIK, with `bend_dir` resolving the ambiguity that the cap
->   exists to avoid. This is the single largest rigging-capability gap in our favour.
-> - *Brush weight painting.* Requested since 2016 and repeatedly since (forum threads d/4251,
->   d/13441, d/15276), still slider-only there. We have radius + feather brush painting, locking,
->   and per-mesh colour coding.
->
-> Both need to be *visible* — see T-908 — because an advantage nobody knows about converts nobody.
->
-> **Clean-room rule still applies (PLAN §0).** These tasks describe *behavior we want*, derived from
-> public complaints. Nothing here licenses reading or porting another editor's source.
-
-### T-901 ∥ Bulk rename with sequential numbering
-**Deps:** T-206 · **Refs:** PLAN §2 · **Evidence:** spine-editor#330
-- Multi-select any homogeneous set (bones, slots, attachments, constraints) → rename dialog with a
-  pattern (`tail_{n}`), a start index, a step, and a zero-pad width. `{n}` numbers by **selection
-  order**, not tree order, so a user clicking down a tail gets 1..N in the order they meant.
-- Live preview list (old → new) before applying, so a 40-bone rename is verified, not gambled.
-- Find/replace mode across the same selection, with a regex toggle.
-- **Rename safety** (the reference tool has three separate filed bugs here — #227, #825, and the
-  path-rename issue): renaming a name field must never silently rewrite an attachment *path*.
-  Show path and name as distinct fields; if a rename would orphan an attachment, refuse and say
-  which. One undo step for the whole batch.
-**Accept:** renaming 40 bones is one command and one undo; a rename that would break an attachment
-reference is blocked with a message naming the attachment; property tests confirm name and path
-never move together unless both were explicitly edited.
-
-### T-902 ∥ ★ Numeric entry for every vertex and handle
-> **T-815 local checkpoint — PENDING MANUAL REVIEW:** existing numeric mesh/UV/
-> polygon fields now use exact f32 drafts, explicit Set/Add and Apply/Cancel;
-> Path reuses its existing point selection/EditPath command. Selection leases/
-> epochs prevent stale indices and drafts after target/revision changes. No new
-> geometry snapping, universal Frame Selection, pivot compensation or expression
-> evaluator. See [geometry editing](geometry-editing.md). Historical criteria
-> remain incomplete; T-813/T-814 are not retroactively manually qualified.
-
-**Deps:** T-401 · **Refs:** PLAN §2 · **Evidence:** spine-editor#77 (open since 2016)
-- Mesh vertices, UV coordinates, bounding-box points and path points all become type-able: an
-  inspector field pair for the current selection, accepting expressions (`120/2`) as the existing
-  numeric fields do.
-- Multi-select → editing one axis sets it on all (align), with a relative mode (`+=`) for nudging.
-- Snap-to-value and snap-to-neighbour so a row of vertices can be made exactly collinear.
-**Accept:** every draggable point in the editor has a keyboard path to an exact value; a mesh can be
-authored to exact pixel coordinates with the mouse untouched.
-
-### T-903 ∥ Isolation (solo) mode
-**Deps:** T-207 · **Refs:** PLAN §2 · **Evidence:** spine-editor#604
-- `Shift+H` (or similar) isolates the selection: everything not in it dims to a configurable opacity
-  or hides entirely. Applies to the viewport, and optionally filters the hierarchy and the dopesheet
-  to the isolated set.
-- Isolation is a **view state, not document state** — it lives in Session, never serializes, and
-  cannot be saved into a `.ankh`. A user must never ship a rig with things hidden by accident.
-- A persistent, obvious badge while isolation is active, with one click to exit. The failure mode to
-  design against is a user who forgets they are isolated and concludes their rig is broken.
-**Accept:** isolating a 60-bone rig to one limb is one keystroke; the badge is visible in every
-screenshot of the isolated state; round-tripping a file while isolated changes nothing on disk.
-
-### T-904 ∥ Selection sets panel
-**Deps:** T-206 · **Refs:** PLAN §2 · **Evidence:** spine-editor#409
-- Named, saved selections (a "left arm" set, a "face" set), listed in their own panel: create from
-  current selection, rename, delete, reorder, and select-on-click. Additive and subtractive click
-  modifiers.
-- Sets are document state (they describe the rig, and a rigger hands them to an animator), so they
-  serialize — a new optional table in the format, absent in old files.
-- Composable with T-903: select a set, isolate it.
-**Accept:** a rigger can hand over a file where "left arm" is one click; loading a pre-T-904 file
-produces no sets and no warning.
-
-### T-905 Non-destructive timeline offset
-**Deps:** T-201, T-208 · **Refs:** PLAN §2 · **Evidence:** spine-editor#153
-- A per-track (and per-selection) **time offset** that shifts evaluation without moving keys: the
-  data is untouched, the playback is phase-shifted. The cited use is secondary motion — a scarf, a
-  tail, hair — where every strand wants the same curve a few frames apart.
-- Offsets are keyable? **No.** Deliberately: an animatable offset on top of animated tracks is a
-  second time dimension and it makes debugging a rig impossible. Offset is authored, static, and
-  visible as a labelled marker on the track header.
-- Negative offsets must work, which means evaluation has to tolerate negative time — the underlying
-  ask in the filed issue.
-**Accept:** ten strands of hair animate from one authored curve plus nine offsets; clearing every
-offset restores the original animation byte-for-byte.
-
-### T-906 ∥ Timeline markers
-**Deps:** T-201 · **Refs:** PLAN §2 · **Evidence:** spine-editor#531
-- Named, coloured markers on the timeline ruler: add at playhead, drag to move, rename, delete.
-  Snap the playhead and dragged keys to them.
-- Distinct from events (T-506): an event fires into the game at runtime; a marker is a note to the
-  animator that never leaves the editor. Conflating the two is the mistake to avoid — keep them in
-  separate rows with separate styling.
-- Per-animation, serialized.
-**Accept:** a walk cycle can be annotated "contact / down / passing / up" and those labels survive
-save/load; markers never appear in any runtime export.
-
-### T-907 Bone length edit carries its children
-**Deps:** T-103, T-206 · **Refs:** PLAN §2 · **Evidence:** spine-editor#566
-- Dragging a bone's length currently should — and after this task, does — offer to bring child bones
-  along so they stay at the tip. Modifier-held drag toggles the behavior; the default is the one
-  users expect (children follow), with the opposite available, and the choice remembered.
-- Same for the numeric length field in the inspector.
-- Undo restores both the length and every child position in one step.
-**Accept:** lengthening an upper arm keeps the elbow at the tip without touching the elbow; the
-modifier reliably produces the old behavior; one undo reverts both.
-
-### 🟡 T-908 ★ Make the existing advantages discoverable
-> T-816 local checkpoint: existing IK/weight tools clarified; unchanged eight-bone
-> Tentacle reused, first-rig guide added. Headless evidence is available; a new
-> user's GUI exercise remains PENDING MANUAL REVIEW. Original criteria follow.
-**Deps:** T-403, T-104 · **Refs:** PLAN §0, §5
-- We already beat the reference on N-bone IK and brush weight painting (see the phase preamble) and
-  neither is advertised anywhere a user would look.
-  - IK constraint UI: show the chain length, allow 3+ explicitly, and document `bend_dir` as the
-    control that resolves multi-bone ambiguity. A rigger arriving from another tool assumes 2 is the
-    ceiling and will not try 3 unless told.
-  - Weight painting: the brush settings (radius, feather, lock, paint modes) need a visible home and
-    a one-line explanation each. Users arriving from slider-only weighting do not know to look for a
-    brush.
-- `docs/` gains a short "what this does that others don't" page, and the samples exercise a 3-bone
-  IK chain so it ships visible in `samples/`.
-**Accept:** a new user rigs a 3-bone chain without reading source; the weights panel explains its own
-brush without a tutorial; a sample demonstrates N-bone IK on open.
-
-### T-909 ∥ Rig transfer between skeletons
-**Deps:** T-209, T-501 · **Refs:** PLAN §2 · **Evidence:** spine-editor#582
-- Copy a subtree — bones, their slots and attachments, their constraints, **and their animation
-  keys** — and paste it into another open skeleton. The filed complaint is that transferring rigging
-  loses keys and forces manual recreation, and that move-vs-copy is ambiguous when dragging.
-- Explicit move and copy as separate commands with separate names. No modifier-guessing.
-- Name collisions resolved by a dialog listing them, with rename-on-paste, not by silently renaming
-  (the reference tool's "duplicate" workaround renames unexpectedly, which is the bug being cited).
-- Constraints referencing bones outside the copied subtree are reported and dropped, not silently
-  broken.
-**Accept:** a rigged and animated arm moves to a second skeleton with its keys intact; every dropped
-constraint is named in a summary; the operation is one undo step.
-
-### T-910 ∥ Multi-window / multi-monitor
-**Deps:** T-207 · **Refs:** PLAN §3.1 · **Evidence:** spine-editor#266
-- Tear off a panel (viewport, timeline, graph) into its own OS window; layout including window
-  positions persists across sessions.
-- A second *viewport* on the same document is the highest-value case: front view and side view, or
-  setup pose and animate pose, at once.
-- Constraint to respect: one document, one undo stack, N views. Two windows must never diverge.
-**Accept:** the timeline can live on a second monitor across restarts; edits in either viewport
-appear in both immediately and undo once.
-
-> **Landed, less the second viewport.** Every pane *except* the canvas tears off, via
-> View › Open in a window, and the set persists across restarts. Divergence is impossible rather
-> than merely avoided: `show_viewport_immediate` takes an `FnMut`, so a torn-off window borrows the
-> same `AppState` the docked tree just drew from — one document, one undo stack, no synchronisation.
-> A torn-off pane is hidden from the dock so it cannot draw twice.
->
-> A second **viewport** is not done. The canvas paints through a wgpu callback against render
-> resources shared with the main window, and a second render pass into another OS window is its own
-> piece of work with its own failure modes — worth doing deliberately rather than landing untested
-> behind a feature that otherwise only moves egui panels around.
-
-### T-911 Physics stability harness
-**Deps:** T-503 · **Refs:** PLAN §2 · **Evidence:** clustered forum reports of jitter at high
-framerate, jitter under unclear conditions, and CPU cost, against the reference implementation's
-physics feature
-- The reference tool shipped physics and drew a cluster of independent instability reports. Ours is
-  newer and less exercised; assume it has the same failure modes until measured.
-- Deterministic tests: fixed-step accumulator so simulation is framerate-independent by construction
-  (the specific complaint is jitter *at higher framerates*); energy-decay assertions so a settled
-  chain provably settles; a soak test over 10k frames asserting no NaN and bounded velocity.
-- A physics debug overlay: per-bone velocity, and a "not yet settled" indicator.
-- Also fix the class of bug behind spine-editor#995 by test: a constraint of one kind must never
-  silently disable an unrelated editing operation on an unrelated attachment. Assert that mesh
-  deformation stays available with physics active.
-**Accept:** the same animation renders identically at 30/60/144 fps; a 10k-frame soak stays finite;
-mesh editing is provably unaffected by an unrelated active physics constraint.
-
-### T-912 ∥ Graph editor ergonomics review
-**Deps:** T-704 · **Refs:** PLAN §2 · **Evidence:** a five-year cluster of independent forum threads
-against the reference tool's graph editor — unexpected snapping, extreme curves, curves not visible,
-and an explicit request for a different interaction model altogether
-- This is the one theme where the evidence is title-level rather than quoted (the source forum is
-  JS-rendered and resisted extraction), so treat the *specific* claims as unconfirmed. What is
-  confirmed is the shape: independent users, several years, same feature, no resolution.
-- Therefore the task is a **review with a usability bar**, not a feature list:
-  - Curves must always be visible — auto-frame the value range, and never let a selected curve be
-    off-screen with no indication.
-  - Snapping is opt-in and its state is always visible. Silent snapping is the specific complaint.
-  - Extreme tangents are clamped or flagged, never silently produce a curve that overshoots the
-    keyed values without the animator noticing.
-  - Direct numeric entry for tangent values (pairs with T-902).
-- Deliverable includes a short written rationale in `docs/` for each interaction chosen, so the next
-  change does not undo it by accident.
-**Accept:** a selected curve is never invisible; snapping state is readable at a glance; an
-overshooting tangent is visually distinct from a well-behaved one.
-
-> **Historical checkpoint:** the first pass landed curve framing, explicit snapping
-> and extreme-handle indicators; numeric entry was deferred because selection was
-> local to dopesheet egui memory. **T-814 local checkpoint** now shares session
-> selection and implements precise numeric Bezier drafts/Apply/Cancel. Invalid
-> input is refused atomically, Setup edits are blocked, and Undo/Redo/Save/Load are
-> covered by automated regressions. See `docs/graph-editor.md` for exact units,
-> multi-key semantics, conservative invalidation and remaining limitations.
-> **PENDING MANUAL REVIEW** for T-813 + T-814; no public release is changed.
-
-### T-913 ∥ ★ Name the thing under the cursor
-**Deps:** T-206, T-301 · **Refs:** PLAN §2 · **Evidence:** the naming-and-selection cluster
-(spine-editor#330, #409, #604) — each of those is a symptom of the same root problem, that a dense
-rig gives you no cheap way to answer "what am I looking at"
-- Hovering anything in the viewport shows its **name** near the cursor: bones, slots, attachments,
-  mesh vertices (index), constraints, IK targets, path and clipping points, event and point
-  attachments.
-- The state is already tracked — `session.hovered_bone`, `hovered_attachment`, `hovered_gizmo`, and
-  the mesh-vertex hover in the renderer — and today it only changes a colour. This task spends that
-  existing signal on a label; it should not need new hit-testing.
-- Show the **kind** alongside the name where a name alone is ambiguous, because a bone, a slot and an
-  attachment routinely share one name (`front-foot` is all three in `samples/spineboy.ankh`, which is
-  exactly the case where a label earns its place). Use the hierarchy's icons so the two read as one
-  vocabulary.
-- On a mesh vertex, the influence list is the useful readout: bone name and weight per influence, in
-  the per-mesh rank colours. That answers "why is this vertex moving" without opening a panel.
-- Constraints driving the hovered bone are worth naming too — a bone that will not move by hand is
-  usually a bone something else is driving, and the label is the cheapest place to say so.
-- **Do not let it become noise.** A label under the cursor on every mouse move is the failure mode:
-  - a short delay before it appears, so passing over a rig does not strobe;
-  - never covering the thing being hovered — offset, and flipped near a viewport edge;
-  - suppressed entirely while dragging, since during a drag the cursor is busy and the label lies
-    about what is under it;
-  - a settings toggle (T-701) and a modifier to summon it on demand, for users who want it only when
-    asked.
-- Legibility over artwork: the label needs its own background, not just a text colour, because it
-  sits on whatever the user imported.
-**Accept:** hovering any object in the viewport names it once the delay elapses; a bone, a slot and
-an attachment sharing a name stay distinguishable; a mesh vertex reports its influences with weights;
-no label is drawn during a drag; the whole thing can be switched off.
-
----
-
-## Phase 10 — Extensions and automation
-
-### ✅ T-1001 Plugin host and declarative panels
-**Deps:** T-701, T-603 · **Refs:** [plugin plan](plugin-plan.md), [plugin API](plugin-api.md)
-- The framework-free `document` crate owns undoable edits, named verbs, their
-  schemas, and the shared read surface.
-- Sandboxed QuickJS plugins can contribute importers, exporters, and declarative
-  panels. The editor loads them from its platform config directory.
-- Plugins never receive filesystem/network/clock access, never mutate a
-  document directly, and never run inside `evaluate()`.
-**Accept:** a plugin can add a panel, import and export through the shared
-registries, and one panel action is one editor undo step.
-
-### ✅ T-1002 MCP stdio server
-**Deps:** T-1001 · **Refs:** [plugin plan](plugin-plan.md) step 8
-- `ankhimate-mcp` keeps one rig open across calls and exposes nine coarse tools:
-  `open_rig`, `new_rig`, `describe_rig`, `list_verbs`, `run_script`, `save_rig`,
-  `export_rig`, `render_frame`, and `render_contact_sheet`.
-- The transport uses the official Rust MCP SDK over stdio; tool definitions are
-  adapted from the transport-free catalogue rather than duplicated.
-- Native `.ankh` and PSD are registered first-party; installed JavaScript
-  packages add foreign formats through the same registry used by the editor.
-- Saving over the opened source is refused. Export uses the existing confined,
-  all-or-nothing, never-delete plan.
-**Accept:** the stdio initialize + `tools/list` exchange succeeds; a rig can be
-created, scripted, described, saved, reopened, and exported in one session;
-tool failures are visible MCP tool results rather than opaque protocol errors.
-
-The two render tools return actual MCP `image/png` content. They share the
-transport-free `ankhimate-render` layer intended for T-601, support fixed or
-automatic framing and per-call focus/diagnostics, and never mutate document or
-session selection state. See [MCP server](mcp.md) for the focus contract and
-deliberate omissions.
-
-### ✅ T-1003 Move foreign formats to community JavaScript plugins
-**Deps:** T-1001 · **Refs:** [plugin plan](plugin-plan.md), [plugin API](plugin-api.md)
-- The complete name-keyed project schema can be imported atomically through
-  `ankhimate.importProject`; image bytes and structured diagnostics cross with it.
-- Atlas-based importers can crop and unrotate encoded images without filesystem
-  access. Export plugins can render an existing strict preset with `emitPreset`.
-- Port Spine import/export and DragonBones import to ordinary `.js` files, pin
-  them against the existing native behavior tests, then remove their native
-  registry entries and parser modules.
-**Accept:** installing the community plugins restores the corresponding registry
-entries; full-schema fixtures preserve constraints, curves, weighted meshes,
-deform and atlas artwork; without the plugins those foreign formats are absent;
-the editor and MCP use the same discovered plugin set.
-
-Spine import/export and DragonBones import now ship as ordinary sandboxed
-QuickJS packages under `community-plugins/`. Package resources carry the Spine
-template; sidecars remain confined to the imported rig directory. The native
-registry and first-party preset list no longer expose either foreign format.
-MCP discovers the same packages and can invoke their importers and exporters.
-The editor exposes missing shipped packages under
-**File → Import → Community importers**; installing copies their JS/resources
-to the normal user plugin directory without overwriting an existing package,
-reloads discovery, and adds the registered importer to that same menu.
-The former Rust parser modules and native-only examples are removed. The Spine
-regression suite now executes the JS importer, and focused DragonBones tests pin
-its defaults, timing, visibility, nested armatures, IK, meshes, diagnostics, and
-representative whole-project conversion.
-
-## Dependency overview
-
-```
-Phase 0: T-001 → T-002        T-003 (free)
-Phase 1: T-101 → T-102 → T-103 → { T-104 ∥ T-105* } → T-106 → T-107 → T-108   (*T-105 only needs T-101)
-Phase 2: T-108 → T-201 → { T-202 ∥ T-203 ∥ T-205 } → T-204 ; T-206 after T-107
-         T-207 after T-107/T-202/T-204 → { T-208 ∥ T-209 ∥ T-210 ∥ T-211 }
-Phase 3: T-207 → T-301 → { T-302 ∥ T-303 ∥ T-305 ∥ T-306 ∥ T-307 } ; T-304 after T-108
-Phase 4: T-301 → T-401 → { T-402 ∥ T-403 } → T-404 → T-405
-Phase 5: T-501 ∥ T-502 ∥ T-503 ∥ T-505 ∥ T-506 ∥ T-507 ; T-504 after T-104+T-207
-Phase 6: T-601 → T-602 ; T-603 (after T-507) → T-604 → T-605
-Phase 7: all ∥ (T-704 after T-203 ; T-706 after T-301)
-Phase 8: T-801 → T-802 ; T-803 after T-604
-Phase 9: T-908 (free, do first) ; { T-901 ∥ T-902 ∥ T-903 ∥ T-904 ∥ T-906 ∥ T-910 ∥ T-913 } ;
-         T-905 after T-208 ; T-907 after T-206 ; T-909 after T-209 ;
-         T-911 after T-503 ; T-912 after T-704
-```
-
-Critical path to a usable 1.0: **T-207 → T-301 → T-401/T-403 → T-603 → T-604**. Everything else is
-breadth. Max useful parallel agents: 2–3 in Phase 3, 4–5 from Phase 5 onward.
-
-## Feature parity checklist
-
-> The reference column is the feature set of established 2D skeletal editors, observed as behavior.
-
-| Reference feature | Covered by |
-|---|---|
-| Bone hierarchy, drag reparent, lock/hide, fold, group color | T-206, T-505 |
-| Textures on bones + z-index | T-301 (slots/attachments), T-204 (draw order) |
-| Styles (multiple active, priority) | T-105, T-507 |
-| PSD import + re-import | T-302 |
-| Atlas import modal | T-305 |
-| Per-attachment transform (offset/rotation/scale/size within the slot) | T-307 |
-| Mesh deformation, vertex/triangle editing | T-401 |
-| Mesh tracing (gap/padding) | T-402 |
-| Vertex binds + weights | T-403 |
-| Bind "pathing" | T-502 (path constraint, generalized) |
-| Inverse kinematics (family, constraint dir, distance, mimic target) | T-104, T-504 |
-| Bone physics (sway, damping, bounce, ratio) | T-503 |
-| Dopesheet, presets, custom curves | T-201, T-203, T-704 |
-| Keyframe elements: pos/rot/scale/zindex/texture/tint/hidden/IK | T-201, T-204, T-205, T-504, T-505 |
-| Onion skinning | T-703 |
-| Playback, fps, edit-while-playing | T-202, T-207 |
-| Copy / paste / duplicate | T-209 |
-| Export image / spritesheet / sequence | T-601 |
-| Export video (ffmpeg, system or bundled) | T-602 |
-| Export armature + atlas, bake/exclude IK | T-603 |
-| Warnings system | T-702 |
-| Settings: UI scale, colors, keymap, autosave, gridlines | T-701, T-708 |
-| Startup window, recents, samples, update check | T-304, T-707 |
-| Localization | T-705 |
-| Crash log recovery, feedback | T-707 |
-| Web build | T-803 |
-| Camera x/y/zoom fields | T-708 (viewport readout); camera stays Session state by design |
-| Bounding boxes (hit/trigger regions) | T-802 — skinned, editable with the clip polygon tools |
-| Point attachments (spawn/FX anchors) | T-802 |
-| Animated sequences on an attachment | T-802 — frame list, fps, hold/once/loop/ping-pong ± reverse |
-| Linked meshes (shared geometry across skins) | T-802 |
-| Skins that own bones and constraints | T-802 — inactive skins skip both |
-| Events with audio (path, volume, balance) | T-802 |
-
-Beyond parity (features the open-source alternatives lack): slot/skin model (T-105/T-507), deform
-timelines
-(T-404), clipping (T-405), transform + path constraints (T-501/T-502), events (T-506), two-color
-tint and blend modes (T-505), curve editor (T-704), embeddable MIT/Apache runtime (T-604).
-
-## Advantage checklist (Phase 9)
-
-> Parity is the table above. This is the other direction: things the *commercial* reference does
-> badly or not at all, each traceable to a filed complaint. Sources are public issue numbers on
-> `EsotericSoftware/spine-editor` unless noted.
-
-| Their gap | Evidence | Ours |
+# Ankhimate — operational tasks and evidence
+
+Audit date: **2026-10-20**. Product source frozen at T-816
+`009e67898317d779d943c23a0210bd48ed9d63bd`. T-817 changes documentation only.
+Public editor: `9233b8e888c811e7c71300101f865a9e74b3f489`; public external runtime:
+`c4c38df269cfcb30f941221454b7202f40d3fa5b`; released tag **v0.2.0-alpha.1**.
+The exact T-811 archives were published by T-812 on 2026-10-19. Historical candidate
+labels in FEATURES/RELEASE_READINESS, old alpha-scope and docs/alpha/ do not override
+that publication record. They also do not qualify the newer local candidates.
+T-813–T-816: **PENDING MANUAL REVIEW**. No GUI, inference, browser or GPU run in T-817.
+
+## 1. Current state
+
+The editor can import layered artwork, rig, animate, save/recover and export
+native v2/atlas or CPU images/video. Public PixiJS/Phaser support a documented
+common subset, **not** every Rust constraint or attachment combination. AI is
+optional and bounded by native approval. Windows x64 portable alpha is unsigned;
+MCP/community tools are source/optional packages rather than ZIP executables.
+
+Accepted T-816 baseline: **1596 Rust tests passed, 4 opt-in ignored**, fmt/Clippy/
+workspace build/core WASM/docs green. T-817 documentation-only validation is
+recorded separately; no new binary or model/GPU test is produced. Read the
+[full inventory](FEATURE_INVENTORY.md) before proposing a new implementation.
+
+## 2. Three independent dimensions
+
+Implementation: **COMPLETE** = the explicitly bounded functional scope is implemented;
+**PARTIAL** = usable subset with original criteria left; **ABSENT** = no implementation
+path found; **SUPERSEDED** = named historical design replaced/renumbered;
+**DEFERRED** = intentionally postponed; **UNKNOWN** = insufficient evidence.
+
+Validation: **NOT_TESTED**, **AUTOMATED**, **MANUAL**, **MIXED**, **PENDING_MANUAL**.
+PENDING_MANUAL retains automated evidence and means the local GUI gate is still
+open, never that the functionality is absent. MIXED may combine automated tests
+with a historical maintainer report for the specified binary/scenario; it is not
+a new manual qualification of T-816. No row claims a universal GUI certificate.
+
+Availability: **PUBLIC_ALPHA**, **LOCAL_CANDIDATE**, **SOURCE_ONLY**,
+**NOT_DISTRIBUTED**, **UNKNOWN**. PUBLIC_ALPHA means present in the exact released
+artifact scope, not every original acceptance criterion. An existing public base
+can have a local-only refinement; the local-delta note identifies that boundary.
+SOURCE_ONLY includes the separately built MCP server and optional community formats,
+which are absent from the portable Windows ZIP. Internal version strings are not
+artifact provenance.
+
+## 3. Complete historical task matrix
+
+Every identifier in the exact T-816 TASKS is represented, including renumbered
+aliases and subtask IDs. T-804/T-812/T-817 are extra context rows. Each link opens
+the exact scope, native entry, existing code/tests, limits and recommended action.
+The matrix is an operational summary; the archive retains all original criteria.
+
+### Foundations
+
+| ID / scope | Implementation | Validation | Availability | Remainder / priority |
+|---|---|---|---|---|
+| [T-001](FEATURE_INVENTORY.md#t-001) — License + repo hygiene | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Not a blanket audit of all transitive dependency licenses |
+| [T-002](FEATURE_INVENTORY.md#t-002) — CI skeleton | PARTIAL | NOT_TESTED | SOURCE_ONLY | Actions disabled; no fresh remote green run; actual Clippy job lacks historical -D warnings |
+| [T-003](FEATURE_INVENTORY.md#t-003) — ADR seed | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Some historical format statements are superseded by format-spec; not every old design sketch is current |
+| [T-101](FEATURE_INVENTORY.md#t-101) — Stable entity IDs | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Names cross disk boundaries; unresolved foreign references still need diagnostics |
+| [T-102](FEATURE_INVENTORY.md#t-102) — Affine2 transform math | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Singular transforms remain noninvertible; no universal arbitrary-float geometry guarantee |
+| [T-103](FEATURE_INVENTORY.md#t-103) — Pose extraction + evaluate skeleton | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Stateful physics requires its separate accumulator; direct seek is not a simulation |
+| [T-104](FEATURE_INVENTORY.md#t-104) — Constraint system + correct IK blending | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Runtime common alpha excludes constraints; geometric singularities are not repaired |
+| [T-105](FEATURE_INVENTORY.md#t-105) — Skin layer | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Not arbitrary game-runtime skin composition or linked deformation qualification |
+| [T-106](FEATURE_INVENTORY.md#t-106) — Animation model + sampling | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Extreme finite handles can overflow sampler; no universal f32-range guarantee |
+| [T-107](FEATURE_INVENTORY.md#t-107) — Editor Document/Session split + command undo | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Undo history is not persisted; not every historical UI metadata assignment uses a command (B02) |
+| [T-108](FEATURE_INVENTORY.md#t-108) — `formats` crate + .ankh v1 save/load | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Prototype ZIP unsupported; no authentic v0 migration; complete scope is current v1 only |
+| [T-707](FEATURE_INVENTORY.md#t-707) — Crash recovery, update check, feedback | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | No panic-time live-document dump, recovery browser or complete update/feedback package |
+| [T-813](FEATURE_INVENTORY.md#t-813) — Format Compatibility & Project Reliability | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE | No arbitrary structural repair, hostile-resource budget or power-loss certificate; GUI pending |
+
+### Rigging
+
+| ID / scope | Implementation | Validation | Availability | Remainder / priority |
+|---|---|---|---|---|
+| [T-206](FEATURE_INVENTORY.md#t-206) — Hierarchy panel UX | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Original hierarchy/reparent/lock scope exists; separate bone-name context-menu usability issue B03… |
+| [T-307](FEATURE_INVENTORY.md#t-307) — Attachment inspector — per-attachment properties | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Mesh/sequence image replacement is a separate unimplemented extension; not an absent region inspector. |
+| [T-501](FEATURE_INVENTORY.md#t-501) — Transform constraint | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Not part of common Pixi/Phaser alpha contract |
+| [T-502](FEATURE_INVENTORY.md#t-502) — Path attachment + path constraint | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Static polyline paths/constraints exist; Bezier path handles and PathPosition/PathSpacing authoring… |
+| [T-503](FEATURE_INVENTORY.md#t-503) — Physics constraint | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Rust fixed-step contract is complete in CAP-08; original export/playback parity not fulfilled: native… |
+| [T-504](FEATURE_INVENTORY.md#t-504) — IK completeness | COMPLETE | PENDING_MANUAL | PUBLIC_ALPHA | No unique-solution guarantee or new IK key dots; runtime IK excluded |
+| [T-505](FEATURE_INVENTORY.md#t-505) — Slot & bone presentation depth | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Not every presentation variant or animated dark tint; viewport acceptance incomplete |
+| [T-506](FEATURE_INVENTORY.md#t-506) — Event timeline | COMPLETE | AUTOMATED | PUBLIC_ALPHA | t=0 ignored by current runtime policy; audio metadata is not audio playback |
+| [T-507](FEATURE_INVENTORY.md#t-507) — Skin manager + multi-skin composition | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Game adapters use one compatible skin; arbitrary multi-skin/mesh-image workflows unqualified |
+| [T-508](FEATURE_INVENTORY.md#t-508) — Former performance task renumbered into T-706 | SUPERSEDED | AUTOMATED | SOURCE_ONLY | Historical alias only, not another performance implementation |
+| [T-816](FEATURE_INVENTORY.md#t-816) — Rigging Discoverability & First-Run Experience | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE | Artist discovery exercise pending; no new solver/runtime capability |
+| [T-904](FEATURE_INVENTORY.md#t-904) — Saved selection sets (not hierarchy folders) | ABSENT | NOT_TESTED | NOT_DISTRIBUTED | Stale SelectionSet comments are not an implementation; new optional schema needed if later authorized |
+| [T-907](FEATURE_INVENTORY.md#t-907) — Bone length edit carries its children | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Remembered carry preference/full canvas-length interaction not identified |
+| [T-908](FEATURE_INVENTORY.md#t-908) — Make the existing advantages discoverable | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | New user's no-source exercise pending; not an absent IK solver/weight brush |
+| [T-909](FEATURE_INVENTORY.md#t-909) — Rig transfer between skeletons | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Opening/replacing a document resets session clipboard; BoneClip carries attachment metadata and bone… |
+| [T-911](FEATURE_INVENTORY.md#t-911) — Physics stability harness | PARTIAL | AUTOMATED | PUBLIC_ALPHA | No complete debug overlay or broad unrelated-edit interaction qualification |
+
+### Animation
+
+| ID / scope | Implementation | Validation | Availability | Remainder / priority |
+|---|---|---|---|---|
+| [T-201](FEATURE_INVENTORY.md#t-201) — Dopesheet panel | COMPLETE | PENDING_MANUAL | PUBLIC_ALPHA | Complex track addresses belong to the separately partial T-209/FFD workflow; local T-814 selection… |
+| [T-202](FEATURE_INVENTORY.md#t-202) — Playback + auto-key | COMPLETE | AUTOMATED | PUBLIC_ALPHA | FPS direct-mutation finding B02 is not fixed; pending preview is distinct from stored key |
+| [T-203](FEATURE_INVENTORY.md#t-203) — Bezier interpolation UI | COMPLETE | PENDING_MANUAL | PUBLIC_ALPHA | Complete scope excludes linked handles, normalize overlay and graph marquee (T-704) |
+| [T-204](FEATURE_INVENTORY.md#t-204) — Draw-order animation UI | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Generic dopesheet order-key clipboard remains excluded |
+| [T-205](FEATURE_INVENTORY.md#t-205) — Slot timelines UI | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Static dark tint is separate; no animated-dark channel is invented |
+| [T-207](FEATURE_INVENTORY.md#t-207) — Setup mode / Animate mode | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Every future edit surface still needs mode semantics; legacy metadata writes audited separately |
+| [T-208](FEATURE_INVENTORY.md#t-208) — Animation manager | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Original animation-reorder UI not clearly qualified; do not recreate manager |
+| [T-209](FEATURE_INVENTORY.md#t-209) — Clipboard: copy / paste / duplicate | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Complex rows/events excluded; no empty-row destination selection or automatic retargeting |
+| [T-209.2](FEATURE_INVENTORY.md#t-209-2) — Validated normal/mirrored multibone pose paste in… | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Auto-key-off retains preview policy; not a retargeter |
+| [T-209.3](FEATURE_INVENTORY.md#t-209-3) — Explicit bone-row mirrored offsets; signs | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Offsets, not asymmetric absolute setup poses; no slot/FFD/event mirror |
+| [T-210](FEATURE_INVENTORY.md#t-210) — Keyed-value affordances in the inspector | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Does not add IK key dots or every future property; no whole-app accessibility certificate |
+| [T-211](FEATURE_INVENTORY.md#t-211) — Pose tools | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Arbitrary numeric retime dialog and broader original UI acceptance remain |
+| [T-703](FEATURE_INVENTORY.md#t-703) — Onion skinning | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Tint/alpha hardcoded; key-mode/boundary coverage, theme controls, performance and desktop qualification… |
+| [T-704](FEATURE_INVENTORY.md#t-704) — Curve editor refinement | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | No aligned/mirrored handle linking, normalized overlay or graph marquee |
+| [T-814](FEATURE_INVENTORY.md#t-814) — Shared key selection | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE | Broader T-704 stays partial; combined graph edits retain existing granularity; GUI pending |
+| [T-905](FEATURE_INVENTORY.md#t-905) — Non-destructive timeline offset | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Not arbitrary per-track/per-selection offsets for slots/constraints/deforms |
+| [T-906](FEATURE_INVENTORY.md#t-906) — Timeline markers | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Not runtime event callbacks; no fresh desktop certification |
+| [T-912](FEATURE_INVENTORY.md#t-912) — Graph editor ergonomics review | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | No tied handles/normalize/marquee; extreme sampling overflow shown as gaps; GUI pending |
+
+### Meshes
+
+| ID / scope | Implementation | Validation | Availability | Remainder / priority |
+|---|---|---|---|---|
+| [T-401](FEATURE_INVENTORY.md#t-401) — Mesh attachment editing UI | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | No universal snapping or arbitrary linked-source/topology edit safety |
+| [T-402](FEATURE_INVENTORY.md#t-402) — Auto mesh tracing | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Tracing/refinement exists, but topology replacement clears weights rather than promised remapping;… |
+| [T-403](FEATURE_INVENTORY.md#t-403) — Weight painting + bind compensation | COMPLETE | PENDING_MANUAL | PUBLIC_ALPHA | Complete native scoped brush; not autorigging or every-project visual fidelity; T-816 GUI pending |
+| [T-404](FEATURE_INVENTORY.md#t-404) — Deform timelines | PARTIAL | AUTOMATED | PUBLIC_ALPHA | FFD dopesheet/clipboard incomplete; topology changes require care |
+| [T-405](FEATURE_INVENTORY.md#t-405) — Clipping attachments | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Common adapters support bounded sequential masks, not arbitrary nested intersections |
+| [T-815](FEATURE_INVENTORY.md#t-815) — Viewport Precision & Numeric Geometry Editing | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE | Not every handle/expression/snap or linked-source edit; GUI pending |
+| [T-902](FEATURE_INVENTORY.md#t-902) — Numeric entry for every vertex and handle | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | Not every draggable point, expression parser or snap-to-neighbour |
+
+### Assets / PSD
+
+| ID / scope | Implementation | Validation | Availability | Remainder / priority |
+|---|---|---|---|---|
+| [T-301](FEATURE_INVENTORY.md#t-301) — Asset database + image drop-import | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Project portability requires sidecar; broad texture-eviction/performance remains T-706 |
+| [T-302](FEATURE_INVENTORY.md#t-302) — PSD import | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Renames/reparents become added+missing; automatic add/delete and changed shared/mesh/linked assets… |
+| [T-303](FEATURE_INVENTORY.md#t-303) — foreign armature importer | SUPERSEDED | AUTOMATED | SOURCE_ONLY | Do not restore a second built-in importer; package licensing/availability remain external |
+| [T-304](FEATURE_INVENTORY.md#t-304) — Startup window | COMPLETE | AUTOMATED | PUBLIC_ALPHA | No first-user study of local T-816; unknown structural input limits remain |
+| [T-305](FEATURE_INVENTORY.md#t-305) — Atlas / spritesheet import modal | COMPLETE | NOT_TESTED | PUBLIC_ALPHA | No guarantee for every vendor atlas variant |
+| [T-306](FEATURE_INVENTORY.md#t-306) — Asset relink + external-source workflow | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Moving only project does not move sidecar; missing assets need explicit resolution |
+| [T-1003](FEATURE_INVENTORY.md#t-1003) — Move foreign formats to community JavaScript plugins | COMPLETE | AUTOMATED | SOURCE_ONLY | Missing package differs from broken builtin; no generic Godot/foreign fidelity promise |
+
+### Formats / exports
+
+| ID / scope | Implementation | Validation | Availability | Remainder / priority |
+|---|---|---|---|---|
+| [T-601](FEATURE_INVENTORY.md#t-601) — Offscreen render + image / spritesheet / sequence… | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Default skin/Normal/no physics; original background/performance/viewport criteria not all closed |
+| [T-601.1](FEATURE_INVENTORY.md#t-601-1) — PNG retained | COMPLETE | AUTOMATED | PUBLIC_ALPHA | JPEG lossy tolerance/no alpha; no runtime format change |
+| [T-601.2](FEATURE_INVENTORY.md#t-601-2) — Opt-in common camera/global bounds | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Skin/blend/physics exclusions persist; not arbitrary renderer fidelity |
+| [T-601.3](FEATURE_INVENTORY.md#t-601-3) — Selected-clip batches | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Not crash-atomic multi-file commit or unrestricted memory/performance guarantee |
+| [T-602](FEATURE_INVENTORY.md#t-602) — Video export via ffmpeg | COMPLETE | MIXED | PUBLIC_ALPHA | No audio/GIF alpha/physics or every-player guarantee; external encoder required |
+| [T-602.1](FEATURE_INVENTORY.md#t-602-1) — Raw RGB CPU video to H.264 | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Opaque background, no bundled encoder; hard-link filesystem requirement |
+| [T-602.2](FEATURE_INVENTORY.md#t-602-2) — Two-pass GIF palette | COMPLETE | AUTOMATED | PUBLIC_ALPHA | No GIF alpha or arbitrary exact FPS promise |
+| [T-602.3](FEATURE_INVENTORY.md#t-602-3) — CRF/bitrate | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Native opener injected in tests; RGB requires player consent; not hardware encoding |
+| [T-603](FEATURE_INVENTORY.md#t-603) — Original hardcoded-exporter plan replaced by… | SUPERSEDED | AUTOMATED | SOURCE_ONLY | Do not create another hardcoded exporter; aggregate library still partial |
+| [T-603a](FEATURE_INVENTORY.md#t-603a) — Atlas bake | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Common runtime excludes rotated atlases even if custom presets differ |
+| [T-603b](FEATURE_INVENTORY.md#t-603b) — Template engine + export runner | COMPLETE | AUTOMATED | PUBLIC_ALPHA | No filesystem-wide atomicity or guaranteed power-loss durability |
+| [T-603c](FEATURE_INVENTORY.md#t-603c) — Native runtime format, authored as a template | COMPLETE | AUTOMATED | PUBLIC_ALPHA | No new .ankh.runtime binary; serializable fields do not imply adapter support |
+| [T-603d](FEATURE_INVENTORY.md#t-603d) — Export panel | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Not a continuously updated global diagnostics dock |
+| [T-603e](FEATURE_INVENTORY.md#t-603e) — Preset library | PARTIAL | AUTOMATED | PUBLIC_ALPHA | No qualified Godot preset; foreign-format plugins remain optional |
+| [T-605](FEATURE_INVENTORY.md#t-605) — Format spec finalization + migration policy | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | No authentic v0 migration/prototype converter or comprehensive hostile-file resource budget |
+
+### PixiJS / Phaser
+
+| ID / scope | Implementation | Validation | Availability | Remainder / priority |
+|---|---|---|---|---|
+| [T-604](FEATURE_INVENTORY.md#t-604) — Runtime integration | PARTIAL | AUTOMATED | PUBLIC_ALPHA | In-workspace Rust player plan superseded; no universal runtime parity |
+| [T-810](FEATURE_INVENTORY.md#t-810) — Phaser common-profile corrections and public… | COMPLETE | AUTOMATED | PUBLIC_ALPHA | No new all-feature parity; detailed external runtime rows below |
+
+### IA
+
+| ID / scope | Implementation | Validation | Availability | Remainder / priority |
+|---|---|---|---|---|
+| [T-805](FEATURE_INVENTORY.md#t-805) — Native conversational assistant | COMPLETE | MIXED | PUBLIC_ALPHA | Not autonomous autorigging; model prose can be wrong; no generic cloud/model certificate |
+| [T-805.1](FEATURE_INVENTORY.md#t-805-1) — Fixed composer | COMPLETE | MIXED | PUBLIC_ALPHA | Historical Qwen real run is binary/model-specific; no new T-816 inference qualification |
+| [T-806](FEATURE_INVENTORY.md#t-806) — Viewport vision and first native rigging tools | PARTIAL | MIXED | PUBLIC_ALPHA | Targeted historical maintainer report only; no general visual placement or every-model certificate |
+| [T-807](FEATURE_INVENTORY.md#t-807) — Controlled native character assembly | COMPLETE | MIXED | PUBLIC_ALPHA | Weighted meshes are not regions; unrepresentable/constrained cases refused |
+| [T-808](FEATURE_INVENTORY.md#t-808) — Guarded mesh weight assistance | COMPLETE | MIXED | PUBLIC_ALPHA | No new influences, geometry/UV/bind/FFD edits; linked/shared/constrained cases protected |
+| [T-809](FEATURE_INVENTORY.md#t-809) — Multimodal provider transport and bounded context | COMPLETE | MIXED | PUBLIC_ALPHA | Wire support is not concrete model compatibility; context exhaustion remains possible |
+
+### UX / tools
+
+| ID / scope | Implementation | Validation | Availability | Remainder / priority |
+|---|---|---|---|---|
+| [T-701](FEATURE_INVENTORY.md#t-701) — Settings, keymap, autosave | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Original exhaustive settings list/restart acceptance incomplete; unsaved-doc autosave policy retained |
+| [T-702](FEATURE_INVENTORY.md#t-702) — Diagnostics / warnings | PARTIAL | AUTOMATED | PUBLIC_ALPHA | No global debounced document rules/badge/dock and offender navigation; not an absent export pipeline |
+| [T-705](FEATURE_INVENTORY.md#t-705) — Localization | DEFERRED | NOT_TESTED | NOT_DISTRIBUTED | i18n implementation absent and deliberately deferred; no locale certificate |
+| [T-706](FEATURE_INVENTORY.md#t-706) — Performance pass | PARTIAL | AUTOMATED | SOURCE_ONLY | No dedicated core benchmark target/xtask bench/CI trend or general 500-bone/iGPU 60-FPS qualification… |
+| [T-708](FEATURE_INVENTORY.md#t-708) — Viewport interaction polish | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | No universal snapping/expression-on-drag/pivot editing for every attachment; framing acceptance… |
+| [T-709](FEATURE_INVENTORY.md#t-709) — Accessibility & window UX | PARTIAL | AUTOMATED | PUBLIC_ALPHA | No whole workflow keyboard/contrast/colorblind audit or exhaustive icon-tooltip certificate |
+| [T-901](FEATURE_INVENTORY.md#t-901) — Bulk rename with sequential numbering | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Not slot/attachment/constraint rename, regex or all path-safety variants |
+| [T-903](FEATURE_INVENTORY.md#t-903) — Isolation mode | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Optional hierarchy/dopesheet filters/configurable opacity not fully qualified |
+| [T-910](FEATURE_INVENTORY.md#t-910) — Multi-window / multi-monitor | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Second viewport absent; per-window positions/multimonitor acceptance not broadly established |
+| [T-913](FEATURE_INVENTORY.md#t-913) — Name the thing under the cursor | COMPLETE | NOT_TESTED | PUBLIC_ALPHA | Overlap/DPI/delay/accessibility not exhaustively qualified No dedicated hover-interaction test found;… |
+
+### Distribution
+
+| ID / scope | Implementation | Validation | Availability | Remainder / priority |
+|---|---|---|---|---|
+| [T-801](FEATURE_INVENTORY.md#t-801) — Samples + documentation | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Not all 3 CC0 sample/PSD/GIF criteria; new user's exercise pending |
+| [T-802](FEATURE_INVENTORY.md#t-802) — Release packaging | PARTIAL | AUTOMATED | PUBLIC_ALPHA | No signed installer, Linux/macOS artifacts or broad hardware certification |
+| [T-803](FEATURE_INVENTORY.md#t-803) — Web build | DEFERRED | NOT_TESTED | NOT_DISTRIBUTED | No browser authoring frontend/distribution; WASM core is not a web editor |
+| [T-810.5](FEATURE_INVENTORY.md#t-810-5) — Simple Windows MP4 action reusing supervised CPU… | COMPLETE | MIXED | PUBLIC_ALPHA | External FFmpeg, opaque output/new-file only; no bundled encoder |
+| [T-811](FEATURE_INVENTORY.md#t-811) — Next Alpha release candidate | COMPLETE | MIXED | PUBLIC_ALPHA | Historical candidate-pending prose superseded only for the exact published artifacts |
+| [T-1001](FEATURE_INVENTORY.md#t-1001) — Plugin host and declarative panels | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Not a general external package/security endorsement |
+| [T-1002](FEATURE_INVENTORY.md#t-1002) — MCP stdio server | COMPLETE | AUTOMATED | SOURCE_ONLY | Not autonomous AI access or browser authoring; permissions remain caller-specific |
+| [T-804](FEATURE_INVENTORY.md#t-804) — Unofficial community fork provenance | COMPLETE | MIXED | PUBLIC_ALPHA | No upstream endorsement or npm publication implied |
+| [T-812](FEATURE_INVENTORY.md#t-812) — Exact T-811 artifacts published as v0.2.0-alpha.1… | COMPLETE | MIXED | PUBLIC_ALPHA | Local T-813–T-816 not included; unsigned Windows, no new platform certificate |
+| [T-817](FEATURE_INVENTORY.md#t-817) — Operational inventory | COMPLETE | AUTOMATED | LOCAL_CANDIDATE | Documentary audit only; no product or graphical acceptance added |
+
+## 4. Completed bounded scopes — retain, do not redevelop
+
+- Native IDs/affine/evaluation/Document-Session/history and current author v1 profiles.
+- Bone/slot dopesheet, auto-key/setup return, slot timelines, per-property key dots,
+  scalar key blocks, atomic multibone pose paste and explicit mirrored bone offsets.
+- Existing region authoring, assets/relink, native mesh/weight brush, 1/2/3+ IK core.
+- Native template export, safe staged publisher/preflight, image formats/framing/
+  trim/padding/batch, MP4/GIF and simple Windows MP4 entry.
+- Bounded native AI tools/approval/transactions and six transport profiles.
+- Local T-813 project safeguards, T-814 tangent drafts, T-815 geometry drafts and
+  T-816 discoverability: implemented/tested; manual qualification is separate.
+
+These are deliberately bounded completions. The inventory's contradictory checks
+exclude unqualified runtimes, platforms, artist quality and extended task promises.
+
+## 5. Partial work — only the remainder is active
+
+| Family | Already delivered | Remaining work / dependencies / risk |
 |---|---|---|
-| IK capped at 2 bones, documented as deliberate | vendor docs | **already shipped** — FABRIK, any length, `bend_dir` disambiguates |
-| Weight painting is slider-only | #139, open since 2016; forum d/4251, d/13441, d/15276 | **already shipped** — radius/feather brush, locking, per-mesh colours |
-| No sequential bulk rename | #330 | T-901 |
-| No numeric entry for mesh/UV/path vertices | #77, open since 2016 | T-902 |
-| No isolation / solo mode | #604 | T-903 |
-| Saved selections are opaque and unmanageable | #409 | T-904 |
-| Timeline offset is destructive; no negative time | #153 | T-905 |
-| No timeline markers | #531 | T-906 |
-| Resizing a bone strands its children | #566 | T-907 |
-| Rig transfer between files loses animation keys | #582 | T-909 |
-| No multi-monitor support | #266 | T-910 |
-| Physics jitter at high framerate; physics silently blocks mesh edit | forum cluster; #995 | T-911 |
-| Graph editor: silent snapping, invisible curves, extreme tangents | 5-year forum cluster (title-level evidence only) | T-912 |
-| Renaming rewrites paths / collapses names / breaks re-import | #227, #825, + path-rename issue | T-901 (safety half) |
-| Nothing in the viewport tells you what it is without clicking it | same cluster as #330/#409/#604 | T-913 |
+| T-209 / T-404 | Owned scalar/slot clipboard, poses and bone-offset mirror | Editable complex/FFD addresses and curves; native index/topology/lock validation before UI; high reference risk |
+| T-302 | Nested import/preview and exact-path region refresh | Explicit path-change resolution / simple new-layer policy, not guessed image matching; preserve rig and animations |
+| T-402 | Alpha tracing/refinement | Weight/topology/FFD implications and original performance budget; do not retrace the subsystem |
+| T-502 / T-503 | Static path constraints and fixed-step Rust physics | Path animation tracks; export/runtime physics compatibility; deliberately excluded from alpha, separate future contracts |
+| T-505 / T-507 | Presentation/skins/default fallback | Advanced blend fidelity and composition/image-assignment boundaries; never infer adapter parity |
+| T-601 | CPU images/pages and deterministic multi-clip exports | General backgrounds/physics stepping/performance/viewport acceptance; reuse current renderer |
+| T-605 / T-701 / T-707 | Profiles/specification, safe refusal, keymap/autosave/recovery | Authentic legacy migration, hostile resource limits, original settings/panic/update/feedback criteria; maintain writer guarantees |
+| T-702 | Export integrity/fidelity preflight | Live global document diagnostics + navigation is absent; reuse rules and native reads, never weaken publication checks |
+| T-703 | Ghost passes, selected-only, frame/key steps | Theme/opacity controls, more boundary coverage and visual/performance qualification |
+| T-704 / T-912 | Graph selection/framing/overshoot and exact numeric tangents | Handle linking/normalize/marquee; T-814 numeric fields are already done |
+| T-708 / T-902 | Gizmos, region pivots, exact mesh/UV/path/polygon fields | Universal point coverage, expressions and neighbour snapping; T-815 fields are already done |
+| T-901 / T-903 / T-905 / T-907 | Bone rename, session isolation, per-bone offsets, carry-children | Other entity rename/regex, optional filters, per-track offset scope, remembered carry preference |
+| T-909 | Subtree slots/constraints/bone animation copy | Cross-document clipboard/asset ownership, conflict preview and explicit transfer; no AssetDb bytes in BoneClip |
+| T-910 / T-911 | Detached noncanvas panes; deterministic physics tests | Second render viewport/debug overlay/broader physics interaction acceptance, not a missing window/solver system |
+| T-801 / T-802 / T-908 | Published Jade, portable Windows, existing Tentacle and first-rig docs | Original samples/GIF/signing/platform breadth; new-user exercise in manual queue |
 
-Two entries above are already true today and are the reason T-908 exists: an advantage the user
-cannot find is worth nothing.
+## 6. Absent, replaced or deferred
 
-## T-807 — Controlled native character assembly 🟡
+- **ABSENT:** saved selection sets; global diagnostics dock; tied tangent modes/
+  graph marquee; second viewport; panic-time document dump; neighbour snapping;
+  onion theme/opacity controls. See scoped CAP rows rather than reopening aggregates.
+- **DEFERRED:** localization and browser editor. WASM core is not browser authoring.
+- **SUPERSEDED:** T-303 built-in importer → optional community packages;
+  T-508 → T-706; T-603 hardcoded-export plan → strict user-authored templates.
+- **UNKNOWN:** authenticated v0 migration qualification and general production
+  performance budgets. Absence of evidence is not a measured incompatibility.
 
-Local typed region transforms, single-entry slot/bone association with checked FK
-Setup world preservation, and safe complete Setup draw order. Native confirmation,
-one Undo lot, ID remaps, bounded corrections, save/reopen tests. Meshes/weights
-read-only; shared-slot reassignment, constrained/nonrepresentable conversions
-refused. [Contract and manual acceptance](native-ai-assembly.md).
-GUI, artistic placement and Qwen/NInfer acceptance of T-806/T-807 remain pending
-with the maintainer. No public package or runtime/format change.
+## 7. Prioritized development backlog (proposals only)
 
-## T-808 — Guarded mesh weight assistance 🟡
+See [ROADMAP_NEXT.md](ROADMAP_NEXT.md): T-818 global diagnostics, T-819 bounded
+cross-document transfer, T-820 tangent linking, T-821 FFD-key authoring, T-822
+explicit PSD path-change resolution. They are five **new proposed IDs**, not
+implemented checkpoints or publication authorization. T-817 Diagnostics was only
+an old proposal; this documentary inventory is the sole T-817 checkpoint.
 
-Targeted paginated mesh reads, exact existing-influence weight edits, native
-normalization and bounded one-bone smoothing; explicit confirmation and one
-Undo lot. Valid binds, topology, assets and FFD indices preserved. Linked/shared,
-constrained, ambiguous or invalid targets refused. Geometry/FFD and influence
-addition/removal stay read-only. [Contract](native-ai-weights.md).
-Headless qualification only; maintainer GUI/artistic/Qwen acceptance pending.
+P0 = demonstrated integrity/security incident; P1 = central workflow gap;
+P2 = production usability; P3 = extension. No new P0 incident is established here.
+FPS history bypass B02 and bone-name menu B03 stay recorded for focused triage;
+no spontaneous fix is authorized by this audit.
 
+## 8. Pending qualification — separate from development
 
-## T-809 — Multimodal provider transport and bounded context 🟡
+[MANUAL_QA_PENDING.md](MANUAL_QA_PENDING.md) references the existing T-813–T-816
+checklists and cumulative T-816 executable. The maintainer will choose when to
+run them; no Windows action is requested now. Missing GUI evidence is not an
+absent capability or a reason to recreate it. Historical accepted T-811/T-812
+results cover their exact artifacts only.
 
-Six native image envelopes, exact-destination user-declared capabilities,
-per-image unknown-model choice, resolution profiles and request/byte budgets.
-Required schemas and opaque continuations retained; bounded same-Send read cache,
-paged metadata, sanitized errors and no automatic paid retry. Native approvals,
-receipts and Undo/Redo unchanged. [Contract and capability matrix](native-ai-multimodal.md).
-Deterministic HTTP/SSE/NDJSON qualification only. Maintainer GUI/live-model
-acceptance A–F and T-806/T-807/T-808 artistic acceptance remain pending.
+## 9. Compatibility notes
 
+Author schema/envelope v1, native runtime format v2 and package/app versions are
+independent. `.ankh.runtime` binary/postcard and the old macroquad player were
+planning targets, not shipped artifacts. Current native output is JSON + atlas.
+Core TS reads v1/v2; common qualified adapters use explicit v2. PixiJS 8.17.0 uses
+WebGL2; Phaser 3.90.0 used actual WebGL1 in accepted T-811 tests. Native constraints,
+physics, linked meshes, rotated atlases and advanced blending remain outside the
+common profile. Images/video retain default skin/Normal/no physics restrictions.
+Spritesheet JSON is Ankhimate metadata, not native Phaser JSON. No format change.
 
-## T-813 — Format Compatibility & Project Reliability
+## 10. History and operating rules
 
-Local checkpoint from public `9233b8e888c811e7c71300101f865a9e74b3f489`.
-Related original requirements: **T-605**, **T-701**, **T-707** above; historical text and
-acceptance criteria remain intact. None of these tasks is automatically closed.
+[Exact TASKS before T-817](TASKS-before-T817.md) retains all criteria/IDs/PLAN links.
+Architecture sketches, old `docs/alpha-scope.md` and `docs/alpha/` remain historical;
+use this inventory, the [format spec](format-spec.md), and protected release records
+for actual behavior/availability. Existing licenses/third-party credit remain intact.
 
-- Reused: authentic v1/profile round trips, CURRENT_VERSION fixture/spec guard, schema
-  inventory, immutable external assets, staged safe saves/rollback, monotonic autosave,
-  recovery offers, dirty snapshots and native command/AI transaction Undo/Redo.
-- Confirmed/fixed: missing-image saves changing the original URI; unknown author members
-  and open-string discriminants lost/defaulted on editable conversion; reserved envelope
-  flags ignored; non-finite numbers published as unreadable null fields; newer corrupt
-  sidecars masking valid interrupted-save stages.
-- Tests: `formats/tests/reliability.rs`, lifecycle additions, retained historical failure,
-  migration, format/export, timer, command and approved/rejected/stale AI transaction suites.
-  No renderer/runtime/format-version change, no historical oracle edits.
-- Safety policy: fail-closed author reading; opaque presets still preserved. Missing image
-  bytes require native relink or explicit removal before Save/autosave. Failed writes keep
-  primary data and UI state under the documented publisher contract. Valid recoveries rank
-  before corrupt fallbacks; all user copies/backups remain preserved.
-- Remaining: authentic v0 and removed-prototype conversion; complete opaque author extras;
-  comprehensive malformed-geometry/resource validation; panic-time dump/log package;
-  optional update/feedback; broad original Settings acceptance. No serialization in panic,
-  telemetry, permanent undo history or power-loss durability claim.
-- Final GUI qualification is pending. No Computer Use, inference, push, tag or release.
-
-See [format spec](format-spec.md), [user recovery guide](project-recovery.md) and
-[save safety](project-save-safety.md). Local delivery records precise test counts and
-binary hash; graphical/manual evidence must be supplied by the maintainer separately.
-
-## T-815 — Viewport Precision & Numeric Geometry Editing (local)
-
-Based exclusively on T-814 78cb4e2b; published alpha unchanged. Reuses EditMesh,
-EditClip, EditBoundingBox, EditPath and session vertex indices. Adds explicit
-precise drafts and independent applies, Set/Add multi-point operations, safe
-selection invalidation and UV pick-to-inspector coordination. Mesh topology,
-weights, influence order, binds, FFD and source assets are preserved by tests.
-Weighted animation positions are compared through Undo/Redo and Save/Reload.
-Modes are enforced natively. Camera/gizmos/hover are retained, not reimplemented.
-Expression syntax was historical intent, not an enabled egui capability; numeric
-inputs document decimal/scientific support instead. Point-to-neighbour snapping,
-universal rig fit/Frame Selection and larger T-708/T-709 acceptance remain open.
-Tests headless only; GUI **PENDING MANUAL REVIEW** with T-813/T-814. Phase 7 is
-not complete. No version, format, runtime, public branch or release change.
-
-
-## T-816 — Rigging Discoverability & First-Run Experience (local)
-
-Base: exact T-815 `85d4bb628e107da7d45d5c61493b4896b0bea53d`.
-IK 1/2/3+ and the weight brush already existed. Inspector now explains chain root,
-order, solver and current evaluated span, shows invalid-chain diagnostics, and is
-reachable from the target; Setup gates and native commands remain authoritative.
-Weights identifies activation/influence/lock state and world-space Radius.
-A reproduced influence-pick bug lost the selected mesh; a weight-specific
-session-selection helper retains that target without changing ordinary selection,
-weights, binds or history. Existing numerical behavior is unchanged.
-
-Eighteen new headless tests cover discovery, Setup gating, selection/locks,
-1–4 bone reach, joint-gap span (including skipped bones), invalid chains,
-native Undo/Redo, sample/weight Save/Load and asset preservation. Existing
-`samples/tentacle.ankh` is reused unchanged (8 chain bones, `curl`, no art).
-See [first rig](first-rig-in-10-minutes.md),
-[capabilities](rigging-capabilities.md) and the local T-816 delivery report.
-T-813–T-816 GUI and artistic qualification: **PENDING MANUAL REVIEW**.
-T-801/T-908 remain partial; T-708/T-709/T-902 are not closed. Runtimes and formats
-are unchanged, IK/physics runtime exclusions remain, and no release is authorized.
+Before any future mission: read the row's code/tests and explicit remainder, verify
+its exact checkpoint, reuse native commands/mode gates, preserve originals and
+immutable releases. Do not use old checkmarks or internal version strings alone.
+No current push, merge, tag, release, Actions, package or product change is authorized.
