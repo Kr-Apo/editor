@@ -11,7 +11,7 @@ use super::{Layout, ROW_H, ViewState};
 use crate::app_state::AppState;
 use ankhimate_core::animation::Interp;
 use ankhimate_core::ids::AnimationId;
-use ankhimate_document::commands::key_cmds::{DeleteKeys, KeyRef, MoveKeys, SetInterp};
+use ankhimate_document::commands::key_cmds::{DeleteKeys, KeyRef, SetInterp};
 use eframe::egui;
 
 const KEY_HIT_R: f32 = 5.0;
@@ -20,7 +20,7 @@ const DELETE_DROP_MARGIN: f32 = 36.0;
 #[cfg(test)]
 mod clipboard_tests;
 
-/// Selected keys, in egui memory (UI state, never undoable).
+/// Transient view of the shared session selection (never undoable).
 #[derive(Clone, Default)]
 pub struct Selection {
     pub keys: Vec<KeyRef>,
@@ -75,11 +75,10 @@ pub fn ui(
     painter.rect_filled(rect, 0.0, sheet_bg(&visuals));
 
     // A key index from another clip must never become a destination by accident.
-    let sel_id = ui.id().with(("tl_sel", anim));
-    let mut selection: Selection = ui
-        .ctx()
-        .memory(|m| m.data.get_temp(sel_id))
-        .unwrap_or_default();
+    let mut selection = Selection {
+        keys: crate::key_selection::read(state, anim),
+    };
+    let mut selection_revision = state.revision;
     let drag_id = ui.id().with("tl_keydrag");
     let mut drag: KeyDrag = ui
         .ctx()
@@ -310,6 +309,11 @@ pub fn ui(
         );
     }
 
+    // A context command may have reordered/deleted keys since this frame began.
+    if state.revision != selection_revision {
+        selection.keys.clear();
+        drag = KeyDrag::default();
+    }
     // Selection drag.
     if drag.active {
         let pointer = ui.ctx().input(|i| i.pointer.interact_pos());
@@ -320,7 +324,14 @@ pub fn ui(
             if delta_frames != drag.last_delta_frames {
                 let step = (delta_frames - drag.last_delta_frames) as f32 / layout.fps as f32;
                 drag.last_delta_frames = delta_frames;
-                state.dispatch(Box::new(MoveKeys::new(anim, selection.keys.clone(), step)));
+                if let Some(moved) =
+                    crate::key_selection::move_keys(state, anim, &selection.keys, step)
+                {
+                    selection.keys = moved;
+                    selection_revision = state.revision;
+                } else {
+                    drag = KeyDrag::default();
+                }
             }
             if released {
                 if p.y > sheet_bottom + DELETE_DROP_MARGIN && !selection.keys.is_empty() {
@@ -387,8 +398,12 @@ pub fn ui(
         ui.ctx().request_repaint();
     }
 
+    if state.revision == selection_revision {
+        crate::key_selection::set(state, anim, selection.keys);
+    } else {
+        state.session.key_selection = Default::default();
+    }
     ui.ctx().memory_mut(|m| {
-        m.data.insert_temp(sel_id, selection);
         m.data.insert_temp(drag_id, drag);
         m.data.insert_temp(box_id, boxsel);
     });

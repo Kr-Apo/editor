@@ -32,7 +32,7 @@
 - Alternate-image skin authoring is region-focused; FFD timeline editing and
   complex PSD reconciliation retain their documented limits. Full localization,
   a web editor, a second viewport, autonomous autorigging, complete Spine parity,
-  advanced numeric tangent editing and advanced runtime constraints remain open.
+  advanced tangent modes and advanced runtime constraints remain open.
 
 No GUI, desktop automation, real inference or GPU benchmark was run for T-811.
 Headless WebGL used an installed browser, actual contexts and local assets only;
@@ -51,3 +51,17 @@ dump, permanent Undo history, recovery browser, automatic recovery purge or powe
 certification was added. Read [project recovery](project-recovery.md). The accepted T-811
 manual review was subsequently declared complete by the maintainer for public T-812;
 that declaration does not qualify this new T-813 build.
+
+## T-814 local animation-UX candidate
+
+Numeric Bezier controls and shared session key selection are implemented and
+covered by automated tests; **PENDING MANUAL REVIEW**, together with T-813.
+Selection clears conservatively on external document edits/Undo/Redo. Colliding
+key moves are refused, and a graph drag stops when sorting changes its key index.
+Restart the gesture to continue. Combined time/value graph drags retain separate
+commands. Multi-key numeric Apply copies all four displayed handles to every
+selected Bezier key. No aligned/mirrored tangent mode, normalized overlay, graph
+marquee or general history redesign is included. Extreme finite values may still
+overflow the core sampler; the graph reports gaps without modifying the data.
+See [graph editor](graph-editor.md). No keymap, project format, evaluator or runtime
+change; published releases and the separate T-813 executable remain unchanged.

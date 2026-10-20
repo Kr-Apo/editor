@@ -761,6 +761,7 @@ pub struct SetInterp {
     refs: Vec<KeyRef>,
     interp: Interp,
     before: Option<Vec<Timeline>>,
+    merge_group: Option<u64>,
 }
 
 impl SetInterp {
@@ -770,11 +771,25 @@ impl SetInterp {
             refs,
             interp,
             before: None,
+            merge_group: Some(0),
         }
+    }
+    /// Separate numeric applies and pointer gestures without changing legacy callers.
+    pub fn isolated(mut self) -> Self {
+        self.merge_group = None;
+        self
+    }
+    pub fn with_gesture(mut self, token: u64) -> Self {
+        self.merge_group = Some(token);
+        self
     }
 }
 
 impl EditCommand for SetInterp {
+    fn requires_mode(&self) -> Option<crate::WorkMode> {
+        Some(crate::WorkMode::Animate)
+    }
+
     fn apply(&mut self, doc: &mut Document) {
         self.before = snapshot(doc, self.anim);
         let Some(anim) = doc.animations.get_mut(self.anim) else {
@@ -798,7 +813,11 @@ impl EditCommand for SetInterp {
         let Some(other) = next.as_any().downcast_ref::<SetInterp>() else {
             return false;
         };
-        if other.anim != self.anim || other.refs != self.refs {
+        if self.merge_group.is_none()
+            || self.merge_group != other.merge_group
+            || other.anim != self.anim
+            || other.refs != self.refs
+        {
             return false;
         }
         self.interp = other.interp;

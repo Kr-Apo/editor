@@ -11,6 +11,7 @@ pub mod edit_router;
 pub mod export_preflight;
 pub mod fileops;
 pub mod key_clipboard;
+pub mod key_selection;
 pub mod keymap;
 pub mod operators;
 mod paste_tests;

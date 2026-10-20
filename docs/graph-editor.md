@@ -86,13 +86,53 @@ view to mostly dead space, flattening every curve in the panel.
 
 ## 5. Tangent values can be typed
 
-**Status: not implemented.** Handles are draggable only.
+**T-814 local implementation; PENDING MANUAL REVIEW.**
 
-Doing it properly needs the graph's key selection — which currently lives in
-egui memory local to the dopesheet — plumbed somewhere the inspector can read,
-so the numbers appear beside the other numeric fields rather than in a popup of
-their own. That is a bigger change than the three rules above and is better done
-with the rest of the inspector's key editing than bolted to the graph.
+Select an editable key in the dopesheet or graph. Both panels and the inspector
+share one session selection; selecting does not author data. A selected graph key
+has an accent ring. Ctrl-click toggles graph keys; the existing dopesheet marquee
+remains available. No persistent key IDs or project fields were added.
 
-It pairs with T-902 (numeric entry for every vertex and handle), which covers
-mesh, UV, path and bounding-box points but not curve tangents.
+The inspector's **Bezier tangents** block appears for an entirely Bezier selection
+whose keys have predecessors. Easing belongs to the **ending** key of the segment.
+Out X/Y and In X/Y are segment-normalized control points, not seconds, degrees,
+slopes or world coordinates. X must be finite and in [0,1]; Y must be finite but
+may be negative or exceed 1. A flat segment has no value span; changing its Y
+handles alone cannot deform its constant value. Broken/aligned/mirrored handle
+modes and per-channel normalization are not added.
+
+Values use round-trippable f32 text. Typing changes only a draft. **Apply tangents**
+validates all four values, current selection/revision and locks before dispatching
+one native `SetInterp` command. **Cancel tangent edits** restores the current
+stored values. Apply does not convert Linear/Stepped keys; use an explicit preset
+first. The first key has no incoming segment and is not a numeric tangent target.
+For multiple selected Bezier keys, Apply explicitly copies all four displayed
+handles (initially from the first selected key) to **all** of them in one Undo.
+Each Apply is separate from preceding edits. Handle drags merge within their
+pointer gesture, but separate gestures have distinct merge groups. Animation
+interpolation commands require Animate at the native command boundary.
+
+Selection indices are revision-scoped leases. Changing document/clip, deleting,
+Undo/Redo, or an unrecognized external edit clears them rather than guessing a
+replacement key. T-814's own tangent applies rebind the same keys; timeline moves
+resolve unique destination times after sorting. Colliding/clamped destinations
+are refused before dispatch. If a graph point crosses another point, its capture
+stops at that reorder; release and start a new drag to continue. This conservative
+boundary avoids transferring the gesture to the former index's next occupant.
+Combined graph value/time drags retain the existing separate native commands;
+T-814 does not redesign their general Undo granularity.
+
+Auto-fit still measures sampled curves, with padding, overshoot badges and pinned
+handle markers. Bounds/mapping arithmetic uses f64 to avoid f32 span overflow,
+without changing the authored f32 values or the core sampler. Bounds stay fixed
+while the primary pointer is held and refit on release; shared horizontal scroll
+and zoom are retained. Extremely large finite values/handles can still overflow
+the existing core sampler: the graph reports non-finite samples and draws gaps
+instead of non-finite geometry or silently rewriting the curve. This is not a
+claim of meaningful animation evaluation over the entire f32 range. No new
+snapping policy or shortcut: the existing `snap: frames` badge and Alt `free` remain.
+
+Automated command, selection, round-trip and in-memory egui regressions exercise
+these paths. No desktop session, screenshot, playback observation or GUI Windows
+qualification was performed. T-813 and T-814 remain **PENDING MANUAL REVIEW**.
+T-704's broader normalize/tie-mode/graph marquee requirements remain deferred.

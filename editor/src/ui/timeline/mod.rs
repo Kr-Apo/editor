@@ -158,7 +158,6 @@ fn panel(ui: &mut egui::Ui, state: &mut AppState, mode: SheetMode, style: Style<
         clip_chooser(ui, state);
         return;
     }
-    let anim_id = state.session.active_animation.unwrap();
 
     // One shared view state, keyed on the context rather than on the pane: the
     // dopesheet and the graph scroll and zoom together, which is the whole point
@@ -172,6 +171,10 @@ fn panel(ui: &mut egui::Ui, state: &mut AppState, mode: SheetMode, style: Style<
 
     // ── Header: transport and view controls ──────────────────────────────
     header(ui, state, &mut view);
+    // The clip picker can change the active animation within this frame.
+    let Some(anim_id) = state.session.active_animation else {
+        return;
+    };
     ui.separator();
 
     // Build the row model once for tree + sheet.
@@ -516,3 +519,6 @@ fn create_clip(state: &mut AppState) {
 // moved to the Animations pane. Managing clips and scrubbing one are different
 // jobs, and a menu that did both meant the same command reachable from two
 // places, each with its own idea of what was selected.
+
+#[cfg(test)]
+mod t814_tests;

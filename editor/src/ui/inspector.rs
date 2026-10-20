@@ -20,6 +20,7 @@ const KEY_AREA_W: f32 = 62.0;
 #[cfg(test)]
 mod key_control_tests;
 mod key_controls;
+pub(crate) mod tangents;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum TransformView {
@@ -31,6 +32,7 @@ enum TransformView {
 pub fn ui(ui: &mut egui::Ui, state: &mut AppState) {
     ui.add_space(2.0);
     breadcrumb(ui, state);
+    tangents::ui(ui, state);
 
     // A focused constraint gets the panel to itself: it belongs to the rig, not
     // to whichever bone happens to be selected, and showing it under a bone's

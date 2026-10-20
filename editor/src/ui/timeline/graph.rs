@@ -23,7 +23,7 @@ use crate::app_state::AppState;
 use ankhimate_core::animation::{Animation, Axis, Interp, Timeline};
 use ankhimate_core::ids::AnimationId;
 use ankhimate_document::commands::key_cmds::{
-    AddKey, BoneProperty, KeyRef, KeyValue, MoveKeys, TimelineAddr,
+    AddKey, BoneProperty, KeyRef, KeyValue, TimelineAddr,
 };
 use eframe::egui;
 
@@ -58,6 +58,7 @@ pub fn ui(
     rect: egui::Rect,
     style: super::Style<'_>,
 ) {
+    let mut selection = crate::key_selection::read(state, anim);
     // Clipped to the sheet: the curve sampler walks every pixel of the plot and
     // the handle interactions allocate their own rects, so without this both
     // spill left over the row names.
@@ -85,8 +86,8 @@ pub fn ui(
     let rows = model.visible_rows(&folded);
 
     // Auto-fit the value range across all shown channels.
-    let mut lo = f32::INFINITY;
-    let mut hi = f32::NEG_INFINITY;
+    let mut lo = f64::INFINITY;
+    let mut hi = f64::NEG_INFINITY;
     for row in &rows {
         if !row.is_soloed(&view.soloed) {
             continue;
@@ -96,8 +97,12 @@ pub fn ui(
         {
             for ch in &data.channels {
                 for &v in &ch.values {
-                    lo = lo.min(v);
-                    hi = hi.max(v);
+                    if v.is_finite() {
+                        lo = lo.min(v as f64);
+                    }
+                    if v.is_finite() {
+                        hi = hi.max(v as f64);
+                    }
                 }
             }
         }
@@ -118,6 +123,7 @@ pub fn ui(
     //
     // Sampled at the same 2px step the curves are drawn at, so what is measured
     // is exactly what is about to be stroked.
+    let mut invalid_samples = false;
     let key_lo = lo;
     let key_hi = hi;
     if let Some(animation) = state.doc.animations.get(anim) {
@@ -142,8 +148,13 @@ pub fn ui(
                 let mut x = rect.left();
                 while x <= rect.right() {
                     if let Some(v) = sample_channel(timeline, layout.x_to_time(x).max(0.0)) {
-                        lo = lo.min(v);
-                        hi = hi.max(v);
+                        invalid_samples |= !v.is_finite();
+                        if v.is_finite() {
+                            lo = lo.min(v as f64);
+                        }
+                        if v.is_finite() {
+                            hi = hi.max(v as f64);
+                        }
                     }
                     x += 2.0;
                 }
@@ -166,9 +177,18 @@ pub fn ui(
     lo -= pad;
     hi += pad;
 
-    let val_to_y = |v: f32| {
+    // Keep the frame fixed for a pointer gesture; auto-fit resumes on release.
+    let bounds_id = ui.id().with(("graph_bounds", anim));
+    let previous = ui.ctx().data(|d| d.get_temp::<(f64, f64)>(bounds_id));
+    if ui.input(|i| i.pointer.primary_down())
+        && let Some(bounds) = previous
+    {
+        (lo, hi) = bounds;
+    }
+    ui.ctx().data_mut(|d| d.insert_temp(bounds_id, (lo, hi)));
+    let val_to_y = |v: f64| {
         let t = (v - lo) / (hi - lo);
-        rect.bottom() - t * rect.height()
+        rect.bottom() - (t * rect.height() as f64).clamp(-1e6, 1e6) as f32
     };
 
     draw_frame_grid(&painter, layout, rect, &visuals);
@@ -192,6 +212,15 @@ pub fn ui(
         );
     }
 
+    if invalid_samples {
+        painter.text(
+            egui::pos2(rect.left() + 6.0, rect.top() + 20.0),
+            egui::Align2::LEFT_TOP,
+            "Non-finite samples: gaps shown; reduce extreme values/handles",
+            egui::FontId::proportional(10.0),
+            visuals.warn_fg_color,
+        );
+    }
     // Snapping state, always on screen (T-912). Silent snapping is the specific
     // complaint; a mode the user cannot see is a mode they cannot reason about
     // when a key refuses to sit where they put it.
@@ -236,8 +265,19 @@ pub fn ui(
             // Bezier handles, one pair per segment. Drawn before the key dots
             // so a handle sitting on top of a key does not hide it.
             if let Some(edit) = bezier_handles(
-                ui, &painter, &data.addr, ch.axis, &data.keys, &ch.values, layout, rect, &val_to_y,
-                lo, hi, color,
+                ui,
+                &painter,
+                &data.addr,
+                ch.axis,
+                &data.keys,
+                &ch.values,
+                layout,
+                rect,
+                &val_to_y,
+                lo,
+                hi,
+                color,
+                &mut selection,
             ) {
                 interp_edit = Some(edit);
             }
@@ -248,7 +288,7 @@ pub fn ui(
                     continue;
                 };
                 let x = layout.time_to_x(k.time);
-                let y = val_to_y(value);
+                let y = val_to_y(value as f64);
                 if x < rect.left() - KEY_R || x > rect.right() + KEY_R {
                     continue;
                 }
@@ -269,13 +309,41 @@ pub fn ui(
                     hit,
                     ui.id()
                         .with(("graph_key", data.addr.stable_id(), ch.axis, k.index)),
-                    egui::Sense::drag(),
+                    egui::Sense::click_and_drag(),
                 );
+                let kref = KeyRef {
+                    addr: data.addr.clone(),
+                    index: k.index,
+                };
+                if resp.clicked() || resp.drag_started() {
+                    if ui.input(|i| i.modifiers.ctrl) && !resp.drag_started() {
+                        if let Some(i) = selection.iter().position(|r| r == &kref) {
+                            selection.remove(i);
+                        } else {
+                            selection.push(kref.clone());
+                        }
+                    } else {
+                        selection = vec![kref.clone()];
+                    }
+                    crate::key_selection::set(state, anim, selection.clone());
+                }
+                if selection.contains(&kref) {
+                    painter.circle_stroke(
+                        center,
+                        KEY_R + 2.0,
+                        egui::Stroke::new(2.0, style.theme.primary()),
+                    );
+                }
+                // Sorting can move the selected key to a new index. Stop the old
+                // widget's captured drag rather than let it edit its successor.
                 if resp.dragged()
+                    && selection.contains(&kref)
                     && let Some(p) = resp.interact_pointer_pos()
                 {
                     // New value from the vertical position; new time from x.
-                    let new_val = lo + (rect.bottom() - p.y) / rect.height() * (hi - lo);
+                    let new_val = (lo + ((rect.bottom() - p.y) / rect.height()) as f64 * (hi - lo))
+                        .clamp(-(f32::MAX as f64), f32::MAX as f64)
+                        as f32;
                     // Frame snapping, escapable with Alt (T-912). It used to be
                     // unconditional and unannounced, which is the "unexpected
                     // snapping" the reference tool's graph editor is repeatedly
@@ -313,6 +381,18 @@ pub fn ui(
         apply_edit(state, anim, &animation, edit);
     }
     if let Some(edit) = interp_edit {
+        if !state.session.is_animating() {
+            return;
+        }
+        if let TimelineAddr::Bone { bone, .. } = edit.addr
+            && state.session.is_bone_locked(bone)
+        {
+            return;
+        }
+        let refs = vec![KeyRef {
+            addr: edit.addr.clone(),
+            index: edit.index,
+        }];
         state.dispatch(Box::new(
             ankhimate_document::commands::key_cmds::SetInterp::new(
                 anim,
@@ -321,8 +401,10 @@ pub fn ui(
                     index: edit.index,
                 }],
                 edit.interp,
-            ),
+            )
+            .with_gesture(edit.gesture),
         ));
+        crate::key_selection::set(state, anim, refs);
     }
 }
 
@@ -332,6 +414,7 @@ struct InterpEdit {
     /// The key the easing belongs to — the one that *ends* the segment.
     index: usize,
     interp: Interp,
+    gesture: u64,
 }
 
 /// Handle radius, and half its grab box.
@@ -386,10 +469,11 @@ fn bezier_handles(
     values: &[f32],
     layout: &Layout,
     rect: egui::Rect,
-    val_to_y: &impl Fn(f32) -> f32,
-    lo: f32,
-    hi: f32,
+    val_to_y: &impl Fn(f64) -> f32,
+    lo: f64,
+    hi: f64,
     color: egui::Color32,
+    selection: &mut Vec<KeyRef>,
 ) -> Option<InterpEdit> {
     let mut edit = None;
     for window in 0..keys.len().saturating_sub(1) {
@@ -409,13 +493,16 @@ fn bezier_handles(
             _ => (LINEAR_OUT, LINEAR_IN),
         };
 
-        let (dt, dv) = (b.time - a.time, vb - va);
+        let (dt, dv) = (b.time - a.time, vb as f64 - va as f64);
         let to_screen = |h: glam::Vec2| {
-            egui::pos2(layout.time_to_x(a.time + h.x * dt), val_to_y(va + h.y * dv))
+            egui::pos2(
+                layout.time_to_x(a.time + h.x * dt),
+                val_to_y(va as f64 + h.y as f64 * dv),
+            )
         };
         let anchors = [
-            egui::pos2(layout.time_to_x(a.time), val_to_y(va)),
-            egui::pos2(layout.time_to_x(b.time), val_to_y(vb)),
+            egui::pos2(layout.time_to_x(a.time), val_to_y(va as f64)),
+            egui::pos2(layout.time_to_x(b.time), val_to_y(vb as f64)),
         ];
         if anchors[1].x < rect.left() - 40.0 || anchors[0].x > rect.right() + 40.0 {
             continue;
@@ -460,13 +547,26 @@ fn bezier_handles(
             if response.hovered() {
                 ui.ctx().set_cursor_icon(egui::CursorIcon::Grab);
             }
-            let Some(p) = response
-                .dragged()
+            let token_id = response.id.with("gesture");
+            let kref = KeyRef {
+                addr: addr.clone(),
+                index: b.index,
+            };
+            if response.drag_started() {
+                *selection = vec![kref.clone()];
+                use std::sync::atomic::{AtomicU64, Ordering};
+                static NEXT: AtomicU64 = AtomicU64::new(1);
+                ui.ctx()
+                    .data_mut(|d| d.insert_temp(token_id, NEXT.fetch_add(1, Ordering::Relaxed)));
+            }
+            let gesture = ui.ctx().data(|d| d.get_temp::<u64>(token_id)).unwrap_or(0);
+            let Some(p) = (selection.contains(&kref) && response.dragged())
                 .then(|| response.interact_pointer_pos())
                 .flatten()
             else {
                 continue;
             };
+
             // Back to normalized space. Time is clamped to the segment: a handle
             // outside it produces a curve that doubles back in time, which is not
             // a function of t and cannot be sampled.
@@ -475,12 +575,15 @@ fn bezier_handles(
             } else {
                 ((layout.x_to_time(p.x) - a.time) / dt).clamp(0.0, 1.0)
             };
-            let value = lo + (rect.bottom() - p.y) / rect.height().max(1.0) * (hi - lo);
+            let value = lo + ((rect.bottom() - p.y) / rect.height().max(1.0)) as f64 * (hi - lo);
             let ny = if dv.abs() < 1e-6 {
                 handle.y
             } else {
-                (value - va) / dv
+                ((value - va as f64) / dv) as f32
             };
+            if !nx.is_finite() || !ny.is_finite() {
+                continue;
+            }
             let moved = glam::vec2(nx, ny);
             let (out, inn) = if which == 0 {
                 (moved, inn)
@@ -490,6 +593,7 @@ fn bezier_handles(
             edit = Some(InterpEdit {
                 addr: addr.clone(),
                 index: b.index,
+                gesture,
                 interp: Interp::Bezier {
                     out_handle: out,
                     in_handle: inn,
@@ -512,30 +616,43 @@ struct Edit {
 /// Apply a graph key drag: value change via overwrite `AddKey`, time change via
 /// `MoveKeys`.
 fn apply_edit(state: &mut AppState, anim: AnimationId, animation: &Animation, edit: Edit) {
-    // Reconstruct the full key value, preserving the sibling axis of a vec2.
-    let value = current_key_value(animation, &edit.addr, edit.index, edit.new_val);
-    if let Some(value) = value {
-        // Overwrite at the (possibly unchanged) time.
+    let r = KeyRef {
+        addr: edit.addr.clone(),
+        index: edit.index,
+    };
+    if !edit.new_val.is_finite() || !edit.new_time.is_finite() || !state.session.is_animating() {
+        return;
+    }
+    if let TimelineAddr::Bone { bone, .. } = edit.addr
+        && state.session.is_bone_locked(bone)
+    {
+        return;
+    }
+    let mut refs = vec![r];
+    // Move first through the collision-safe path. Do not overwrite a value if
+    // its requested time cannot be represented without merging two keys.
+    if (edit.new_time - edit.old_time).abs() > 1e-6 {
+        let Some(moved) =
+            crate::key_selection::move_keys(state, anim, &refs, edit.new_time - edit.old_time)
+        else {
+            return;
+        };
+        refs = moved;
+    }
+    if let Some(value) = current_key_value(animation, &edit.addr, edit.index, edit.new_val) {
         state.dispatch(Box::new(AddKey::new(
             anim,
-            edit.addr.clone(),
-            edit.old_time,
+            edit.addr,
+            if (edit.new_time - edit.old_time).abs() > 1e-6 {
+                edit.new_time
+            } else {
+                edit.old_time
+            },
             value,
-            interp_of(animation, &edit.addr, edit.index),
+            interp_of(animation, &refs[0].addr, edit.index),
         )));
     }
-    // Time change as a separate merged move.
-    if (edit.new_time - edit.old_time).abs() > 1e-6 {
-        let kref = KeyRef {
-            addr: edit.addr,
-            index: edit.index,
-        };
-        state.dispatch(Box::new(MoveKeys::new(
-            anim,
-            vec![kref],
-            edit.new_time - edit.old_time,
-        )));
-    }
+    crate::key_selection::set(state, anim, refs);
 }
 
 /// Build the [`KeyValue`] for a key from the value a drag produced.
@@ -601,7 +718,7 @@ fn draw_channel_curve(
     addr: &TimelineAddr,
     layout: &Layout,
     rect: egui::Rect,
-    val_to_y: &impl Fn(f32) -> f32,
+    val_to_y: &impl Fn(f64) -> f32,
     color: egui::Color32,
 ) {
     let Some(timeline) = animation
@@ -617,8 +734,17 @@ fn draw_channel_curve(
     let mut x = rect.left();
     while x <= rect.right() {
         let t = layout.x_to_time(x).max(0.0);
-        if let Some(v) = sample_channel(timeline, t) {
-            pts.push(egui::pos2(x, val_to_y(v)));
+        if let Some(v) = sample_channel(timeline, t).filter(|v| v.is_finite()) {
+            pts.push(egui::pos2(x, val_to_y(v as f64)));
+        } else if !pts.is_empty() {
+            if pts.len() >= 2 {
+                painter.add(egui::Shape::line(
+                    std::mem::take(&mut pts),
+                    egui::Stroke::new(1.5, color),
+                ));
+            } else {
+                pts.clear();
+            }
         }
         x += step;
     }
@@ -678,8 +804,8 @@ fn draw_frame_grid(
 fn draw_value_axis(
     painter: &egui::Painter,
     rect: egui::Rect,
-    lo: f32,
-    hi: f32,
+    lo: f64,
+    hi: f64,
     visuals: &egui::Visuals,
 ) {
     // A few horizontal gridlines with value labels.
@@ -699,7 +825,7 @@ fn draw_value_axis(
                     .gamma_multiply(0.3),
             ),
         );
-        let v = lo + f * (hi - lo);
+        let v = lo + f as f64 * (hi - lo);
         painter.text(
             egui::pos2(rect.left() + 3.0, y - 1.0),
             egui::Align2::LEFT_BOTTOM,

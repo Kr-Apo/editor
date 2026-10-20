@@ -73,7 +73,7 @@ Evidence and code references: [alpha-validation.md](alpha-validation.md).
 | T-801 | Partial: usable samples, PSD and pinned Phaser guide; not all original sample types, GIFs or documentation assertions are complete. |
 | T-802 | Partial: local Windows x64 ZIP procedure validated; no signed public release, installer or macOS/Linux artifact qualification. New ZIP needs a manual smoke test. |
 | T-803 | Not implemented; browser editor deferred after alpha. WASM core check is not a web editor. |
-| T-901–T-913 | Several commands/UI surfaces exist (rename, isolation, markers, offsets, detached panels, physics harness, hover labels); complete per-task UX acceptance not requalified. Deferred remainder, with T-910 second viewport and T-912 numeric tangents explicitly open. |
+| T-901–T-913 | Several commands/UI surfaces exist (rename, isolation, markers, offsets, detached panels, physics harness, hover labels); complete per-task UX acceptance not requalified. Deferred remainder, with T-910 second viewport open and T-912/T-814 numeric tangents pending manual review. |
 | T-1001–T-1003 | Implemented and covered by existing workspace suites; external marketplace/community functionality is outside the supported alpha walkthrough. |
 
 M001–M007 evidence is summarized in alpha-validation; M007.0 and M006.1 remain
@@ -1101,6 +1101,13 @@ debug build); ghost count matches k.
 **Accept:** dragging a handle changes easing live during playback; undo restores handles exactly;
 switching modes preserves the selection.
 
+> **T-814 local checkpoint:** session key selection shared by dopesheet, graph and
+> inspector; numeric normalized Bezier controls use native undoable commands.
+> Revision-scoped selection, sorted-move rebasing, separate tangent gestures and
+> overflow-safe/stable gesture framing are regression-tested. Normalize overlay,
+> handle-tie modes and graph marquee remain deferred. **PENDING MANUAL REVIEW**;
+> this does not complete T-704 or Phase 7.
+
 ### ⏸ T-705 ∥ Localization (i18n)
 **Deps:** T-701 · **Refs:** PLAN §7
 - `editor/src/i18n.rs`: string catalog keyed by dotted ids, loaded from embedded `en` plus optional
@@ -1414,11 +1421,14 @@ and an explicit request for a different interaction model altogether
 **Accept:** a selected curve is never invisible; snapping state is readable at a glance; an
 overshooting tangent is visually distinct from a well-behaved one.
 
-> **Landed, less one part.** Three of the four rules are in, with the rationale in
-> `docs/graph-editor.md`. Numeric tangent entry is **not** done: it needs the graph's key selection
-> — today local to the dopesheet's egui memory — plumbed somewhere the inspector can read, so the
-> numbers sit beside the other numeric fields rather than in a popup of their own. Worth doing with
-> the rest of the inspector's key editing rather than bolted onto the graph.
+> **Historical checkpoint:** the first pass landed curve framing, explicit snapping
+> and extreme-handle indicators; numeric entry was deferred because selection was
+> local to dopesheet egui memory. **T-814 local checkpoint** now shares session
+> selection and implements precise numeric Bezier drafts/Apply/Cancel. Invalid
+> input is refused atomically, Setup edits are blocked, and Undo/Redo/Save/Load are
+> covered by automated regressions. See `docs/graph-editor.md` for exact units,
+> multi-key semantics, conservative invalidation and remaining limitations.
+> **PENDING MANUAL REVIEW** for T-813 + T-814; no public release is changed.
 
 ### T-913 ∥ ★ Name the thing under the cursor
 **Deps:** T-206, T-301 · **Refs:** PLAN §2 · **Evidence:** the naming-and-selection cluster
