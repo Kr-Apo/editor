@@ -171,7 +171,7 @@ pub fn ui(ui: &mut egui::Ui, state: &mut AppState) {
     });
 
     if let Some(id) = set_active {
-        state.session.active_skin = id;
+        state.session.set_active_skin(id);
         // A skin cannot be both the edit target and a layer under itself.
         state.session.layered_skins.retain(|s| *s != id);
         state.refresh_pose();
@@ -193,7 +193,7 @@ pub fn ui(ui: &mut egui::Ui, state: &mut AppState) {
     if let Some(id) = remove {
         // Point the session somewhere real before the skin goes away.
         if state.session.active_skin == id {
-            state.session.active_skin = default_skin;
+            state.session.set_active_skin(default_skin);
         }
         state.session.layered_skins.retain(|s| *s != id);
         state.dispatch(Box::new(RemoveSkin::new(id)));

@@ -201,6 +201,8 @@ pub struct Session {
     pub mesh_edit: bool,
     /// Vertices picked in mesh edit mode, by index into setup_vertices.
     pub selected_vertices: Vec<usize>,
+    pub geometry_lease: Option<crate::geometry_edit::Lease>,
+    pub geometry_epoch: u64,
     /// Where a bone box-select began, in canvas-local screen space.
     ///
     /// Dragging from empty canvas sweeps a rectangle over the bones, which is
@@ -463,6 +465,8 @@ impl Session {
             trace_options: ankhimate_document::meshgen::TraceOptions::default(),
             mesh_edit: false,
             selected_vertices: Vec::new(),
+            geometry_lease: None,
+            geometry_epoch: 0,
             dragging_vertex: None,
             deform_drag: None,
             hovered_vertex: None,
@@ -626,6 +630,32 @@ impl Session {
         self.isolated_bones.is_empty() || self.isolated_bones.contains(&bone)
     }
 
+    /// Invalidate geometry even while its panes are hidden. User indices never
+    /// migrate between targets/tools/modes by coincidence.
+    pub fn clear_geometry_selection(&mut self) {
+        self.selected_vertices.clear();
+        self.geometry_lease = None;
+        self.geometry_epoch = self.geometry_epoch.wrapping_add(1);
+        self.dragging_vertex = None;
+        self.vertex_box_start = None;
+        self.deform_drag = None;
+        if let Some(pane) = self.uv_pane.as_mut() {
+            pane.dragging = None;
+        }
+    }
+    pub fn set_tool(&mut self, tool: Tool) {
+        if self.tool != tool {
+            self.clear_geometry_selection();
+            self.tool = tool;
+        }
+    }
+    pub fn set_active_skin(&mut self, skin: SkinId) {
+        if self.active_skin != skin {
+            self.clear_geometry_selection();
+            self.active_skin = skin;
+        }
+    }
+
     /// Replace the selection with a single bone (a plain click).
     /// Focus an attachment, and its slot with it — the inspector's attachment
     /// section reads the slot, and the canvas gizmos follow the slot's bone.
@@ -638,6 +668,7 @@ impl Session {
     /// siblings. `bone` is still taken because the caller has it in hand and the
     /// breadcrumb walks up from the slot.
     pub fn select_attachment(&mut self, slot: SlotId, name: impl Into<String>, _bone: BoneId) {
+        self.clear_geometry_selection();
         self.reveal_selection = true;
         self.selected_slots.clear();
         self.selected_slots.push(slot);
@@ -651,11 +682,13 @@ impl Session {
 
     /// Focus a constraint.
     pub fn select_constraint(&mut self, constraint: ConstraintId) {
+        self.clear_geometry_selection();
         self.reveal_selection = true;
         self.selection = Some(Selection::Constraint(constraint));
     }
 
     pub fn select_bone(&mut self, bone: Option<BoneId>) {
+        self.clear_geometry_selection();
         self.cancel_deform_drag();
         self.reveal_selection = true;
         self.selection = bone.map(Selection::Bone);
@@ -680,6 +713,7 @@ impl Session {
     }
 
     pub fn select_slot(&mut self, slot: Option<SlotId>) {
+        self.clear_geometry_selection();
         self.cancel_deform_drag();
         self.reveal_selection = true;
         self.selection = slot.map(Selection::Slot);

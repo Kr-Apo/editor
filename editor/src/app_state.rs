@@ -215,6 +215,7 @@ impl AppState {
         if self.session.work_mode == mode {
             return;
         }
+        self.session.clear_geometry_selection();
         // Anything staged mid-gesture belongs to the old mode's semantics.
         self.session.clear_previews();
 
@@ -232,7 +233,7 @@ impl AppState {
                 }
             }
             if self.session.tool.is_setup_only() {
-                self.session.tool = Tool::Select;
+                self.session.set_tool(Tool::Select);
             }
         } else {
             self.session.playing = false;

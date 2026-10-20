@@ -65,3 +65,15 @@ marquee or general history redesign is included. Extreme finite values may still
 overflow the core sampler; the graph reports gaps without modifying the data.
 See [graph editor](graph-editor.md). No keymap, project format, evaluator or runtime
 change; published releases and the separate T-813 executable remain unchanged.
+
+## T-815 local viewport-precision candidate
+
+Mesh positions/UVs and path/clipping/bounding-box points use exact numeric drafts
+and native undoable commands. **PENDING MANUAL REVIEW** with T-813/T-814. Editing
+is Setup-only; numeric FFD, linked geometry and linked parents are excluded.
+Only the currently displayed attachment in one slot is a geometry target.
+UV numbers refer to source texture [0,1] top-left and reject out-of-range results.
+Expressions, neighbour snap, universal rig-fit/Frame Selection, new pivot modes
+and complete keyboard/DPI/accessibility acceptance remain deferred. Existing
+camera/gizmos/hover and drag merging remain in place. No GPU/visual/performance
+qualification is claimed for dense rigs. See [numeric geometry](geometry-editing.md).

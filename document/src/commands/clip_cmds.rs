@@ -135,6 +135,7 @@ pub struct EditClip {
     edit: ClipEdit,
     before: Option<ClippingAttachment>,
     label: &'static str,
+    mergeable: bool,
 }
 
 impl EditClip {
@@ -152,7 +153,13 @@ impl EditClip {
             edit,
             before: None,
             label,
+            mergeable: true,
         }
+    }
+    /// A validated numeric Apply is a separate Undo from drags and other applies.
+    pub fn isolated(mut self) -> Self {
+        self.mergeable = false;
+        self
     }
 }
 
@@ -212,7 +219,12 @@ impl EditCommand for EditClip {
         let Some(other) = next.as_any().downcast_ref::<EditClip>() else {
             return false;
         };
-        if other.skin != self.skin || other.slot != self.slot || other.name != self.name {
+        if !self.mergeable
+            || !other.mergeable
+            || other.skin != self.skin
+            || other.slot != self.slot
+            || other.name != self.name
+        {
             return false;
         }
         match (&mut self.edit, &other.edit) {
@@ -249,6 +261,7 @@ pub struct EditBoundingBox {
     edit: ClipEdit,
     before: Option<BoundingBoxAttachment>,
     label: &'static str,
+    mergeable: bool,
 }
 
 impl EditBoundingBox {
@@ -266,6 +279,7 @@ impl EditBoundingBox {
             edit,
             before: None,
             label,
+            mergeable: true,
         }
     }
 
@@ -280,6 +294,11 @@ impl EditBoundingBox {
             Attachment::BoundingBox(b) => Some(b),
             _ => None,
         }
+    }
+    /// A validated numeric Apply is a separate Undo from drags and other applies.
+    pub fn isolated(mut self) -> Self {
+        self.mergeable = false;
+        self
     }
 }
 
@@ -354,7 +373,12 @@ impl EditCommand for EditBoundingBox {
         let Some(other) = next.as_any().downcast_ref::<EditBoundingBox>() else {
             return false;
         };
-        if other.skin != self.skin || other.slot != self.slot || other.name != self.name {
+        if !self.mergeable
+            || !other.mergeable
+            || other.skin != self.skin
+            || other.slot != self.slot
+            || other.name != self.name
+        {
             return false;
         }
         match (&mut self.edit, &other.edit) {
@@ -698,6 +722,7 @@ pub struct EditPath {
     edit: ClipEdit,
     before: Option<ankhimate_core::attachment::PathAttachment>,
     label: &'static str,
+    mergeable: bool,
 }
 
 impl EditPath {
@@ -715,6 +740,7 @@ impl EditPath {
             edit,
             before: None,
             label,
+            mergeable: true,
         }
     }
 
@@ -732,6 +758,11 @@ impl EditPath {
             Attachment::Path(path) => Some(path),
             _ => None,
         }
+    }
+    /// A validated numeric Apply is a separate Undo from drags and other applies.
+    pub fn isolated(mut self) -> Self {
+        self.mergeable = false;
+        self
     }
 }
 
@@ -786,7 +817,12 @@ impl EditCommand for EditPath {
         let Some(other) = next.as_any().downcast_ref::<EditPath>() else {
             return false;
         };
-        if other.skin != self.skin || other.slot != self.slot || other.name != self.name {
+        if !self.mergeable
+            || !other.mergeable
+            || other.skin != self.skin
+            || other.slot != self.slot
+            || other.name != self.name
+        {
             return false;
         }
         match (&mut self.edit, &other.edit) {

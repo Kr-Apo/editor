@@ -121,6 +121,11 @@ fn edit_command(target: &ClipTarget, edit: ClipEdit) -> Box<dyn EditCommand> {
 }
 
 pub fn update(ctx: &mut ToolContext, mouse_screen: Option<glam::Vec2>) {
+    crate::geometry_edit::sync(ctx.state);
+    update_inner(ctx, mouse_screen);
+    crate::geometry_edit::bind(ctx.state);
+}
+fn update_inner(ctx: &mut ToolContext, mouse_screen: Option<glam::Vec2>) {
     let viewport_size = glam::Vec2::new(ctx.rect.width(), ctx.rect.height());
     let Some(target) = target(ctx.state) else {
         return;

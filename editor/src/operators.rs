@@ -223,17 +223,17 @@ impl Operator for AddMarkerAtPlayhead {
 // ── Tools ────────────────────────────────────────────────────────────────────
 
 operator!(SelectTool, "tool.select", "Select Tool",
-    run: |s| { s.session.tool = Tool::Select; OpResult::done() });
+    run: |s| { s.session.set_tool(Tool::Select); OpResult::done() });
 
 operator!(CreateBoneTool, "tool.create_bone", "Create Bone Tool",
     mode: WorkMode::Setup,
     enabled: |s| s.session.can_edit_structure(),
-    run: |s| { s.session.tool = Tool::CreateBone; OpResult::done() });
+    run: |s| { s.session.set_tool(Tool::CreateBone); OpResult::done() });
 
 operator!(WeightPaintTool, "tool.weight_paint", "Weight Paint Tool",
     mode: WorkMode::Setup,
     enabled: |s| s.session.can_edit_structure(),
-    run: |s| { s.session.tool = Tool::WeightPaint; OpResult::done() });
+    run: |s| { s.session.set_tool(Tool::WeightPaint); OpResult::done() });
 
 // ── Transform gizmo mode ─────────────────────────────────────────────────────
 

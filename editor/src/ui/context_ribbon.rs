@@ -153,7 +153,7 @@ fn tool_segment(ui: &mut egui::Ui, state: &mut AppState) {
     let (icon, label, _) = tool_identity(state);
     ui.menu_button(crate::ui::semantic_icon_label(ui, icon, label), |ui| {
         if ui.button("Select").clicked() {
-            state.session.tool = Tool::Select;
+            state.session.set_tool(Tool::Select);
             ui.close();
         }
         ui.separator();
@@ -171,7 +171,7 @@ fn tool_segment(ui: &mut egui::Ui, state: &mut AppState) {
                 )
                 .clicked()
             {
-                state.session.tool = Tool::Select;
+                state.session.set_tool(Tool::Select);
                 state.session.active_transform_tool = tool;
                 ui.close();
             }
@@ -183,7 +183,7 @@ fn tool_segment(ui: &mut egui::Ui, state: &mut AppState) {
             .on_disabled_hover_text("Setup mode only")
             .clicked()
         {
-            state.session.tool = Tool::CreateBone;
+            state.session.set_tool(Tool::CreateBone);
             ui.close();
         }
         if ui
@@ -191,7 +191,7 @@ fn tool_segment(ui: &mut egui::Ui, state: &mut AppState) {
             .on_disabled_hover_text("Setup mode only")
             .clicked()
         {
-            state.session.tool = Tool::WeightPaint;
+            state.session.set_tool(Tool::WeightPaint);
             ui.close();
         }
     });

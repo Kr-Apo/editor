@@ -65,6 +65,7 @@ const ZOOM_MAX: f32 = 40.0;
 const CHECKER: f32 = 8.0;
 
 pub fn ui(ui: &mut egui::Ui, state: &mut AppState, theme: &Theme) {
+    crate::geometry_edit::sync(state);
     let Some(pane) = state.session.uv_pane.clone() else {
         // An empty pane says what would fill it. A blank card reads as broken.
         empty(ui);
@@ -162,6 +163,7 @@ pub fn ui(ui: &mut egui::Ui, state: &mut AppState, theme: &Theme) {
             MeshEdit::ResetUvs,
         )));
     }
+    crate::geometry_edit::bind(state);
 }
 
 /// Drop whatever the pane was editing, and its cached texture.
@@ -340,20 +342,40 @@ fn canvas(
     // the same frame, so a pan that consulted last frame's `dragging` would
     // shove the image sideways at the instant a vertex is grabbed.
     let mut dragging = pane.dragging;
-    if response.drag_started()
-        && let Some(pos) = response.interact_pointer_pos()
-    {
-        let nearest = mesh
-            .uvs
-            .iter()
-            .enumerate()
-            .map(|(i, uv)| (i, (to_screen(*uv) - pos).length()))
-            .min_by(|a, b| a.1.total_cmp(&b.1));
-        dragging = nearest
-            .filter(|(_, distance)| *distance <= HANDLE_HIT)
-            .map(|(index, _)| index);
+    let picked = if response.clicked() || response.drag_started() {
+        response.interact_pointer_pos().and_then(|pos| {
+            mesh.uvs
+                .iter()
+                .enumerate()
+                .map(|(i, uv)| (i, (to_screen(*uv) - pos).length()))
+                .filter(|(_, distance)| *distance <= HANDLE_HIT)
+                .min_by(|a, b| a.1.total_cmp(&b.1))
+                .map(|(index, _)| index)
+        })
+    } else {
+        None
+    };
+    if response.drag_started() {
+        dragging = picked;
         if let Some(pane) = state.session.uv_pane.as_mut() {
             pane.dragging = dragging;
+        }
+    }
+    // One hit-test feeds dragging, selection highlight and numeric coordinates.
+    if let Some(index) = picked {
+        if ui.input(|i| i.modifiers.shift) && response.clicked() {
+            if let Some(at) = state
+                .session
+                .selected_vertices
+                .iter()
+                .position(|i| *i == index)
+            {
+                state.session.selected_vertices.remove(at);
+            } else {
+                state.session.selected_vertices.push(index);
+            }
+        } else if !state.session.selected_vertices.contains(&index) {
+            state.session.selected_vertices = vec![index];
         }
     }
 

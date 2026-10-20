@@ -55,7 +55,7 @@ pub fn ui(
         ] {
             let (icon, key, name, value, enabled) = spec;
             if rail_button(ui, theme, icon, name, key, tool == value, enabled) {
-                state.session.tool = value;
+                state.session.set_tool(value);
             }
         }
         gap(ui);
@@ -94,7 +94,7 @@ pub fn ui(
             let on = tool == Tool::Select && active == value;
             if rail_button(ui, theme, icon, name, key, on, true) {
                 state.session.active_transform_tool = value;
-                state.session.tool = Tool::Select;
+                state.session.set_tool(Tool::Select);
             }
         }
         gap(ui);

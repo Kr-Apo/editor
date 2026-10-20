@@ -186,6 +186,7 @@ pub struct EditMesh {
     edit: MeshEdit,
     before: Option<MeshAttachment>,
     label: &'static str,
+    mergeable: bool,
 }
 
 impl EditMesh {
@@ -207,6 +208,7 @@ impl EditMesh {
             edit,
             before: None,
             label,
+            mergeable: true,
         }
     }
 
@@ -215,6 +217,11 @@ impl EditMesh {
             Attachment::Mesh(mesh) => Some(mesh),
             _ => None,
         }
+    }
+    /// A validated numeric Apply is a separate Undo from drags and other applies.
+    pub fn isolated(mut self) -> Self {
+        self.mergeable = false;
+        self
     }
 }
 
@@ -345,7 +352,12 @@ impl EditCommand for EditMesh {
         };
         // Only drags merge: inserting, deleting and pinning are discrete edits a
         // user expects to undo one at a time.
-        if other.skin != self.skin || other.slot != self.slot || other.name != self.name {
+        if !self.mergeable
+            || !other.mergeable
+            || other.skin != self.skin
+            || other.slot != self.slot
+            || other.name != self.name
+        {
             return false;
         }
         match (&mut self.edit, &other.edit) {

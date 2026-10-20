@@ -1140,6 +1140,14 @@ GPU (recorded in the PR); scrolling a 300-row dopesheet stays above 60 fps.
 message; a fresh install makes zero network requests until the user asks.
 
 ### 🟡 T-708 ∥ Viewport interaction polish
+> **T-815 local checkpoint — PENDING MANUAL REVIEW:** existing numeric mesh/UV/
+> polygon fields now use exact f32 drafts, explicit Set/Add and Apply/Cancel;
+> Path reuses its existing point selection/EditPath command. Selection leases/
+> epochs prevent stale indices and drafts after target/revision changes. No new
+> geometry snapping, universal Frame Selection, pivot compensation or expression
+> evaluator. See [geometry editing](geometry-editing.md). Historical criteria
+> remain incomplete; T-813/T-814 are not retroactively manually qualified.
+
 **Deps:** T-207 · **Refs:** PLAN §7
 - Transform gizmo per tool (translate / rotate / scale / shear) with axis handles and rings, plus a
   contextual edit bar: snap X/Y, rotation snap step, aspect-ratio lock, and **pivot editing mode**
@@ -1271,6 +1279,14 @@ reference is blocked with a message naming the attachment; property tests confir
 never move together unless both were explicitly edited.
 
 ### T-902 ∥ ★ Numeric entry for every vertex and handle
+> **T-815 local checkpoint — PENDING MANUAL REVIEW:** existing numeric mesh/UV/
+> polygon fields now use exact f32 drafts, explicit Set/Add and Apply/Cancel;
+> Path reuses its existing point selection/EditPath command. Selection leases/
+> epochs prevent stale indices and drafts after target/revision changes. No new
+> geometry snapping, universal Frame Selection, pivot compensation or expression
+> evaluator. See [geometry editing](geometry-editing.md). Historical criteria
+> remain incomplete; T-813/T-814 are not retroactively manually qualified.
+
 **Deps:** T-401 · **Refs:** PLAN §2 · **Evidence:** spine-editor#77 (open since 2016)
 - Mesh vertices, UV coordinates, bounding-box points and path points all become type-able: an
   inspector field pair for the current selection, accepting expressions (`120/2`) as the existing
@@ -1678,3 +1694,18 @@ acceptance criteria remain intact. None of these tasks is automatically closed.
 See [format spec](format-spec.md), [user recovery guide](project-recovery.md) and
 [save safety](project-save-safety.md). Local delivery records precise test counts and
 binary hash; graphical/manual evidence must be supplied by the maintainer separately.
+
+## T-815 — Viewport Precision & Numeric Geometry Editing (local)
+
+Based exclusively on T-814 78cb4e2b; published alpha unchanged. Reuses EditMesh,
+EditClip, EditBoundingBox, EditPath and session vertex indices. Adds explicit
+precise drafts and independent applies, Set/Add multi-point operations, safe
+selection invalidation and UV pick-to-inspector coordination. Mesh topology,
+weights, influence order, binds, FFD and source assets are preserved by tests.
+Weighted animation positions are compared through Undo/Redo and Save/Reload.
+Modes are enforced natively. Camera/gizmos/hover are retained, not reimplemented.
+Expression syntax was historical intent, not an enabled egui capability; numeric
+inputs document decimal/scientific support instead. Point-to-neighbour snapping,
+universal rig fit/Frame Selection and larger T-708/T-709 acceptance remain open.
+Tests headless only; GUI **PENDING MANUAL REVIEW** with T-813/T-814. Phase 7 is
+not complete. No version, format, runtime, public branch or release change.
