@@ -1209,6 +1209,8 @@ vision model and artistic rigging quality await maintainer testing**. No GUI or
 live-inference test is claimed, and frozen RC2 is unchanged.
 
 ### 🟡 T-801 ★ Samples + documentation *(was T-602)*
+> T-816 adds a no-code first-rig guide and validates the existing Tentacle sample.
+> No new artwork/sample collection or GIF; original acceptance remains open.
 **Deps:** Phase 3, Phase 5 · **Refs:** PLAN §3.3
 - 3 CC0 rigged samples in `samples/`: a simple 2-bone-limb character, a mesh/deform character, and
   one PSD source demonstrating the import conventions. README with gifs; a "first rig in 10 minutes"
@@ -1353,7 +1355,10 @@ save/load; markers never appear in any runtime export.
 **Accept:** lengthening an upper arm keeps the elbow at the tip without touching the elbow; the
 modifier reliably produces the old behavior; one undo reverts both.
 
-### T-908 ★ Make the existing advantages discoverable
+### 🟡 T-908 ★ Make the existing advantages discoverable
+> T-816 local checkpoint: existing IK/weight tools clarified; unchanged eight-bone
+> Tentacle reused, first-rig guide added. Headless evidence is available; a new
+> user's GUI exercise remains PENDING MANUAL REVIEW. Original criteria follow.
 **Deps:** T-403, T-104 · **Refs:** PLAN §0, §5
 - We already beat the reference on N-bone IK and brush weight painting (see the phase preamble) and
   neither is advertised anywhere a user would look.
@@ -1709,3 +1714,25 @@ inputs document decimal/scientific support instead. Point-to-neighbour snapping,
 universal rig fit/Frame Selection and larger T-708/T-709 acceptance remain open.
 Tests headless only; GUI **PENDING MANUAL REVIEW** with T-813/T-814. Phase 7 is
 not complete. No version, format, runtime, public branch or release change.
+
+
+## T-816 — Rigging Discoverability & First-Run Experience (local)
+
+Base: exact T-815 `85d4bb628e107da7d45d5c61493b4896b0bea53d`.
+IK 1/2/3+ and the weight brush already existed. Inspector now explains chain root,
+order, solver and current evaluated span, shows invalid-chain diagnostics, and is
+reachable from the target; Setup gates and native commands remain authoritative.
+Weights identifies activation/influence/lock state and world-space Radius.
+A reproduced influence-pick bug lost the selected mesh; a weight-specific
+session-selection helper retains that target without changing ordinary selection,
+weights, binds or history. Existing numerical behavior is unchanged.
+
+Eighteen new headless tests cover discovery, Setup gating, selection/locks,
+1–4 bone reach, joint-gap span (including skipped bones), invalid chains,
+native Undo/Redo, sample/weight Save/Load and asset preservation. Existing
+`samples/tentacle.ankh` is reused unchanged (8 chain bones, `curl`, no art).
+See [first rig](first-rig-in-10-minutes.md),
+[capabilities](rigging-capabilities.md) and the local T-816 delivery report.
+T-813–T-816 GUI and artistic qualification: **PENDING MANUAL REVIEW**.
+T-801/T-908 remain partial; T-708/T-709/T-902 are not closed. Runtimes and formats
+are unchanged, IK/physics runtime exclusions remain, and no release is authorized.

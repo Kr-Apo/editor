@@ -77,3 +77,17 @@ Expressions, neighbour snap, universal rig-fit/Frame Selection, new pivot modes
 and complete keyboard/DPI/accessibility acceptance remain deferred. Existing
 camera/gizmos/hover and drag merging remain in place. No GPU/visual/performance
 qualification is claimed for dense rigs. See [numeric geometry](geometry-editing.md).
+
+
+## T-816 local rigging discovery checkpoint
+
+GUI qualification for T-813/T-814/T-815/T-816 is **PENDING MANUAL REVIEW**.
+The local candidate clarifies existing IK and weight controls and retains the
+selected mesh during weight-influence picking; solver/brush/bind math is unchanged.
+Evaluated span describes current joint geometry, not a maximum or natural-reach
+prediction. Bend sign does not guarantee a unique solution; editing locks do not
+freeze constraint evaluation. The existing Tentacle example is bones-only and
+contains runtime-excluded IK: exporting constraints does not bake their poses.
+Weight locks are session-only. There is no Normalize brush mode. No new graphic,
+GPU, inference or artistic qualification is claimed. See
+[First rig](first-rig-in-10-minutes.md) and [capabilities](rigging-capabilities.md).

@@ -24,7 +24,7 @@ impl CanvasTool for WeightPaintTool {
         if ctx.response.clicked()
             && let Some(hovered) = ctx.state.session.hovered_bone
         {
-            ctx.state.session.select_bone(Some(hovered));
+            crate::ui::weights::select_influence(ctx.state, hovered);
             return;
         }
 

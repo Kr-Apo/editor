@@ -166,9 +166,11 @@ Prune exists to control that.
 
 ## Enter Weight Paint
 
-Select a slot containing a mesh, enter Setup, and press `W` or choose **Weight
-paint**. Click a bone in the canvas or bound-bone list to choose the influence.
-Then drag over the mesh.
+Select a slot containing a mesh, enter Setup, open **View → Weights** and click
+**Activate Weight Paint**, or press `W`. Click a bone in the canvas or bound-bone list to choose the influence.
+Then drag over the mesh. The chosen influence name and lock state appear above
+the controls; picking an influence retains the current mesh slot. Weight editing
+is Setup-only. For a short exercise, see [First rig](../first-rig-in-10-minutes.md).
 
 The brush measures distance to the vertices where they are currently drawn, so
 it remains aligned on a posed rig. A stroke is undoable as one step. When weights
@@ -185,14 +187,15 @@ adding an influence does not make the mesh jump.
 | **Smooth** | Averages the active bone with neighboring vertices. |
 | **Direct** | No brush. Changing **Weight** writes that exact active-bone value to vertices selected in mesh-edit mode. |
 
-In brush modes, **Weight** is a destination, not an amount added per dab. At the
+In Add/Replace, **Weight** is a destination, not an amount added per dab.
+Subtract uses it as removal rate; Smooth uses it as averaging strength. At the
 center of a full-strength brush, Add/Replace can reach 1 exactly. Other unlocked
 influences give up the remaining share proportionally.
 
 | Control | Range | Meaning |
 |---|---:|---|
-| **Weight** | `0..1` | Target for Add/Replace/Direct; removal rate for Subtract. |
-| **Size** | `4..400` | Brush radius in world-space distance. Disabled in Direct. |
+| **Weight** | `0..1` | Target for Add/Replace/Direct; rate for Subtract; strength for Smooth. |
+| **Radius** | `4..400` | Brush radius in world-space distance. Disabled in Direct. |
 | **Feather** | `0..1` | Fraction of radius used for falloff. `0` is hard; `1` fades from center to edge. Disabled in Direct. |
 
 Direct needs one active bone and at least one vertex selected. Brush modes need

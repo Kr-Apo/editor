@@ -11,6 +11,11 @@ fourth layer on top, and it only ever records *offsets* from the rigged pose.
 
 The fastest way to understand it is to open a finished one.
 
+New here? Start with [First rig in ten minutes](first-rig-in-10-minutes.md):
+open the existing eight-bone Tentacle example without generating files or using
+AI. [Rigging capabilities](rigging-capabilities.md) separates Rust authoring from
+runtime support. The source-oriented Walker walkthrough below remains available.
+
 ## Open the sample
 
 ```bash

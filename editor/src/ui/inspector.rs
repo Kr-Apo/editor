@@ -412,7 +412,7 @@ pub fn ui(ui: &mut egui::Ui, state: &mut AppState) {
     // ── World Transform (read-only) ───────────────────────────────────────
     // ── Constraints (T-501) ──────────────────────────────────────────────
     constraint_inspector(ui, state, bone_id);
-    ik_inspector(ui, state, bone_id);
+    ik_inspector(ui, state, Some(bone_id));
     physics_inspector(ui, state, bone_id);
     path_constraint_inspector(ui, state, bone_id);
     add_driver_menu(ui, state, bone_id);
@@ -576,9 +576,16 @@ fn focused_constraint(
     // The per-kind editors are written against a driven bone, which is also how
     // they are reached from the bone panel; passing the first one keeps a single
     // implementation rather than a second copy that can drift.
+    if matches!(
+        state.doc.skeleton.constraints.get(id),
+        Some(Constraint::Ik(_))
+    ) {
+        ik_inspector(ui, state, None);
+        return;
+    }
     let Some(bone) = first else { return };
     match state.doc.skeleton.constraints.get(id) {
-        Some(Constraint::Ik(_)) => ik_inspector(ui, state, bone),
+        Some(Constraint::Ik(_)) => {}
         Some(Constraint::Transform(_)) => constraint_inspector(ui, state, bone),
         Some(Constraint::Physics(_)) => physics_inspector(ui, state, bone),
         Some(Constraint::Path(_)) => path_constraint_inspector(ui, state, bone),
@@ -778,7 +785,11 @@ fn constraint_inspector(
 ///
 /// Sits under the transform-constraint list and reads the same way: the
 /// constraints that explain why this bone moves on its own.
-fn ik_inspector(ui: &mut egui::Ui, state: &mut AppState, bone_id: ankhimate_core::ids::BoneId) {
+fn ik_inspector(
+    ui: &mut egui::Ui,
+    state: &mut AppState,
+    bone_id: Option<ankhimate_core::ids::BoneId>,
+) {
     use ankhimate_core::constraints::Constraint;
     use ankhimate_document::commands::constraint_cmds::{IkProps, RemoveConstraint, SetIkProps};
 
@@ -793,9 +804,11 @@ fn ik_inspector(ui: &mut egui::Ui, state: &mut AppState, bone_id: ankhimate_core
             let Some(Constraint::Ik(ik)) = state.doc.skeleton.constraints.get(*id) else {
                 return None;
             };
-            ik.bones
-                .contains(&bone_id)
-                .then(|| (*id, ik.name.clone(), IkProps::from_constraint(ik)))
+            let selected = match bone_id {
+                Some(bone) => ik.bones.contains(&bone) || ik.target == bone,
+                None => matches!(state.session.selection, Some(crate::session::Selection::Constraint(focused)) if focused == *id),
+            };
+            selected.then(|| (*id, ik.name.clone(), IkProps::from_constraint(ik)))
         })
         .collect();
 
@@ -804,7 +817,6 @@ fn ik_inspector(ui: &mut egui::Ui, state: &mut AppState, bone_id: ankhimate_core
         .skeleton
         .bones
         .iter()
-        .filter(|(id, _)| *id != bone_id)
         .map(|(id, b)| (id, b.name.clone()))
         .collect();
 
@@ -831,25 +843,45 @@ fn ik_inspector(ui: &mut egui::Ui, state: &mut AppState, bone_id: ankhimate_core
             });
         });
 
-        ui.horizontal(|ui| {
-            ui.label(egui::RichText::new("Target").size(10.5));
-            let current = bones
-                .iter()
-                .find(|(b, _)| *b == next.target)
-                .map(|(_, n)| n.clone())
-                .unwrap_or_else(|| "<missing>".to_string());
-            egui::ComboBox::from_id_salt(("ik_target", id))
-                .selected_text(current)
-                .show_ui(ui, |ui| {
-                    for (candidate, label) in &bones {
-                        if ui
-                            .selectable_label(*candidate == next.target, label)
-                            .clicked()
-                        {
-                            next.target = *candidate;
-                        }
+        if let Some(Constraint::Ik(ik)) = state.doc.skeleton.constraints.get(*id) {
+            match ik_info::summary(state, ik) {
+                Ok(rows) => {
+                    for (label, value) in rows {
+                        info_row(ui, label, &value);
                     }
-                });
+                }
+                Err(message) => {
+                    ui.colored_label(ui.visuals().warn_fg_color, message);
+                }
+            }
+        }
+        if !setup {
+            ui.label("IK properties require Setup; animate the target bone or key IK mix in the timeline");
+        }
+        ui.add_enabled_ui(setup, |ui| {
+            ui.horizontal(|ui| {
+                ui.label(egui::RichText::new("Target").size(10.5));
+                let current = bones
+                    .iter()
+                    .find(|(b, _)| *b == next.target)
+                    .map(|(_, n)| n.clone())
+                    .unwrap_or_else(|| "<missing>".to_string());
+                egui::ComboBox::from_id_salt(("ik_target", id))
+                    .selected_text(current)
+                    .show_ui(ui, |ui| {
+                        for (candidate, label) in &bones {
+                            if next.bones.contains(candidate) {
+                                continue;
+                            }
+                            if ui
+                                .selectable_label(*candidate == next.target, label)
+                                .clicked()
+                            {
+                                next.target = *candidate;
+                            }
+                        }
+                    });
+            });
         });
 
         ui.horizontal(|ui| {
@@ -861,7 +893,7 @@ fn ik_inspector(ui: &mut egui::Ui, state: &mut AppState, bone_id: ankhimate_core
                 setup,
                 egui::Slider::new(&mut next.mix, 0.0..=1.0).max_decimals(2),
             )
-            .on_hover_text("0 is pure FK, 1 is pure IK");
+            .on_hover_text("0 is pure FK, 1 is pure IK. This field edits Setup; animate IK mix from its timeline track.");
         });
         ui.horizontal(|ui| {
             ui.add_sized(
@@ -895,9 +927,8 @@ fn ik_inspector(ui: &mut egui::Ui, state: &mut AppState, bone_id: ankhimate_core
             if ui
                 .add_enabled(setup, egui::Checkbox::new(&mut flipped, "Flip bend"))
                 .on_hover_text(
-                    "Which way the chain bends.\nOn a chain of three or more \
-                     this is what makes it predictable: a long chain has many \
-                     ways to reach the same target, and this picks the side.",
+                    "Prefer the opposite bend side. For 3+ bones, this guides the FABRIK seed; \
+                     it does not guarantee a unique pose, especially in degenerate configurations.",
                 )
                 .changed()
             {
@@ -3703,3 +3734,8 @@ mod explicit_axis_key_tests {
 
 #[cfg(test)]
 mod t815_tests;
+
+#[cfg(test)]
+mod t816_tests;
+
+mod ik_info;

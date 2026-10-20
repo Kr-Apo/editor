@@ -14,6 +14,9 @@ Proposed versions: Editor/core/Phaser/PixiJS **0.2.0-alpha.1**, subject to revie
 The [existing public RC2](https://github.com/Kr-Apo/ankhimate/releases/tag/alpha-2026.10.18-rc2)
 is unchanged and does not contain the new AI or simplified MP4 workflow.
 
+Explore the existing tools with [First rig in ten minutes](docs/first-rig-in-10-minutes.md)
+and the factual [rigging capability matrix](docs/rigging-capabilities.md).
+
 ## Create, animate, export
 
 - Rig bones and image parts; use Setup/Animate, curves, slots, skins, meshes,

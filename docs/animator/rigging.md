@@ -351,3 +351,21 @@ back to Setup to verify the baseline was not changed.
 Next: [Meshes and deformation](/animator/deformation/) for topology, UVs,
 binding, and weights, or [Animation](/animator/animation/) to key the completed
 setup rig.
+
+
+## Discover multibone IK
+
+The existing Inspector **Add driver… → IK target** accepts a continuous selected
+parent–child chain in Setup, including three or more bones. One bone aims, two
+use analytic IK, and 3+ use FABRIK. Select the constraint, a chain bone or its
+target to inspect root, ordered chain, evaluated world span and solver.
+The span is current joint geometry, not a promised maximum reach. Invalid or
+degenerate chains show a diagnostic instead of a misleading length.
+
+**Flip bend** controls the signed bend preference; it does not make every
+multibone solution unique. Mix 0 is FK, 1 is IK. Inspector properties edit Setup;
+use the existing timeline tracks for IK property animation, or animate the target.
+Editing locks do not freeze solver evaluation. Follow the unchanged eight-bone
+Tentacle example in [First rig in ten minutes](../first-rig-in-10-minutes.md).
+IK remains excluded from alpha game-adapter playback; see
+[capabilities](../rigging-capabilities.md).

@@ -64,9 +64,68 @@ pub fn ui(ui: &mut egui::Ui, state: &mut AppState) {
         return;
     };
 
-    controls(ui, state, &target, &mesh);
-    ui.add_space(10.0);
-    bound_bones(ui, state, &target, &mesh);
+    let setup = state.session.can_edit_structure();
+    if !setup {
+        ui.label("Weight editing requires Setup mode");
+    }
+    ui.add_enabled_ui(setup, |ui| {
+        let active = state.session.tool == crate::session::Tool::WeightPaint;
+        if ui
+            .selectable_label(
+                active,
+                if active {
+                    "Weight Paint active"
+                } else {
+                    "Activate Weight Paint"
+                },
+            )
+            .on_hover_text("Paint the selected influence on this mesh in Setup. Shortcut: W")
+            .clicked()
+        {
+            state.session.set_tool(crate::session::Tool::WeightPaint);
+        }
+        let influence = state.session.active_bone().and_then(|b| {
+            state
+                .doc
+                .skeleton
+                .bones
+                .get(b)
+                .map(|info| (b, info.name.clone()))
+        });
+        match influence {
+            Some((bone, name)) => {
+                let locked = state.session.weight_paint_settings.locked.contains(&bone);
+                ui.label(format!(
+                    "Influence: {name} ({})",
+                    if locked { "locked" } else { "unlocked" }
+                ));
+            }
+            None => {
+                ui.label("Influence: choose a bone below");
+            }
+        }
+        controls(ui, state, &target, &mesh);
+        ui.add_space(10.0);
+        bound_bones(ui, state, &target, &mesh);
+    });
+}
+
+/// Re-aim the existing brush without losing its validated mesh target.
+/// Normal bone picking remains exclusive everywhere else in the editor.
+pub(crate) fn select_influence(state: &mut AppState, bone: BoneId) {
+    if target(state).is_none() || !state.doc.skeleton.bones.contains_key(bone) {
+        state
+            .session
+            .set_status("Select a mesh slot before choosing a paint influence");
+        return;
+    }
+    crate::geometry_edit::sync(state);
+    let slots = state.session.selected_slots.clone();
+    let vertices = state.session.selected_vertices.clone();
+    state.session.select_bone(Some(bone));
+    state.session.selected_slots = slots;
+    state.session.selected_vertices = vertices;
+    crate::geometry_edit::bind(state);
 }
 
 /// The brush, in one column of labelled rows.
@@ -135,6 +194,10 @@ fn controls(ui: &mut egui::Ui, state: &mut AppState, target: &Target, mesh: &Mes
         )
         .on_hover_text(if direct {
             "The weight written to the selected vertices"
+        } else if state.session.weight_paint_settings.mode == BrushMode::Subtract {
+            "Rate of reduction toward zero (0–1)"
+        } else if state.session.weight_paint_settings.mode == BrushMode::Smooth {
+            "Strength of smoothing toward neighbouring weights (0–1)"
         } else {
             "The weight the brush drives toward — not an amount added"
         })
@@ -146,8 +209,9 @@ fn controls(ui: &mut egui::Ui, state: &mut AppState, target: &Target, mesh: &Mes
     ui.add_enabled_ui(!direct, |ui| {
         ui.add(
             egui::Slider::new(&mut state.session.weight_paint_settings.radius, 4.0..=400.0)
-                .text("Size"),
-        );
+                .text("Radius"),
+        )
+        .on_hover_text("Brush radius in world units (4–400), independent of viewport zoom");
         ui.add(
             egui::Slider::new(&mut state.session.weight_paint_settings.feather, 0.0..=1.0)
                 .text("Feather")
@@ -279,7 +343,7 @@ fn bound_bones(ui: &mut egui::Ui, state: &mut AppState, target: &Target, mesh: &
                             .color(ui.visuals().weak_text_color()),
                     );
                     ui.label(
-                        egui::RichText::new("Select bones and press Bind")
+                        egui::RichText::new("Select bones, then use Auto or Bind")
                             .size(10.0)
                             .color(ui.visuals().weak_text_color()),
                     );
@@ -361,7 +425,7 @@ fn bound_bones(ui: &mut egui::Ui, state: &mut AppState, target: &Target, mesh: &
 
     // ── Apply, after the layout so nothing mutates mid-borrow ───────────
     if let Some(bone) = select {
-        state.session.select_bone(Some(bone));
+        select_influence(state, bone);
     }
     if let Some(bone) = toggle_lock {
         let locked = &mut state.session.weight_paint_settings.locked;
@@ -851,3 +915,6 @@ fn dispatch(
         label,
     )))
 }
+
+#[cfg(test)]
+mod t816_tests;
