@@ -654,6 +654,7 @@ impl Session {
     pub fn set_active_skin(&mut self, skin: SkinId) {
         if self.active_skin != skin {
             self.clear_geometry_selection();
+            self.key_selection.clear_ffd();
             self.active_skin = skin;
         }
     }

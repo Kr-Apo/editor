@@ -245,6 +245,7 @@ impl AppState {
             self.session.playing = false;
         }
 
+        self.session.key_selection.clear_ffd();
         self.session.work_mode = mode;
         self.session.status = None;
         self.refresh_pose();

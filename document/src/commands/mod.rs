@@ -35,6 +35,7 @@ pub mod create_attachment_cmds;
 pub mod document_cmds;
 pub mod event_cmds;
 pub mod export_cmds;
+pub mod ffd_cmds;
 pub mod group_cmds;
 pub mod key_cmds;
 pub mod marker_cmds;

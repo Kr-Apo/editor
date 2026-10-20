@@ -1,5 +1,17 @@
 # Feature inventory — exact T-816 product, T-817 documentary audit
 
+## Local T-821 update — 2026-10-20
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for editing one existing owned
+Deform key in the Dopesheet: select, move time, delete and native interpolation.
+See [FFD key editing](ffd-key-editing.md). Weighted arrays use influence count;
+linked/shared sources, ambiguous skins and invalid topology refuse. No vector
+clipboard, graph averaging or T-820 scalar tangent linking. T-404/T-209 remain
+PARTIAL. Cumulative T-813–T-821 manual qualification is deferred, not certified.
+No runtime, sampler, format, version or public release change. Earlier sections
+below describe their historical checkpoint scope. T-822 is not started.
+
+
 ## Local T-820 update — 2026-10-20
 
 **T-820: COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for bounded single-junction
@@ -41,9 +53,9 @@ T-813–T-816: **PENDING MANUAL REVIEW**. No GUI, inference, browser or GPU run 
 
 ## Reading this inventory
 
-135 **entries**, consisting of 107 ID records (101 historical
-IDs plus T-804/T-812/T-817/T-818/T-819/T-820 context) and 28 linked scope refinements.
-These are not 135 independent nonoverlapping product features. Aggregates
+136 **entries**, consisting of 108 ID records (101 historical
+IDs plus T-804/T-812/T-817/T-818/T-819/T-820/T-821 context) and 28 linked scope refinements.
+These are not 136 independent nonoverlapping product features. Aggregates
 and their refinements overlap; counts are always reported separately.
 
 Implementation: **COMPLETE** = the explicitly bounded functional scope is implemented;
@@ -917,7 +929,7 @@ not the current availability matrix. The current [tasks](TASKS.md),
 - Implementation: [`editor/src/edit_router.rs`](../editor/src/edit_router.rs), [`editor/src/ui/canvas/tools/mesh_edit.rs`](../editor/src/ui/canvas/tools/mesh_edit.rs), [`core/src/pose.rs`](../core/src/pose.rs).
 - Test/reference suites: [`editor/src/ui/canvas/tools/mesh_edit/tests.rs`](../editor/src/ui/canvas/tools/mesh_edit/tests.rs), [`core/src/pose.rs`](../core/src/pose.rs)
 - Example test symbols (suite references, not a coverage claim): `ffd_drag_does_not_accumulate_mouse_updates`; `deform_offsets_land_in_the_pose`.
-- Contradictory check / remaining historical criteria: FFD dopesheet/clipboard incomplete; topology changes require care
+- Contradictory check / remaining historical criteria: T-821 adds local single-key FFD editing; vector clipboard and broader topology/authoring qualification remain
 - Latest relevant checkpoint: T-812 integration; audited exact T-816 source.
 - Recommended action: Work only on the explicit remainder; preserve existing paths. Priority: Retain scoped implementation.
 
@@ -2052,3 +2064,17 @@ in [manual QA](MANUAL_QA_PENDING.md).
 Bounded single-key junction linking, exact native Undo/Redo and unchanged
 Save/Reload fields. [Contract](bezier-tangent-linking.md), [graph rules](graph-editor.md).
 No public distribution or GUI claim. Preserve T-813–T-819; T-821 not started.
+
+<a id="t-821"></a>
+### T-821 — Editable existing FFD keys
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** · Origin: T-404 / T-209.
+
+- Scope: one existing Deform key, exact owned mesh, native time/delete/interpolation;
+  rigid and weighted influence-count arrays plus preserved empty resets.
+- Entry: Dopesheet Deform row, click / horizontal drag / right-click FFD actions.
+- Implementation: [native capture](../document/src/ffd_keys.rs), [command](../document/src/commands/ffd_cmds.rs), [session](../editor/src/ffd_keys.rs), [shared selection](../editor/src/key_selection.rs).
+- Tests: [native/editor regression scenarios](../editor/src/ffd_keys/tests.rs), [real in-memory egui actions](../editor/src/ui/timeline/sheet/t821_tests.rs).
+- Limits: [contract](ffd-key-editing.md); one key, no general clipboard or vector graph,
+  linked/shared-source and ambiguous owner refusal. T-404/T-209 remain PARTIAL.
+- GUI qualification is deferred cumulatively through T-821; no public release.

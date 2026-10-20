@@ -146,6 +146,9 @@ pub fn navigate(state: &mut AppState, ticket: &Ticket) -> bool {
         Location::Key { animation, key } => {
             use ankhimate_document::commands::key_cmds::TimelineAddr as A;
             let target_exists = match key.addr {
+                // FFD selection has its own topology lease; diagnostic key tickets
+                // remain restricted to the existing scalar/slot clipboard surface.
+                ankhimate_document::commands::key_cmds::TimelineAddr::Deform { .. } => false,
                 A::Bone { bone, .. } => s.bones.contains_key(bone),
                 A::SlotColor { slot } | A::SlotVisible { slot } | A::SlotAttachment { slot } => {
                     s.slots.contains_key(slot)

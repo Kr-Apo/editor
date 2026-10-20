@@ -384,3 +384,15 @@ areas that must follow a bending limb.
 
 Next: [Animation](/animator/animation/) for deform tracks, interpolation, and
 timeline editing, or return to [Setup and rigging](/animator/rigging/).
+
+
+## Existing Deform keys in the Dopesheet — local T-821
+
+The local candidate adds one-key selection, temporal movement, deletion and
+existing interpolation presets on compatible owned meshes. This edits animation
+keys, not setup geometry or per-influence values. See [FFD key editing](../ffd-key-editing.md)
+for identity, topology, reset-vector behavior, locks, history and exclusions.
+The corrected canvas drag's existing per-influence stability regressions are
+retained; T-821 does not redesign that gesture or qualify it artistically.
+All Windows manual checks remain pending; vector clipboard and linked meshes
+are outside this key-editing scope.

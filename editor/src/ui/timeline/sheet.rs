@@ -48,6 +48,8 @@ struct KeyDrag {
     active: bool,
     start_x: f32,
     last_delta_frames: i64,
+    ffd: Option<crate::ffd_keys::Lease>,
+    token: u64,
 }
 
 /// In-progress rubber-band box select.
@@ -84,6 +86,9 @@ pub fn ui(
         .ctx()
         .memory(|m| m.data.get_temp(drag_id))
         .unwrap_or_default();
+    if drag.ffd.as_ref().is_some_and(|l| !l.matches(state)) {
+        drag = KeyDrag::default();
+    }
     let box_id = ui.id().with("tl_boxsel");
     let mut boxsel: BoxSelect = ui
         .ctx()
@@ -177,6 +182,38 @@ pub fn ui(
             VisibleRow::Group { .. } => {}
             VisibleRow::Property { data, .. } => {
                 let channel = style.theme.channel_color(data.label);
+                let ffd = matches!(
+                    data.addr,
+                    ankhimate_document::commands::key_cmds::TimelineAddr::Deform { .. }
+                );
+                let reason = if ffd && !data.keys.is_empty() {
+                    crate::ffd_keys::reason(
+                        state,
+                        anim,
+                        KeyRef {
+                            addr: data.addr.clone(),
+                            index: 0,
+                        },
+                    )
+                } else {
+                    None
+                };
+                let readonly = data.read_only || reason.is_some();
+                if let Some(reason) = &reason {
+                    ui.interact(
+                        row_rect,
+                        ui.id().with(("ffd_unavailable", data.row_id)),
+                        egui::Sense::hover(),
+                    )
+                    .on_hover_text(reason);
+                    painter.text(
+                        egui::pos2(rect.right() - 4., y + ROW_H / 2.),
+                        egui::Align2::RIGHT_CENTER,
+                        format!("FFD unavailable: {reason}"),
+                        egui::FontId::proportional(9.),
+                        visuals.weak_text_color(),
+                    );
+                }
                 // A dopesheet describes held motion, not only isolated moments.
                 // Join each key to the next, and the final key to clip end, so a
                 // glance shows where a channel is active across time.
@@ -219,7 +256,7 @@ pub fn ui(
                         center,
                         k.interp,
                         selected,
-                        data.read_only || !shown,
+                        readonly || !shown,
                         &visuals,
                         channel,
                     );
@@ -227,7 +264,7 @@ pub fn ui(
                     // A greyed row is not editable either: dragging a key you
                     // cannot properly see is how keys end up somewhere nobody
                     // meant to put them.
-                    if data.read_only || !shown {
+                    if readonly || !shown {
                         continue;
                     }
                     key_positions.push((kref.clone(), center));
@@ -269,6 +306,9 @@ pub fn ui(
                             selection.set_single(kref.clone());
                         }
                     }
+                    if resp.clicked() {
+                        crate::key_selection::set(state, anim, selection.keys.clone());
+                    }
                     if resp.drag_started() {
                         if !selection.contains(&kref) {
                             selection.set_single(kref.clone());
@@ -276,12 +316,30 @@ pub fn ui(
                         drag.active = true;
                         drag.start_x = resp.interact_pointer_pos().map(|p| p.x).unwrap_or(x);
                         drag.last_delta_frames = 0;
+                        if ffd {
+                            // egui starts a drag after its movement threshold;
+                            // measure the FFD gesture from the actual press.
+                            drag.start_x =
+                                ui.input(|i| i.pointer.press_origin()).map_or(x, |p| p.x);
+                            selection.set_single(kref.clone());
+                            crate::key_selection::set(state, anim, selection.keys.clone());
+                            drag.ffd = crate::ffd_keys::selected(state, anim).ok();
+                            use std::sync::atomic::{AtomicU64, Ordering};
+                            static NEXT: AtomicU64 = AtomicU64::new(1);
+                            drag.token = NEXT.fetch_add(1, Ordering::Relaxed);
+                            if drag.ffd.is_none() {
+                                drag = KeyDrag::default();
+                            }
+                        }
                     }
                     resp.context_menu(|ui| {
                         if !selection.contains(&kref) {
                             selection.set_single(kref.clone());
                         }
-                        key_context_menu(ui, state, anim, &selection, style.operators);
+                        if state.revision == selection_revision {
+                            crate::key_selection::set(state, anim, selection.keys.clone());
+                            key_context_menu(ui, state, anim, &selection, style.operators);
+                        }
                     });
                 }
             }
@@ -311,7 +369,17 @@ pub fn ui(
 
     // A context command may have reordered/deleted keys since this frame began.
     if state.revision != selection_revision {
-        selection.keys.clear();
+        if selection.keys.iter().any(|r| {
+            matches!(
+                r.addr,
+                ankhimate_document::commands::key_cmds::TimelineAddr::Deform { .. }
+            )
+        }) {
+            selection.keys = crate::key_selection::read(state, anim);
+            selection_revision = state.revision;
+        } else {
+            selection.keys.clear();
+        }
         drag = KeyDrag::default();
     }
     // Selection drag.
@@ -324,18 +392,41 @@ pub fn ui(
             if delta_frames != drag.last_delta_frames {
                 let step = (delta_frames - drag.last_delta_frames) as f32 / layout.fps as f32;
                 drag.last_delta_frames = delta_frames;
-                if let Some(moved) =
+                let moved = if drag.ffd.is_some() {
+                    match crate::ffd_keys::move_delta(state, anim, step, Some(drag.token)) {
+                        Ok(refs) => Some(refs),
+                        Err(e) => {
+                            state.session.set_status(e);
+                            None
+                        }
+                    }
+                } else {
                     crate::key_selection::move_keys(state, anim, &selection.keys, step)
-                {
+                };
+                if let Some(moved) = moved {
                     selection.keys = moved;
                     selection_revision = state.revision;
+                    if drag.ffd.is_some() {
+                        drag.ffd = crate::ffd_keys::selected(state, anim).ok();
+                    }
                 } else {
                     drag = KeyDrag::default();
                 }
             }
-            if released {
+            if released && drag.active {
                 if p.y > sheet_bottom + DELETE_DROP_MARGIN && !selection.keys.is_empty() {
-                    state.dispatch(Box::new(DeleteKeys::new(anim, selection.keys.clone())));
+                    if let Some(l) = &drag.ffd {
+                        if let Err(e) = crate::ffd_keys::apply(
+                            state,
+                            l,
+                            ankhimate_document::ffd_keys::Action::Delete,
+                            Some(drag.token),
+                        ) {
+                            state.session.set_status(e);
+                        }
+                    } else {
+                        state.dispatch(Box::new(DeleteKeys::new(anim, selection.keys.clone())));
+                    }
                     selection.keys.clear();
                 }
                 drag = KeyDrag::default();
@@ -499,6 +590,19 @@ fn key_context_menu(
     selection: &Selection,
     operators: &crate::registry::Registry,
 ) {
+    if selection.keys.iter().any(|r| {
+        matches!(
+            r.addr,
+            ankhimate_document::commands::key_cmds::TimelineAddr::Deform { .. }
+        )
+    }) {
+        if selection.keys.len() == 1 {
+            crate::ffd_keys::menu(ui, state, anim);
+        } else {
+            ui.label("FFD actions require exactly one key; mixed/grouped selection is refused.");
+        }
+        return;
+    }
     clipboard_menu(ui, state, anim, selection, operators);
     ui.separator();
     if ui.button("Delete").clicked() {
@@ -526,6 +630,25 @@ fn clipboard_menu(
     selection: &Selection,
     operators: &crate::registry::Registry,
 ) {
+    if selection.keys.iter().any(|r| {
+        matches!(
+            r.addr,
+            ankhimate_document::commands::key_cmds::TimelineAddr::Deform { .. }
+        )
+    }) {
+        for text in [
+            "Copy selected keys",
+            "Paste keys at playhead",
+            "Paste Keys Mirrored (Offsets)",
+        ] {
+            ui.add_enabled(false, egui::Button::new(text))
+                .on_disabled_hover_text(
+                    "FFD vector clipboard is outside T821; select scalar/slot rows instead",
+                );
+        }
+        ui.label("FFD clipboard is not supported; use the key's FFD edit actions.");
+        return;
+    }
     // Canonical *visible row order*, independent of Ctrl-click order. Read-only
     // placeholder addresses are deliberately excluded instead of guessed.
     let model = TimelineModel::build(state, anim);
@@ -582,5 +705,8 @@ fn clipboard_menu(
         ui.close();
     }
     ui.weak("Mirrors bone animation offsets only; asymmetric setups need not produce an absolute mirrored pose.");
-    ui.weak("Read-only here: draw order, constraints, FFD. Events use their own lane.");
+    ui.weak("Draw order/constraints remain read-only; FFD has dedicated time/interpolation actions and no clipboard. Events use their own lane.");
 }
+
+#[cfg(test)]
+mod t821_tests;

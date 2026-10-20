@@ -59,6 +59,9 @@ pub fn address(t: &Timeline) -> Result<TimelineAddr, String> {
 impl NamedTrack {
     pub fn capture(doc: &Document, addr: &TimelineAddr) -> Result<Self, String> {
         let (name, kind) = match addr {
+            TimelineAddr::Deform { .. } => {
+                return Err("FFD vectors are excluded from the general key clipboard".into());
+            }
             TimelineAddr::Bone {
                 bone,
                 property,

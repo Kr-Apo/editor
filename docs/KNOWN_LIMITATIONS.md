@@ -103,3 +103,16 @@ editing remains; multi-junction linking, normalized overlay and graph marquee
 remain outside this candidate. No new sampler, format or runtime field.
 Cumulative T-813–T-820 manual qualification is pending; no GUI/GPU/inference run.
 See [contract](bezier-tangent-linking.md) and [graph rules](graph-editor.md).
+
+## T-821 local FFD-key candidate
+
+One existing owned Deform key may be selected, retimed, deleted or assigned a
+native Linear/Stepped/Bezier interpolation. Weighted offsets count influences;
+empty resets are retained with the native sampler's asymmetric between-key
+behavior. Unique owner and track required; linked/shared sources, ambiguous skin
+overrides, invalid topology/binds/offsets and time collisions refuse. No implicit
+rebind/repair, multi-key FFD, vector clipboard, graph average, offset table editor
+or scalar tangent linking. Locks use existing slot/influence bone locks; no new
+per-mesh/slot lock model. Complete-mesh/track captures have data-proportional cost,
+not a claimed interactive performance budget. See [FFD key editing](ffd-key-editing.md).
+Manual T-813–T-821 qualification stays pending; old runtimes/releases unchanged.

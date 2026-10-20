@@ -19,7 +19,7 @@
 use super::EditCommand;
 use crate::doc::Document;
 use ankhimate_core::animation::{Animation, Axis, Interp, Key, Timeline};
-use ankhimate_core::ids::{AnimationId, BoneId, SlotId};
+use ankhimate_core::ids::{AnimationId, BoneId, SkinId, SlotId};
 
 /// Which bone transform property a timeline drives. The dopesheet groups rows by
 /// this; `AddKey` uses it to pick the timeline and the value type.
@@ -48,6 +48,12 @@ impl BoneProperty {
 /// drive, not their index — an index shifts when another timeline is inserted.
 #[derive(Debug, Clone, PartialEq)]
 pub enum TimelineAddr {
+    /// Existing Deform track; None is explicitly unresolved, never a placeholder.
+    Deform {
+        slot: SlotId,
+        attachment: String,
+        owner: Option<SkinId>,
+    },
     Bone {
         bone: BoneId,
         property: BoneProperty,
@@ -100,6 +106,20 @@ impl TimelineAddr {
                     Some(Axis::Y) => 32,
                 };
                 bone.data().as_ffi().wrapping_mul(64).wrapping_add(p + a)
+            }
+            TimelineAddr::Deform {
+                slot,
+                attachment,
+                owner,
+            } => {
+                let mut h = 0x4646440000000001u64 ^ slot.data().as_ffi().rotate_left(19);
+                if let Some(o) = owner {
+                    h ^= o.data().as_ffi().rotate_left(37);
+                }
+                for b in attachment.bytes() {
+                    h = (h ^ u64::from(b)).wrapping_mul(0x100000001b3);
+                }
+                h
             }
             TimelineAddr::SlotColor { slot } => slot.data().as_ffi() ^ 0xC010_0000_0000_0000,
             TimelineAddr::SlotAttachment { slot } => slot.data().as_ffi() ^ 0xA77A_0000_0000_0000,
@@ -154,6 +174,16 @@ impl TimelineAddr {
                     bone: b, axis: ax, ..
                 },
             ) => bone == b && *axis == Some(*ax),
+            (
+                TimelineAddr::Deform {
+                    slot, attachment, ..
+                },
+                Timeline::Deform {
+                    slot: s,
+                    attachment: a,
+                    ..
+                },
+            ) => slot == s && attachment == a,
             (TimelineAddr::SlotColor { slot }, Timeline::SlotColor { slot: s, .. }) => slot == s,
             (TimelineAddr::SlotAttachment { slot }, Timeline::SlotAttachment { slot: s, .. }) => {
                 slot == s
@@ -198,6 +228,13 @@ impl TimelineAddr {
                     },
                 }
             }
+            TimelineAddr::Deform {
+                slot, attachment, ..
+            } => Timeline::Deform {
+                slot: *slot,
+                attachment: attachment.clone(),
+                keys: Vec::new(),
+            },
             TimelineAddr::SlotColor { slot } => Timeline::SlotColor {
                 slot: *slot,
                 keys: Vec::new(),

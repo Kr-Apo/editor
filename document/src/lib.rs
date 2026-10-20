@@ -34,6 +34,7 @@ pub mod diagnostics;
 pub mod doc;
 pub mod doc_ops;
 pub mod edit;
+pub mod ffd_keys;
 pub mod import_ops;
 /// Retriangulation for meshes — geometry, so it travels with the commands that
 /// call it rather than with the viewport that displays the result.

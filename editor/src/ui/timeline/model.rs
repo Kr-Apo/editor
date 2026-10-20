@@ -91,7 +91,15 @@ impl TimelineModel {
             std::collections::HashMap::new();
 
         for timeline in &animation.timelines {
-            let (key, row) = describe(timeline);
+            let (key, mut row) = describe(timeline);
+            if let TimelineAddr::Deform {
+                slot,
+                attachment,
+                owner,
+            } = &mut row.addr
+            {
+                *owner = ankhimate_document::ffd_keys::owner(&state.doc, *slot, attachment).ok();
+            }
             if !buckets.contains_key(&key) {
                 order.push(key);
             }
@@ -460,10 +468,20 @@ fn describe(timeline: &Timeline) -> (GroupKey, PropertyRow) {
             GroupKey::Global,
             read_only_row("constraint mix", keys.iter().map(|k| (k.time, k.interp))),
         ),
-        Timeline::Deform { keys, .. } => (
-            GroupKey::Global,
-            read_only_row("deform", keys.iter().map(|k| (k.time, k.interp))),
-        ),
+        Timeline::Deform {
+            slot,
+            attachment,
+            keys,
+        } => {
+            let mut row = read_only_row("deform", keys.iter().map(|k| (k.time, k.interp)));
+            row.addr = TimelineAddr::Deform {
+                slot: *slot,
+                attachment: attachment.clone(),
+                owner: None,
+            };
+            row.read_only = false;
+            (GroupKey::Slot(*slot), row)
+        }
     }
 }
 
@@ -640,5 +658,28 @@ mod solo_tests {
             group_id: 7,
         };
         assert_ne!(header.solo_id(), child.solo_id());
+    }
+}
+
+#[cfg(test)]
+mod t821_tests {
+    #[test]
+    fn t821_existing_deform_row_has_real_editable_address() {
+        let (s, a, _, _) = crate::ffd_keys::tests::fixture(false);
+        let model = super::TimelineModel::build(&s, a);
+        let row = model
+            .groups
+            .iter()
+            .flat_map(|g| &g.rows)
+            .find(|r| r.label == "deform")
+            .unwrap();
+        assert!(
+            !row.read_only,
+            "Existing Deform key row must be editable rather than a read-only placeholder"
+        );
+        assert!(matches!(
+            row.addr,
+            ankhimate_document::commands::key_cmds::TimelineAddr::Deform { owner: Some(_), .. }
+        ));
     }
 }

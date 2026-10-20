@@ -1,5 +1,17 @@
 # Next roadmap — proposals after T-817 review
 
+## Local T-821 update — 2026-10-20
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for editing one existing owned
+Deform key in the Dopesheet: select, move time, delete and native interpolation.
+See [FFD key editing](ffd-key-editing.md). Weighted arrays use influence count;
+linked/shared sources, ambiguous skins and invalid topology refuse. No vector
+clipboard, graph averaging or T-820 scalar tangent linking. T-404/T-209 remain
+PARTIAL. Cumulative T-813–T-821 manual qualification is deferred, not certified.
+No runtime, sampler, format, version or public release change. Earlier sections
+below describe their historical checkpoint scope. T-822 is not started.
+
+
 ## Local T-820 update — 2026-10-20
 
 **T-820: COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for bounded single-junction
@@ -86,16 +98,16 @@ qualification are separate. No format, evaluator, runtime or export changes.
 
 ## T-821 — Editable existing FFD keys in the dopesheet
 
-Historical IDs: **T-209 / T-404** · Priority **P1** · Effort: Medium/high; small staged acceptance.
-
-- **Verified gap:** FFD authoring/evaluation exists but complex rows have no editable key addresses or block clipboard path.
-- **Already done — preserve:** Reuse Deform tracks, existing edit router, KeyClip/PasteKeys transactions where applicable; preserve T-209.2/.3.
-- **Bounded work:** First expose select/move/delete/interpolation for keys of one existing exact mesh topology; no vertex generation/retopology, no mirrored FFD or automatic target guessing.
-- **Dependencies:** Existing FFD and key selection/history; define typed deform address and vertex-count validation before UI.
-- **Regression risk:** High: index/topology/linked ownership and curves; separate selection/edit phase from cross-mesh paste if needed.
-- **Measurable acceptance:** Single-mesh FFD keys editable and undoable; mismatched topology/skin/linked cases refuse without data/Redo loss; three cycles and Save/Reload; scalar/pose/mirrored bone clipboard regressions retained; no format/evaluator changes.
-- **Runtime boundary:** Existing native v2 deform encoding only; runtime render qualification remains separately scoped.
-- **Migration boundary:** None for editing existing tracks; any new payload/address architecture needs design review.
+Historical IDs: **T-209 / T-404**. Authorized bounded implementation:
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE**.
+One exact existing key on a uniquely owned compatible mesh can be selected,
+retimed, deleted or assigned an existing interpolation through one native command.
+Typed owner/slot/attachment addresses, topology/bind capture, strict time collision
+refusal and existing key leases protect it. Weighted vectors count influences,
+not visible vertices. Empty resets retain the sampler's asymmetric semantics.
+No FFD general clipboard, offset inspector, vector graph average or linked/shared
+mesh editing; no topology repair, evaluator, renderer, runtime or format change.
+T-209/T-404 remain PARTIAL. See [contract](ffd-key-editing.md).
 
 ## T-822 — Explicit PSD path-change resolution for simple regions
 
@@ -162,3 +174,8 @@ requires separate scope review; no universal retargeting claim is added.
 
 Stop for maintainer review of the local candidate. Cumulative manual T-813–T-820
 qualification remains deferred. T-821 is a proposal only, not started/authorized.
+
+## After T-821
+
+Stop for local candidate review. Manual T-813–T-821 qualification remains deferred.
+T-822 remains a proposal only; no further implementation is started or authorized.

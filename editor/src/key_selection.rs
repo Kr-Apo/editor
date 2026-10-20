@@ -12,9 +12,17 @@ pub struct KeySelection {
     revision: u64,
     refs: Vec<KeyRef>,
     captured: Option<KeyClip>,
+    ffd: Option<crate::ffd_keys::Lease>,
 }
 pub fn read(state: &mut AppState, anim: AnimationId) -> Vec<KeyRef> {
     let s = &state.session.key_selection;
+    if let Some(lease) = &s.ffd {
+        if s.animation == Some(anim) && lease.matches(state) {
+            return s.refs.clone();
+        }
+        state.session.key_selection = Default::default();
+        return Vec::new();
+    }
     let valid = s.animation == Some(anim)
         && state.session.active_animation == Some(anim)
         && s.revision == state.revision
@@ -27,6 +35,35 @@ pub fn read(state: &mut AppState, anim: AnimationId) -> Vec<KeyRef> {
     }
 }
 pub fn set(state: &mut AppState, anim: AnimationId, refs: Vec<KeyRef>) {
+    if refs.iter().any(|r| {
+        matches!(
+            r.addr,
+            ankhimate_document::commands::key_cmds::TimelineAddr::Deform { .. }
+        )
+    }) {
+        if refs.len() != 1 {
+            state
+                .session
+                .set_status("FFD selection is limited to one key; mixed/grouped selection refused");
+            return;
+        }
+        state.session.key_selection =
+            match crate::ffd_keys::Lease::new(state, anim, refs[0].clone()) {
+                Ok(l) if state.session.active_animation == Some(anim) => KeySelection {
+                    animation: Some(anim),
+                    revision: state.revision,
+                    refs,
+                    captured: None,
+                    ffd: Some(l),
+                },
+                Err(e) => {
+                    state.session.set_status(e);
+                    KeySelection::default()
+                }
+                _ => KeySelection::default(),
+            };
+        return;
+    }
     let captured = KeyClip::capture(&state.doc, anim, &refs).ok();
     state.session.key_selection =
         if captured.is_some() && state.session.active_animation == Some(anim) {
@@ -35,6 +72,7 @@ pub fn set(state: &mut AppState, anim: AnimationId, refs: Vec<KeyRef>) {
                 revision: state.revision,
                 refs,
                 captured,
+                ffd: None,
             }
         } else {
             KeySelection::default()
@@ -50,6 +88,17 @@ pub fn move_keys(
 ) -> Option<Vec<KeyRef>> {
     if state.session.active_animation != Some(anim) || refs.is_empty() || !delta.is_finite() {
         return None;
+    }
+    if refs.iter().any(|r| {
+        matches!(
+            r.addr,
+            ankhimate_document::commands::key_cmds::TimelineAddr::Deform { .. }
+        )
+    }) {
+        if refs != read(state, anim) {
+            return None;
+        }
+        return crate::ffd_keys::move_delta(state, anim, delta, None).ok();
     }
     KeyClip::capture(&state.doc, anim, refs).ok()?;
     let a = state.doc.animations.get(anim)?;
@@ -131,5 +180,13 @@ fn key_count(t: &ankhimate_core::animation::Timeline) -> usize {
         Timeline::SlotVisible { keys, .. } => keys.len(),
         Timeline::SlotAttachment { keys, .. } => keys.len(),
         _ => 0,
+    }
+}
+
+impl KeySelection {
+    pub fn clear_ffd(&mut self) {
+        if self.ffd.is_some() {
+            *self = Self::default();
+        }
     }
 }

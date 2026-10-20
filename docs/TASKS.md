@@ -1,5 +1,17 @@
 # Ankhimate — operational tasks and evidence
 
+## Local T-821 update — 2026-10-20
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for editing one existing owned
+Deform key in the Dopesheet: select, move time, delete and native interpolation.
+See [FFD key editing](ffd-key-editing.md). Weighted arrays use influence count;
+linked/shared sources, ambiguous skins and invalid topology refuse. No vector
+clipboard, graph averaging or T-820 scalar tangent linking. T-404/T-209 remain
+PARTIAL. Cumulative T-813–T-821 manual qualification is deferred, not certified.
+No runtime, sampler, format, version or public release change. Earlier sections
+below describe their historical checkpoint scope. T-822 is not started.
+
+
 ## Local T-820 update — 2026-10-20
 
 **T-820: COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for bounded single-junction
@@ -149,7 +161,7 @@ The matrix is an operational summary; the archive retains all original criteria.
 | [T-401](FEATURE_INVENTORY.md#t-401) — Mesh attachment editing UI | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | No universal snapping or arbitrary linked-source/topology edit safety |
 | [T-402](FEATURE_INVENTORY.md#t-402) — Auto mesh tracing | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Tracing/refinement exists, but topology replacement clears weights rather than promised remapping;… |
 | [T-403](FEATURE_INVENTORY.md#t-403) — Weight painting + bind compensation | COMPLETE | PENDING_MANUAL | PUBLIC_ALPHA | Complete native scoped brush; not autorigging or every-project visual fidelity; T-816 GUI pending |
-| [T-404](FEATURE_INVENTORY.md#t-404) — Deform timelines | PARTIAL | AUTOMATED | PUBLIC_ALPHA | FFD dopesheet/clipboard incomplete; topology changes require care |
+| [T-404](FEATURE_INVENTORY.md#t-404) — Deform timelines | PARTIAL | AUTOMATED | PUBLIC_ALPHA | T-821 adds local single-key FFD move/delete/interpolation; vector clipboard, wider authoring/topology qualification remain |
 | [T-405](FEATURE_INVENTORY.md#t-405) — Clipping attachments | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Common adapters support bounded sequential masks, not arbitrary nested intersections |
 | [T-815](FEATURE_INVENTORY.md#t-815) — Viewport Precision & Numeric Geometry Editing | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE | Not every handle/expression/snap or linked-source edit; GUI pending |
 | [T-902](FEATURE_INVENTORY.md#t-902) — Numeric entry for every vertex and handle | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | Not every draggable point, expression parser or snap-to-neighbour |
@@ -236,6 +248,7 @@ The matrix is an operational summary; the archive retains all original criteria.
 | [T-818](FEATURE_INVENTORY.md#t-818) — Bounded global diagnostics | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE | Read-only rules/cache/badge/list/navigation implemented; larger T-702 framing and latency criteria remain open |
 | [T-819](FEATURE_INVENTORY.md#t-819) — Safe cross-project region subtree transfer | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE | Bounded region/image/internal IK-Transform/bone-key workflow; no universal merge or world-pose retargeting |
 | [T-820](FEATURE_INVENTORY.md#t-820) — Bezier tangent linking | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE | Single scalar junction, adjacent Bezier segments, session Broken/Aligned/Mirrored; no normalize overlay or graph marquee |
+| [T-821](FEATURE_INVENTORY.md#t-821) — Existing FFD keys in the Dopesheet | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE | One exact owned mesh/key, time/delete/interpolation; no FFD clipboard or linked/shared ownership |
 
 ## 4. Completed bounded scopes — retain, do not redevelop
 
@@ -256,7 +269,7 @@ exclude unqualified runtimes, platforms, artist quality and extended task promis
 
 | Family | Already delivered | Remaining work / dependencies / risk |
 |---|---|---|
-| T-209 / T-404 | Owned scalar/slot clipboard, poses and bone-offset mirror | Editable complex/FFD addresses and curves; native index/topology/lock validation before UI; high reference risk |
+| T-209 / T-404 | Owned scalar/slot clipboard, poses and bone-offset mirror | Vector clipboard, multi-key/advanced track editing and wider qualification; T-821 adds bounded single-key FFD editing locally |
 | T-302 | Nested import/preview and exact-path region refresh | Explicit path-change resolution / simple new-layer policy, not guessed image matching; preserve rig and animations |
 | T-402 | Alpha tracing/refinement | Weight/topology/FFD implications and original performance budget; do not retrace the subsystem |
 | T-502 / T-503 | Static path constraints and fixed-step Rust physics | Path animation tracks; export/runtime physics compatibility; deliberately excluded from alpha, separate future contracts |
@@ -364,3 +377,13 @@ No persisted mode, automatic keys, implicit Linear/Stepped conversion or new sam
 Numeric Apply is isolated, Cancel preserves history, pointer gestures merge only
 within their captured lease/token. See [linking](bezier-tangent-linking.md).
 Cumulative T-813–T-820 manual review remains pending. T-821 is not started.
+
+## T-821 checkpoint (local, not released)
+
+Exact parent T-820: `fad9150d04d81438ef177b96dd53f793ea11e3bb`.
+Typed slot/attachment/owner FFD addresses replace the Deform placeholder. Shared
+session selection has a guarded FFD lease, while KeyClip still refuses vectors.
+A targeted Animate command preserves offsets/mesh data, restores duration/track
+position and separates gestures. See [FFD contract](ffd-key-editing.md).
+T-404 and T-209 stay PARTIAL. All prior checkpoints/checklists remain available;
+T-821 becomes the main cumulative local binary. No T-822 implementation.

@@ -4,7 +4,7 @@ All **local T-813–T-816 GUI results remain PENDING_MANUAL / PENDING MANUAL REV
 This register requests no action now. The maintainer chose to continue development
 before grouped tests. No editor/browser/inference session was run by T-817.
 
-Use the **T-820 cumulative executable** for the grouped campaign; older binaries
+Use the **T-821 cumulative executable** for the grouped campaign; older binaries
 are retained for targeted comparisons, not substitutes. Internal version remains
 0.2.0-alpha.1 and cannot identify a candidate by itself. Check the SHA before use.
 
@@ -77,3 +77,14 @@ driver/Apply/Cancel, three Undo/Redo, Setup/Animate and Save/Reload with the mod
 reset to Broken. Combine it with all prior cumulative qualification steps.
 No checklist is marked PASS, and no action is requested during development.
 In-memory egui tests are not desktop, DPI/theme, artistic or playback evidence.
+
+## T-821 — cumulative main candidate, PENDING_MANUAL
+
+Artifact: `outputs/T821-FFD-Key-Editing/Ankhimate-T821-dev.exe`.
+Check exact CHECKPOINT.json / WINDOWS-BUILD.json SHA; internal version remains
+0.2.0-alpha.1. Follow the 24-step FFD-key checklist plus T-813–T-820 cumulative
+checks. Rigid/Weighted synthetic fixtures are disposable technical samples,
+not visually qualified artwork. Actual mouse comfort, skin/clip changes,
+playback, dialogs, DPI/theme and geometry display remain for human review.
+All prior binaries/evidence remain untouched. No manual result is pre-marked PASS
+and no action is requested now. In-memory egui events are automated evidence only.
