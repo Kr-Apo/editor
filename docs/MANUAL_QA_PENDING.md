@@ -99,3 +99,13 @@ locks/mode, three Undo/Redo, resize and Save As/reopen/second exact-path refresh
 require human review. No manual result is pre-marked PASS; no action is requested
 now. Headless egui events and CPU texture-upload bytes are automated evidence,
 not Windows, GPU, DPI/theme or artistic qualification. All old binaries remain.
+
+## T-823 — cumulative main candidate, PENDING MANUAL REVIEW
+
+Artifact: `outputs/T823-Safe-Mesh-Retracing/Ankhimate-T823-dev.exe`. Verify its exact
+WINDOWS-BUILD.json SHA; the unchanged version string is not sufficient. Follow the
+15-step delivery checklist on copies: simple/rigid/weighted tracing, preview,
+FFD/linked/lock refusals, Cancel, three Undo/Redo, painting, Save As/reopen and
+diagnostics, plus cumulative T-813–T-822 controls. No check is marked PASS.
+All earlier binaries/fixtures remain. In-memory egui events and numeric Setup
+checks are not desktop, GPU, DPI/theme, visual quality or artistic evidence.

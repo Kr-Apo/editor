@@ -2465,6 +2465,7 @@ fn attachment_inspector(
                 // The settings need a preview to mean anything, so they get a
                 // window rather than two spinboxes in a side panel (T-402).
                 state.session.pending_trace = Some(crate::ui::trace::PendingTrace::new(
+                    state,
                     skin,
                     slot_id,
                     name.clone(),

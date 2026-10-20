@@ -396,3 +396,14 @@ The corrected canvas drag's existing per-influence stability regressions are
 retained; T-821 does not redesign that gesture or qualify it artistically.
 All Windows manual checks remain pending; vector clipboard and linked meshes
 are outside this key-editing scope.
+
+## Safe topology retracing (local T-823)
+
+[Trace from image](../safe-mesh-retracing.md) now copies nearest source weight rows only for a
+compatible owned mesh, with validated canonical binds and explicit preview/Apply.
+This does not expose new AI geometry tools. Any inline or Deform FFD dependency,
+linked/shared owner, ambiguous skin or pinned edges refuses before mutation.
+No key is deleted or zeroed. Weight painting remains the existing command; nearest-
+neighbour transfer is not a promise of an artistically identical deformation.
+Save/Load rebuilds derived binds by the native Setup convention. Human review is
+pending; no runtime, evaluator, file-format or automatic FFD migration change.

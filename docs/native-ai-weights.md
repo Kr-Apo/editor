@@ -87,3 +87,14 @@ rendering acceptance. No renderer, runtime or project/export format changes.
 The delivery-copy test is headless and explicitly selected with
 `ANKHIMATE_T808_DEMO`; it stays ignored in ordinary checkout tests, which must
 not depend on external delivery files. The real inference tests stay ignored.
+
+## Safe topology retracing (local T-823)
+
+[Trace from image](safe-mesh-retracing.md) now copies nearest source weight rows only for a
+compatible owned mesh, with validated canonical binds and explicit preview/Apply.
+This does not expose new AI geometry tools. Any inline or Deform FFD dependency,
+linked/shared owner, ambiguous skin or pinned edges refuses before mutation.
+No key is deleted or zeroed. Weight painting remains the existing command; nearest-
+neighbour transfer is not a promise of an artistically identical deformation.
+Save/Load rebuilds derived binds by the native Setup convention. Human review is
+pending; no runtime, evaluator, file-format or automatic FFD migration change.

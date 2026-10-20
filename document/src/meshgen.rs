@@ -452,7 +452,7 @@ pub fn mesh_from_trace_on_mesh(
 /// Recover one stable affine UV frame. The largest UV triangle is least
 /// sensitive to floating-point error and exactly recovers converted quads and
 /// meshes that have only received whole-attachment transforms.
-fn uv_to_local_affine(mesh: &MeshAttachment) -> Option<(glam::Mat2, Vec2)> {
+pub(crate) fn uv_to_local_affine(mesh: &MeshAttachment) -> Option<(glam::Mat2, Vec2)> {
     let mut best: Option<(f32, [usize; 3])> = None;
     for triangle in &mesh.triangles {
         let indices = [

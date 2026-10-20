@@ -16,11 +16,57 @@ pub struct PendingTrace {
     pub skin: SkinId,
     pub slot: SlotId,
     pub name: String,
+    identity: u64,
+    revision: u64,
+    active_skin: SkinId,
+    selected_slots: Vec<SlotId>,
+    selection: Option<crate::session::Selection>,
+    snapshot: std::sync::Arc<ankhimate_document::snapshot::Snapshot>,
 }
 
 impl PendingTrace {
-    pub fn new(skin: SkinId, slot: SlotId, name: String) -> Self {
-        Self { skin, slot, name }
+    pub fn new(state: &AppState, skin: SkinId, slot: SlotId, name: String) -> Self {
+        Self {
+            skin,
+            slot,
+            name,
+            identity: state.diagnostics.document_identity(),
+            revision: state.revision,
+            active_skin: state.session.active_skin,
+            selected_slots: state.session.selected_slots.clone(),
+            selection: state.session.selection.clone(),
+            snapshot: std::sync::Arc::new(ankhimate_document::snapshot::snapshot(&state.doc)),
+        }
+    }
+    fn validate(&self, state: &AppState) -> Result<(), String> {
+        if self.identity != state.diagnostics.document_identity()
+            || self.revision != state.revision
+            || self.active_skin != state.session.active_skin
+            || self.selected_slots != state.session.selected_slots
+            || self.selection != state.session.selection
+            || *self.snapshot != ankhimate_document::snapshot::snapshot(&state.doc)
+        {
+            return Err(
+                "Trace preview is stale; reopen it for the current document and selection".into(),
+            );
+        }
+        if state.session.work_mode != ankhimate_document::WorkMode::Setup
+            || state.session.has_pending_pose()
+            || state.session.has_previews()
+        {
+            return Err("Trace requires Setup mode without uncommitted pose previews".into());
+        }
+        let m = ankhimate_document::retrace::source(&state.doc, self.skin, self.slot, &self.name)?;
+        let bone = state.doc.skeleton.slots[self.slot].bone;
+        if state.session.is_bone_locked(bone)
+            || m.weights
+                .iter()
+                .flatten()
+                .any(|w| state.session.is_bone_locked(w.bone))
+        {
+            return Err("Slot bone or an influencing bone is locked".into());
+        }
+        Ok(())
     }
 }
 
@@ -31,6 +77,25 @@ pub fn ui(ctx: &egui::Context, state: &mut AppState, theme: &crate::theme::Theme
         return;
     };
 
+    if let Err(error) = pending.validate(state) {
+        let mut close = false;
+        let dialog = crate::ui::dialog::Dialog::new("trace_mesh", "Trace mesh")
+            .width(620.)
+            .max_height(580.)
+            .show(ctx, theme, |ui| {
+                for line in inventory(state, &pending) {
+                    ui.label(line);
+                }
+                ui.colored_label(ui.visuals().error_fg_color, format!("REFUSED: {error}"));
+                close = ui.button("Cancel").clicked();
+            });
+        state.session.set_status(error);
+        if close || dialog.closed {
+            state.session.pending_trace = None;
+            state.session.thumbnails.remove(PREVIEW_KEY);
+        }
+        return;
+    }
     // Everything the preview needs, resolved once.
     let Some(bytes) = mesh_texture_bytes(state, &pending) else {
         state
@@ -57,12 +122,25 @@ pub fn ui(ctx: &egui::Context, state: &mut AppState, theme: &crate::theme::Theme
         }),
         (None, _) => None,
     };
+    let safety = traced
+        .as_ref()
+        .ok_or_else(|| "No valid trace geometry".to_string())
+        .and_then(|t| {
+            ankhimate_document::retrace::Plan::from_trace(
+                &state.doc,
+                pending.skin,
+                pending.slot,
+                &pending.name,
+                t,
+            )
+        });
     let mut apply = false;
     let mut close = false;
 
     let dialog = crate::ui::dialog::Dialog::new("trace_mesh", "Trace mesh")
         .icon(crate::ui::icons::MESH)
         .width(620.0)
+        .max_height(580.0)
         .show(ctx, theme, |ui| {
             ui.horizontal_top(|ui| {
                 preview(ui, state, theme, &image, traced.as_ref());
@@ -170,6 +248,11 @@ pub fn ui(ctx: &egui::Context, state: &mut AppState, theme: &crate::theme::Theme
                         }
                     }
 
+                    for line in inventory(state,&pending) {ui.label(egui::RichText::new(line).small());}
+                    match &safety {
+                        Ok(plan)=>{for line in plan.summary.lines(){ui.label(egui::RichText::new(line).small());}},
+                        Err(error)=>{ui.colored_label(ui.visuals().error_fg_color,format!("REFUSED: {error}"));}
+                    }
                     ui.add_space(10.0);
                     ui.horizontal(|ui| {
                         // Trace re-cuts the outline; Refine fills it. Two steps
@@ -191,10 +274,9 @@ pub fn ui(ctx: &egui::Context, state: &mut AppState, theme: &crate::theme::Theme
                         }
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                             if ui
-                                .add_enabled(traced.is_some(), egui::Button::new("OK"))
+                                .add_enabled(safety.is_ok(), egui::Button::new("OK"))
                                 .on_hover_text(
-                                    "Replace the mesh. Weights are cleared — the vertices they \
-                                     referred to are gone.",
+                                    "Apply the validated topology and copied weight rows together. Unsafe dependencies are refused.",
                                 )
                                 .clicked()
                             {
@@ -212,8 +294,10 @@ pub fn ui(ctx: &egui::Context, state: &mut AppState, theme: &crate::theme::Theme
     state.session.trace_options = options;
 
     if apply && let Some(traced) = traced {
-        apply_trace(state, &pending, &traced);
-        close = true;
+        match apply_trace(state, &pending, &traced) {
+            Ok(_) => close = true,
+            Err(error) => state.session.set_status(error),
+        }
     }
     close |= dialog.closed;
     if close {
@@ -315,49 +399,61 @@ fn mesh_texture_bytes(state: &AppState, pending: &PendingTrace) -> Option<Vec<u8
     state.doc.assets.get(id).map(|a| a.bytes.clone())
 }
 
-fn apply_trace(state: &mut AppState, pending: &PendingTrace, traced: &meshgen::Traced) {
-    use ankhimate_core::attachment::Attachment;
-
-    let Some(Attachment::Mesh(mesh)) = state
+fn inventory(state: &AppState, p: &PendingTrace) -> Vec<String> {
+    let Some(ankhimate_core::attachment::Attachment::Mesh(m)) = state
         .doc
         .skeleton
         .skins
-        .get(pending.skin)
-        .and_then(|s| s.get(pending.slot, &pending.name))
+        .get(p.skin)
+        .and_then(|s| s.get(p.slot, &p.name))
     else {
-        return;
+        return vec!["Target mesh is absent".into()];
     };
-    let had_weights = !mesh.weights.is_empty();
-
-    // Preserve the mesh's UV-to-local frame. Using its axis-aligned bounds here
-    // discarded rotation from a converted region and spread the texture across
-    // the larger box.
-    let (vertices, uvs, triangles) = meshgen::mesh_from_trace_on_mesh(traced, mesh);
-    if triangles.is_empty() {
+    let tracks=state.doc.animations.values().flat_map(|a|&a.timelines).filter(|t|matches!(t,ankhimate_core::animation::Timeline::Deform{slot,attachment,..} if *slot==p.slot&&attachment==&p.name)).count();
+    vec![
+        format!(
+            "Current: {} vertices, {} triangles, {} influence entries, {} binds",
+            m.setup_vertices.len(),
+            m.triangles.len(),
+            m.influence_count(),
+            m.inverse_bind_matrices.len()
+        ),
+        format!(
+            "Inline FFD keys: {}; Deform tracks: {}; linked target: {}",
+            m.ffd_keyframes.len(),
+            tracks,
+            m.linked.is_some()
+        ),
+    ]
+}
+fn apply_trace(
+    state: &mut AppState,
+    pending: &PendingTrace,
+    traced: &meshgen::Traced,
+) -> Result<bool, String> {
+    pending.validate(state)?;
+    let plan = ankhimate_document::retrace::Plan::from_trace(
+        &state.doc,
+        pending.skin,
+        pending.slot,
+        &pending.name,
+        traced,
+    )?;
+    let summary = plan.summary.lines();
+    let Some(command) = plan.into_command(&state.doc)? else {
         state
             .session
-            .set_status("Tracing produced no triangles — try a coarser detail value");
-        return;
+            .set_status("Trace unchanged; no history entry");
+        return Ok(false);
+    };
+    if !state.dispatch(Box::new(command)) {
+        return Err("Trace refused in current mode".into());
     }
-    let (vertex_count, triangle_count) = (vertices.len(), triangles.len());
-
-    if state.dispatch(Box::new(
-        ankhimate_document::commands::mesh_cmds::TraceMesh::new(
-            pending.skin,
-            pending.slot,
-            pending.name.clone(),
-            vertices,
-            uvs,
-            triangles,
-        ),
-    )) {
-        state.session.selected_vertices.clear();
-        state.session.set_status(if had_weights {
-            format!(
-                "Traced {vertex_count} vertices, {triangle_count} triangles — weights were cleared"
-            )
-        } else {
-            format!("Traced {vertex_count} vertices, {triangle_count} triangles")
-        });
-    }
+    state.session.selected_vertices.clear();
+    crate::geometry_edit::sync(state);
+    state.session.set_status(summary.join("; "));
+    Ok(true)
 }
+
+#[cfg(test)]
+mod t823_tests;

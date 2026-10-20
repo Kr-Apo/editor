@@ -131,3 +131,19 @@ No Photoshop effects/masks, universal persistent source identity or GUI certific
 is claimed. An identical-content file replacement is accepted as the same snapshot;
 there is no filesystem reservation against edits occurring after the final read.
 T-302 remains PARTIAL; all T-813–T-822 manual checklists remain pending.
+
+## Local T-823 retracing boundary
+
+[Safe retracing](safe-mesh-retracing.md) supports owned rigid meshes and compatible
+weighted meshes with an affine UV-to-Setup frame and canonical native binds.
+The bounded weighted operation accepts at most four influences per row (the
+painting default, not a file-format limit) and 16 million nearest-pair comparisons.
+Exceeding these limits refuses; rows are never pruned to fit. Nearest-neighbour
+may change the artistic weight field; unsampled source-vertex count is disclosed,
+and a whole source BoneId disappearing refuses. Inline/Deform FFD, linked/shared
+geometry, skin overrides, sequences, pinned edges and invalid/ambiguous data refuse.
+No automatic FFD/topology migration or general retopology. Rigid non-affine tracing
+retains its historical projection behavior; it is not newly qualified as distortion
+free. Release performance measurements cover one synthetic 512x512 ring fixture,
+not a universal image/mesh or GUI budget. T-402 remains PARTIAL. Manual review stays
+pending, and no public build, model, renderer, runtime or format is changed.

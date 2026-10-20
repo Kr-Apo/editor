@@ -1,5 +1,18 @@
 # Next roadmap — proposals after T-817 review
 
+## Local T-823 update — 2026-10-21
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for safe retracing of compatible
+owned meshes. [Safe mesh retracing](safe-mesh-retracing.md) reuses the existing
+tracer and copies nearest source weight rows in slot-bone-local Setup space;
+exact ties use the lowest source index. No silent pruning, normalization or FFD
+remapping. All source BoneIds must remain represented. Inline/track FFD, linked
+or ambiguous ownership, pinned edges, invalid/noncanonical binds and unsupported
+weighted UV frames refuse. T-402 stays PARTIAL; nearest-neighbour is not artistic
+fidelity. Cumulative T-813–T-823 manual qualification remains deferred. Prior
+checkpoint sections retain their historical scope. No runtime, renderer, format,
+writer, version or public-release change; no next phase is authorized.
+
 ## Local T-822 update — 2026-10-20
 
 **COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for one explicit missing-image

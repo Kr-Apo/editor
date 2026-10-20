@@ -82,77 +82,51 @@ impl EditCommand for ConvertToMesh {
     }
 }
 
-/// Replace a mesh's geometry with a traced silhouette (T-402).
-///
-/// Separate from [`EditMesh`] because it throws away topology rather than
-/// nudging it: weights and deform keys are keyed to vertex indices, and after a
-/// trace those indices mean something else entirely. The caller warns; this
-/// command clears them rather than leaving them pointing at the wrong points.
+/// A validated topology and weight replacement, prepared by `retrace::Plan`.
+/// One whole attachment per direction; never merges with a drag or another trace.
 pub struct TraceMesh {
     skin: SkinId,
     slot: SlotId,
     name: String,
-    vertices: Vec<glam::Vec2>,
-    uvs: Vec<glam::Vec2>,
-    triangles: Vec<[u32; 3]>,
-    before: Option<MeshAttachment>,
+    before: MeshAttachment,
+    after: MeshAttachment,
 }
-
 impl TraceMesh {
-    pub fn new(
+    pub(crate) fn prepared(
         skin: SkinId,
         slot: SlotId,
-        name: impl Into<String>,
-        vertices: Vec<glam::Vec2>,
-        uvs: Vec<glam::Vec2>,
-        triangles: Vec<[u32; 3]>,
+        name: String,
+        before: MeshAttachment,
+        after: MeshAttachment,
     ) -> Self {
         Self {
             skin,
             slot,
-            name: name.into(),
-            vertices,
-            uvs,
-            triangles,
-            before: None,
+            name,
+            before,
+            after,
         }
     }
 }
-
 impl EditCommand for TraceMesh {
     fn apply(&mut self, doc: &mut Document) {
-        let Some(Attachment::Mesh(mesh)) = attachment_mut(doc, self.skin, self.slot, &self.name)
-        else {
-            return;
-        };
-        if self.before.is_none() {
-            self.before = Some(mesh.clone());
+        if let Some(Attachment::Mesh(mesh)) = attachment_mut(doc, self.skin, self.slot, &self.name)
+        {
+            *mesh = self.after.clone();
         }
-        mesh.setup_vertices = self.vertices.clone();
-        mesh.uvs = self.uvs.clone();
-        mesh.triangles = self.triangles.clone();
-        // Index-keyed data cannot survive a topology change.
-        mesh.weights.clear();
-        mesh.inverse_bind_matrices.clear();
     }
-
     fn revert(&mut self, doc: &mut Document) {
-        if let (Some(before), Some(Attachment::Mesh(mesh))) = (
-            self.before.take(),
-            attachment_mut(doc, self.skin, self.slot, &self.name),
-        ) {
-            *mesh = before;
+        if let Some(Attachment::Mesh(mesh)) = attachment_mut(doc, self.skin, self.slot, &self.name)
+        {
+            *mesh = self.before.clone();
         }
     }
-
     fn label(&self) -> &str {
         "Trace Mesh"
     }
-
     fn requires_mode(&self) -> Option<WorkMode> {
         Some(WorkMode::Setup)
     }
-
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }

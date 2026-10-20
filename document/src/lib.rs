@@ -45,6 +45,7 @@ pub mod psd_mesh;
 pub mod psd_reimport;
 pub mod read;
 pub mod rebind;
+pub mod retrace;
 pub mod rig_ops;
 pub mod shape_ops;
 pub mod snapshot;
