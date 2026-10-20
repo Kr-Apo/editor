@@ -1637,3 +1637,34 @@ paged metadata, sanitized errors and no automatic paid retry. Native approvals,
 receipts and Undo/Redo unchanged. [Contract and capability matrix](native-ai-multimodal.md).
 Deterministic HTTP/SSE/NDJSON qualification only. Maintainer GUI/live-model
 acceptance A–F and T-806/T-807/T-808 artistic acceptance remain pending.
+
+
+## T-813 — Format Compatibility & Project Reliability
+
+Local checkpoint from public `9233b8e888c811e7c71300101f865a9e74b3f489`.
+Related original requirements: **T-605**, **T-701**, **T-707** above; historical text and
+acceptance criteria remain intact. None of these tasks is automatically closed.
+
+- Reused: authentic v1/profile round trips, CURRENT_VERSION fixture/spec guard, schema
+  inventory, immutable external assets, staged safe saves/rollback, monotonic autosave,
+  recovery offers, dirty snapshots and native command/AI transaction Undo/Redo.
+- Confirmed/fixed: missing-image saves changing the original URI; unknown author members
+  and open-string discriminants lost/defaulted on editable conversion; reserved envelope
+  flags ignored; non-finite numbers published as unreadable null fields; newer corrupt
+  sidecars masking valid interrupted-save stages.
+- Tests: `formats/tests/reliability.rs`, lifecycle additions, retained historical failure,
+  migration, format/export, timer, command and approved/rejected/stale AI transaction suites.
+  No renderer/runtime/format-version change, no historical oracle edits.
+- Safety policy: fail-closed author reading; opaque presets still preserved. Missing image
+  bytes require native relink or explicit removal before Save/autosave. Failed writes keep
+  primary data and UI state under the documented publisher contract. Valid recoveries rank
+  before corrupt fallbacks; all user copies/backups remain preserved.
+- Remaining: authentic v0 and removed-prototype conversion; complete opaque author extras;
+  comprehensive malformed-geometry/resource validation; panic-time dump/log package;
+  optional update/feedback; broad original Settings acceptance. No serialization in panic,
+  telemetry, permanent undo history or power-loss durability claim.
+- Final GUI qualification is pending. No Computer Use, inference, push, tag or release.
+
+See [format spec](format-spec.md), [user recovery guide](project-recovery.md) and
+[save safety](project-save-safety.md). Local delivery records precise test counts and
+binary hash; graphical/manual evidence must be supplied by the maintainer separately.

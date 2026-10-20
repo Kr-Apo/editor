@@ -8,9 +8,9 @@
 //! the animation key convention. Conversion to core's radians happens in
 //! [`crate::convert`].
 //!
-//! Unknown fields are captured into `extra` maps so a file written by a newer
-//! version survives a round-trip through an older one rather than silently losing
-//! data.
+//! Extra maps retain unknown fields for direct schema consumers. Editable author
+//! loading rejects unknown members before model conversion, which cannot retain
+//! those maps. Opaque export presets remain supported without interpretation.
 
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;

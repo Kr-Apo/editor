@@ -179,7 +179,7 @@ fn unknown_author_versions_and_malformed_payloads_preserve_inputs_and_backups() 
 }
 
 #[test]
-fn unknown_fields_survive_schema_only_but_not_loaded_model_except_opaque_presets() {
+fn unknown_fields_survive_schema_only_and_editable_load_refuses_loss_except_opaque_presets() {
     let raw = json!({"version":1,"name":"unknown fields","fps":60,"future_root":{"a":7},
         "bones":[{"name":"root","length":1,"future_bone":[1,2]}],
         "export_presets":[{"future_preset":{"nested":["é",{"future":true}]}}]});
@@ -190,11 +190,13 @@ fn unknown_fields_survive_schema_only_but_not_loaded_model_except_opaque_presets
         direct["bones"][0]["future_bone"],
         raw["bones"][0]["future_bone"]
     );
-    let loaded = formats::from_json(&raw.to_string()).unwrap();
-    let saved = snapshot(&loaded);
-    assert!(saved.get("future_root").is_none());
-    assert!(saved["bones"][0].get("future_bone").is_none());
-    assert_eq!(saved["export_presets"], raw["export_presets"]);
+    assert!(matches!(
+        formats::from_json(&raw.to_string()),
+        Err(formats::Error::UnsupportedMember { .. })
+    ));
+    let opaque =
+        json!({"version":1,"name":"opaque","fps":60,"export_presets":raw["export_presets"]});
+    let loaded = formats::from_json(&opaque.to_string()).unwrap();
     let compact = formats::to_min_json(&project(&loaded)).unwrap();
     assert_eq!(
         snapshot(&formats::from_json(&compact).unwrap())["export_presets"],

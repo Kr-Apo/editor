@@ -274,14 +274,17 @@ pub fn check_after_open(project: Option<&Path>, primary_valid: bool) -> Option<R
             if primary_time.is_some_and(|t| t >= modified) {
                 return None;
             }
-            // Keep timestamp-only behavior of check() for legacy named autosaves;
-            // staging candidates must decode before they can be offered.
-            if origin.is_some()
-                && ankhimate_formats::load_with_assets(&path, origin.as_ref().unwrap()).is_err()
-            {
+            // A newer corrupt sidecar must not hide a valid interrupted-save
+            // payload. Keep an invalid ordinary sidecar as a fallback so Recover
+            // can report its error and Ignore still preserves the copy.
+            let valid =
+                ankhimate_formats::load_with_assets(&path, origin.as_deref().unwrap_or(&path))
+                    .is_ok();
+            if origin.is_some() && !valid {
                 return None;
             }
             Some((
+                valid,
                 modified,
                 Recovery {
                     autosave: path,
@@ -290,8 +293,8 @@ pub fn check_after_open(project: Option<&Path>, primary_valid: bool) -> Option<R
                 },
             ))
         })
-        .max_by_key(|(time, _)| *time)
-        .map(|(_, recovery)| recovery)
+        .max_by_key(|(valid, time, _)| (*valid, *time))
+        .map(|(_, _, recovery)| recovery)
 }
 
 fn snapshot(state: &AppState) -> Option<serde_json::Value> {

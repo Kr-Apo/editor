@@ -19,6 +19,8 @@ pub enum ContainerError {
     UnsupportedVersion(u16),
     #[error("unsupported Ankh codec {0}")]
     UnsupportedCodec(u8),
+    #[error("unsupported Ankh envelope flags {0:#04x}")]
+    UnsupportedFlags(u8),
     #[error("invalid Ankh payload length")]
     BadLength,
     #[error("Ankh payload checksum mismatch")]
@@ -60,6 +62,9 @@ pub fn decode(bytes: &[u8]) -> Result<Vec<u8>, ContainerError> {
         return Err(ContainerError::UnsupportedCodec(bytes[6]));
     }
     let flags = bytes[7];
+    if flags & !FLAG_DEFLATE != 0 {
+        return Err(ContainerError::UnsupportedFlags(flags));
+    }
     let raw_len = u32::from_le_bytes(bytes[8..12].try_into().unwrap()) as usize;
     let checksum = u32::from_le_bytes(bytes[12..16].try_into().unwrap());
     let payload = if flags & FLAG_DEFLATE != 0 {

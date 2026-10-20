@@ -47,7 +47,7 @@ above: asset-root suffix stripping is case sensitive. Slotmap IDs are never seri
 | 0 | 4 | ASCII ANKH |
 | 4 | 2 | Little-endian envelope version 1 |
 | 6 | 1 | Codec 1, compact-key MessagePack |
-| 7 | 1 | Bit 0: raw Deflate; other bits currently not rejected |
+| 7 | 1 | Bit 0: raw Deflate; other bits rejected by the T-813 reader |
 | 8 | 4 | Little-endian uncompressed byte count |
 | 12 | 4 | CRC-32 of uncompressed payload |
 | 16 | remainder | Payload; writer compresses only if smaller |
@@ -507,8 +507,8 @@ Container attributes: `#[serde(rename_all = "lowercase")]`.
 | Setup draw order | Unresolved names reported; remaining slots appended |
 | Default skin | Named resolution; first available skin fallback |
 | Skin/attachment | Resolved by slot and name; linked meshes retain source references |
-| Unknown constraint kind | Reported and omitted, not a supported extension |
-| Unknown blend / sequence mode | Falls back to Normal / Hold; not proof of fidelity |
+| Unknown constraint kind | Author load/from_json rejects it before conversion (T-813) |
+| Unknown blend / sequence mode | Author load/from_json rejects unsupported strings; legacy empty defaults remain accepted |
 | Missing fields / types / enum tags / fixed-array size | Serde errors, except stated defaults and optional members |
 | Unknown project version | Rejected; schema deserialization happens first, so malformed future input may report a field error before version error |
 | Geometry and numbers | No comprehensive semantic validator in the format loader: odd flattened tails may be discarded by chunks_exact, unresolved weight bones filtered, domain/index/finite/sorted checks are not universally enforced |
@@ -527,7 +527,12 @@ sibling `hero.assets/`. Asset.file is relative to that directory, e.g. `8f/<sha2
 sniffed PNG/JPG/WEBP/bin. Bytes are not embedded, decoded or re-encoded by project save.
 The loader does not verify hash, image dimensions or image decodability. Identical existing
 bytes are reused; conflicting existing bytes are an error, never overwritten. Missing images
-report dangling asset references while retaining the rig. `source_path` is advisory and
+report dangling asset references while retaining the rig. T-813 refuses file Save, Save As
+and autosave while any indexed image has no bytes (including an unused library entry).
+The original serialized URI is not retained in the editable image model, so refusing saves
+avoids replacing it with an empty-content hash. Relink/reload the image through Assets,
+or explicitly remove an unwanted entry, before retrying. Pure to_json/to_min_json helpers
+are projections, not safe file publication. `source_path` is advisory and
 machine specific; `psd_layer_paths` preserves reimport provenance; export_presets is opaque JSON.
 
 Asset URIs reject absolute paths, drive/UNC prefixes, dot and parent components, including
@@ -540,8 +545,8 @@ a distinct project filename/asset namespace; staged recovery uses the original a
 |---|---|
 | Raw compact contraction/expansion | Unknown object keys survive with escaped tags |
 | Direct schema Serde round trip | Unknown members retained where a flattened Extra map exists; MixKey caveat below |
-| Struct without Extra | Unknown properties ignored; unknown enum discriminants rejected |
-| Loaded model -> save / to_json | Extra maps are lost by conversion; no end-to-end unknown-field preservation promise |
+| Direct Serde on a struct without Extra | Unknown properties ignored; unknown enum discriminants rejected; author loading additionally rejects unknown members |
+| Author load/from_json -> editable model | Unknown members are rejected before conversion, including members ignored by direct Serde; raw files remain intact |
 | Opaque export_presets values | Nested unknown members preserved by loaded round trip |
 | Known metadata / assets | Historical save/reopen tests compare values and original encoded bytes |
 
@@ -549,11 +554,15 @@ A concrete additional limitation: deserializing MixKey directly captures `curve`
 flattened Interp and Extra, then serializing that schema value writes duplicate curve
 members; direct typed reopening rejects it. A dedicated compiled case records this defect.
 Loaded-model conversion drops Extra, so this is not a claim that ordinary editor Save emits
-duplicate keys. It is not repaired in this documentation/test-only task.
+duplicate keys. This pre-existing direct-Serde limitation is not a claim of a duplicate field in native Save; it remains outside the T-813 repair.
 
-The broad preservation claim in schema.rs comments is limited by conversion; this mission
-documents and tests the loss without changing the project representation. Keep original
-newer files/backups and avoid saving them through an older reader on this assumption.
+T-813 guards both author reader entry points before conversion. It compares input members
+with the actual Serde projection after clearing Extra maps, permits only scoped declared
+skip_serializing_if defaults, and exempts opaque export_presets. This is fail-closed reading,
+not opaque document preservation or a migration. Unsupported member errors identify a JSON
+pointer (not its value). Low-level direct Serde and convert::from_schema are not equivalent
+compatibility gates; foreign importers keep their existing conversion policy. Known-schema
+structural/reference validation is still partial as documented above.
 
 ## Native runtime JSON (format version 2)
 
@@ -633,6 +642,9 @@ Unknown members remain on its returned object but have no generic migration/writ
 2. Additive optional author fields require documented defaults, compatibility tests and an
    updated schema inventory. Removing/renaming/reinterpreting fields requires a reviewed
    new version and an explicit reader/migration policy. No version changes occur in T-605.
+   The published 0.2.0-alpha.1 reader predates the T-813 unknown-member guard. Future
+   meaningful additions must not rely on that old binary preserving unknown data:
+   review an author-version bump/migration when older readers would discard it.
 3. For a new author/envelope version, record an explicit format identity, authentic fixture,
    provenance and SHA-256 in `formats/tests/fixtures/format-versions.json`; add its specification
    anchor and reading/migration tests. Existing historical fixtures stay immutable. Normal
@@ -681,6 +693,21 @@ The deliberately red version-gate scenario uses a temporary manifest, never a so
 bump. These tests run in the existing workspace test suite without an external service.
 
 Known outstanding qualification: authentic v0 migration; removed prototype conversion;
-end-to-end preservation of unknown schema members. No migration or product serializer was
-changed here. Authoring access and advanced visual fidelity remain governed by their own
+end-to-end opaque preservation of unknown schema members (unsupported author input is now
+refused by T-813). T-813 changes reader acceptance and pre-write validation only; versions,
+wire fields, compact tags and supported valid writer bytes remain unchanged. Authoring access and advanced visual fidelity remain governed by their own
 milestone evidence, not by these tables.
+
+
+## T-813 pre-publication validation
+
+Before any project/asset write, Save validates the typed JSON projection. A non-finite
+f32 otherwise becomes null without a serde_json serialization error, even in the binary
+profile built from that value tree. A non-reopenable typed projection is now an error
+before publication, preserving the old project and assets. This is not comprehensive
+geometry, finite-value or graph validation of every opaque/custom payload. Existing
+safe-write staging, Windows path restrictions, rollback and recovery contracts still apply.
+
+The T-605 authentic fixtures and CURRENT_VERSION/envelope/spec gates remain unchanged.
+No v0 or prototype migration has been invented. See [project recovery](project-recovery.md)
+and [save safety](project-save-safety.md) for the user workflow and crash limitations.

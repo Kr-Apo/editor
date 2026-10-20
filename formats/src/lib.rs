@@ -1,6 +1,7 @@
 //! Ankh v1: compact binary projects, optional JSON profiles, external images.
 
 mod compact;
+mod compatibility;
 pub mod container;
 pub mod convert;
 pub mod importer;
@@ -29,6 +30,14 @@ pub enum Error {
     MessagePack(String),
     #[error("project schema version {found} is not supported; expected version 1")]
     Version { found: u32 },
+    #[error(
+        "unsupported project member or value at {path}; open with a compatible editor; source preserved"
+    )]
+    UnsupportedMember { path: String },
+    #[error(
+        "cannot save: image {name:?} has no bytes; relink the missing image before Save or Save As; previous project preserved"
+    )]
+    MissingImage { name: String },
 }
 
 pub struct ImageBlob {
@@ -58,12 +67,13 @@ pub fn from_json(json: &str) -> Result<Loaded, Error> {
     if raw.get("version").is_none() {
         raw = compact::expand(raw);
     }
-    let project: schema::Project = serde_json::from_value(raw)?;
+    let project: schema::Project = serde_json::from_value(raw.clone())?;
     if project.version != schema::CURRENT_VERSION {
         return Err(Error::Version {
             found: project.version,
         });
     }
+    compatibility::validate(&raw, &project)?;
     Ok(convert::from_schema(&project))
 }
 
@@ -77,7 +87,20 @@ pub fn save(
     project: &ProjectRef<'_>,
     extra_images: &[ImageBlob],
 ) -> Result<(), Error> {
+    if let Some(asset) = project
+        .assets
+        .images
+        .values()
+        .find(|asset| asset.bytes.is_empty())
+    {
+        return Err(Error::MissingImage {
+            name: asset.name.clone(),
+        });
+    }
     let schema = convert::to_schema(project);
+    // JSON encodes non-finite floats as null without an error. Check the exact
+    // typed projection before any asset or primary write, including binary.
+    let _: schema::Project = serde_json::from_value(serde_json::to_value(&schema)?)?;
     safe_write::validate_project(path)?;
     let profile = path.to_string_lossy().to_ascii_lowercase();
     let bytes = if profile.ends_with(".ankh.min.json") {
@@ -155,12 +178,13 @@ pub fn load_with_assets(
             compact::expand(value)
         }
     };
-    let project: schema::Project = serde_json::from_value(value)?;
+    let project: schema::Project = serde_json::from_value(value.clone())?;
     if project.version != schema::CURRENT_VERSION {
         return Err(Error::Version {
             found: project.version,
         });
     }
+    compatibility::validate(&value, &project)?;
     let index: Vec<(String, String)> = project
         .assets
         .iter()

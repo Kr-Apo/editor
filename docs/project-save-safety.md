@@ -35,7 +35,8 @@ receiver is dropped, but cannot replace the document.
 the private `formats::safe_write` module. The historic function name does **not**
 imply a fully atomic or durable project transaction.
 
-1. Serialize the complete project in memory. Validate the primary path and its
+1. Refuse missing image bytes and validate the complete typed serialization before
+   writing anything (T-813). Serialize the complete project in memory. Validate the primary path and its
    existing parent before preparing assets. Refuse directory, linked/reparse and
    read-only write targets. Validate portable Windows components (device names,
    trailing dots/spaces, control characters, invalid characters and ADS colon),
@@ -101,7 +102,13 @@ manifest destination and contain a decodable payload; truncated candidates are
 skipped. Staged payloads load assets relative to the original project, not their
 temporary filename. Discovery refuses linked/reparse candidate files/stages.
 
-The newest eligible copy is offered through the existing modal shell, including
+T-813 ranks decodable eligible copies ahead of corrupt ordinary sidecars, then
+uses modification time among valid candidates. A corrupt sidecar cannot hide a
+valid interrupted-save stage. If no valid candidate exists, an eligible corrupt
+ordinary sidecar can still be offered so Recover reports its error; it is never
+deleted or silently adopted. Invalid staged payloads remain excluded.
+
+The selected copy is offered through the existing modal shell, including
 on the startup page. Recover first loads it successfully, then adopts it and
 marks it dirty; it never rewrites the primary file. Missing assets remain visible
 as unresolved references. A stale offer cannot replace changed content. Failure
@@ -154,3 +161,20 @@ Windows desktop at 30 seconds, later edits, manual Save and playback; see its
 milestone report. No real power-cut test, network-share fault test or ACL-denial
 environment is claimed; permission-denied preparation and rename/restore/cleanup
 faults are injected.
+
+
+## T-813 local qualification
+
+See [opening and recovery guide](project-recovery.md). File Save/Save As/autosave refuse
+missing image bytes, non-reopenable typed projections, and the existing unsafe path/write
+conditions. Errors preserve dirty state, active path and pending destructive confirmations.
+Relink uses the existing native undoable image command; three Undo/Redo cycles and subsequent
+Save As/reopen are tested. Unknown author members/values are rejected on load rather than
+quietly discarded. Opaque export presets keep their original compatibility rule.
+
+There is no dedicated panic hook, persistent crash-log package or emergency serialization
+in this checkpoint. A panic/kill can lose work since the last completed periodic copy.
+Serializing potentially inconsistent mutable state during panic is deliberately avoided.
+No new process-kill mechanism or GUI crash was introduced/tested. The optional update checker
+and feedback package from T-707 remain incomplete; this task adds no network or telemetry.
+Final Windows GUI qualification is for the maintainer; headless tests do not replace it.

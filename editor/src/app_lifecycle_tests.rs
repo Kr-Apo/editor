@@ -925,3 +925,169 @@ fn autosave_error_preserves_document_selection_history_and_primary() {
         crate::autosave::Schedule::Wait(Duration::from_secs(29))
     );
 }
+
+#[test]
+fn t813_corrupt_newer_sidecar_cannot_hide_a_valid_interrupted_save() {
+    let dir = tempfile::tempdir().unwrap();
+    let primary = dir.path().join("recovery.ankh");
+    let mut source = AppState::default();
+    source.doc.meta.name = "recoverable stage".into();
+    assert!(matches!(
+        crate::fileops::write_to(&source, &primary),
+        crate::fileops::FileOutcome::Saved(_)
+    ));
+    let stage = dir.path().join(".ankh-save-t813");
+    std::fs::create_dir(&stage).unwrap();
+    let destination = std::fs::canonicalize(&primary).unwrap();
+    std::fs::write(
+        stage.join("manifest.json"),
+        serde_json::json!({"save_version":1,"destination":destination}).to_string(),
+    )
+    .unwrap();
+    std::fs::rename(&primary, stage.join("previous")).unwrap();
+    let sidecar = crate::autosave::path_for(Some(&primary)).unwrap();
+    std::fs::write(&sidecar, b"interrupted corrupt autosave").unwrap();
+    std::fs::OpenOptions::new()
+        .write(true)
+        .open(&sidecar)
+        .unwrap()
+        .set_times(
+            std::fs::FileTimes::new()
+                .set_modified(std::time::SystemTime::now() + std::time::Duration::from_secs(60)),
+        )
+        .unwrap();
+    assert!(
+        std::fs::metadata(&sidecar).unwrap().modified().unwrap()
+            > std::fs::metadata(stage.join("previous"))
+                .unwrap()
+                .modified()
+                .unwrap()
+    );
+    // Both candidates qualify with a missing primary. Validity must precede mtime ranking.
+    let mut app = AnkhimateApp::default();
+    app.open_initial(Some(primary.clone()));
+    app.recover_project();
+    assert_eq!(app.state.doc.meta.name, "recoverable stage");
+    assert!(app.is_dirty());
+    assert_eq!(
+        std::fs::read(sidecar).unwrap(),
+        b"interrupted corrupt autosave"
+    );
+    assert!(stage.join("previous").exists());
+    assert!(!primary.exists());
+}
+
+#[test]
+fn t813_missing_pixels_block_save_as_autosave_and_pending_new_until_native_relink() {
+    use ankhimate_core::assets::ImageAsset;
+    use ankhimate_document::commands::asset_cmds::{AddAsset, ReplaceAssetPixels};
+    let dir = tempfile::tempdir().unwrap();
+    let primary = dir.path().join("primary.ankh");
+    let target = dir.path().join("après relink.ankh");
+    let mut app = edited();
+    app.save_project_to(&primary);
+    let primary_bytes = std::fs::read(&primary).unwrap();
+    app.state.dispatch(Box::new(AddAsset::new(ImageAsset::new(
+        "missing",
+        vec![],
+        1,
+        1,
+    ))));
+    let snapshot = document_snapshot(&app.state);
+    let selected = app.state.session.selected_bones.clone();
+    let history = (app.state.history.can_undo(), app.state.history.can_redo());
+    app.save_project_to(&target);
+    assert_eq!(app.current_path.as_ref(), Some(&primary));
+    assert!(!target.exists());
+    assert!(app.is_dirty());
+    assert!(app.status.as_deref().unwrap().contains("relink"));
+    assert!(app.autosave.write(&app.state, Some(&primary)).is_none());
+    assert!(
+        app.autosave
+            .last_error
+            .as_deref()
+            .unwrap()
+            .contains("relink")
+    );
+    assert!(!crate::autosave::path_for(Some(&primary)).unwrap().exists());
+    app.run_file_action(FileAction::New);
+    app.confirm_file_action(UnsavedChoice::Save, Some(&primary));
+    assert!(app.confirm_unsaved);
+    assert_eq!(document_snapshot(&app.state), snapshot);
+    assert_eq!(app.state.session.selected_bones, selected);
+    assert_eq!(
+        (app.state.history.can_undo(), app.state.history.can_redo()),
+        history
+    );
+    assert_eq!(std::fs::read(&primary).unwrap(), primary_bytes);
+    app.confirm_file_action(UnsavedChoice::Cancel, None);
+    let asset = app.state.doc.assets.by_name("missing").unwrap();
+    let mut png = std::io::Cursor::new(Vec::new());
+    image::RgbaImage::from_pixel(1, 1, image::Rgba([40, 80, 120, 255]))
+        .write_to(&mut png, image::ImageFormat::Png)
+        .unwrap();
+    let bytes = png.into_inner();
+    app.state.dispatch(Box::new(ReplaceAssetPixels::relink(
+        asset,
+        bytes.clone(),
+        1,
+        1,
+        "replacement.png".into(),
+    )));
+    let relinked = document_snapshot(&app.state);
+    for _ in 0..3 {
+        app.state.undo();
+        assert_eq!(document_snapshot(&app.state), snapshot);
+        app.state.redo();
+        assert_eq!(document_snapshot(&app.state), relinked);
+    }
+    app.save_project_to(&target);
+    assert_eq!(app.current_path, Some(target.clone()));
+    assert!(!app.is_dirty());
+    let reopened = ankhimate_formats::load(&target).unwrap().0;
+    assert!(reopened.report.is_clean());
+    assert_eq!(reopened.assets.images.values().next().unwrap().bytes, bytes);
+    assert_eq!(std::fs::read(primary).unwrap(), primary_bytes);
+}
+
+#[test]
+fn t813_save_as_after_recovery_keeps_original_and_sidecar_and_reopens() {
+    let dir = tempfile::tempdir().unwrap();
+    let primary = dir.path().join("source.ankh");
+    let sidecar = crate::autosave::path_for(Some(&primary)).unwrap();
+    let target = dir.path().join("recovered elsewhere.ankh");
+    let mut app = edited();
+    app.save_project_to(&primary);
+    let original = std::fs::read(&primary).unwrap();
+    app.state.doc.meta.name = "recovered version".into();
+    assert!(matches!(
+        crate::fileops::write_to(&app.state, &sidecar),
+        crate::fileops::FileOutcome::Saved(_)
+    ));
+    std::fs::OpenOptions::new()
+        .write(true)
+        .open(&sidecar)
+        .unwrap()
+        .set_times(
+            std::fs::FileTimes::new()
+                .set_modified(std::time::SystemTime::now() + std::time::Duration::from_secs(60)),
+        )
+        .unwrap();
+    let recovery_bytes = std::fs::read(&sidecar).unwrap();
+    app.open_initial(Some(primary.clone()));
+    app.recover_project();
+    assert_eq!(app.state.doc.meta.name, "recovered version");
+    assert!(app.is_dirty());
+    app.run_file_action(FileAction::Close);
+    app.confirm_file_action(UnsavedChoice::Cancel, None);
+    assert!(!app.close_allowed);
+    assert!(app.is_dirty());
+    app.save_project_to(&target);
+    assert!(!app.is_dirty());
+    assert_eq!(
+        ankhimate_formats::load(&target).unwrap().0.name,
+        "recovered version"
+    );
+    assert_eq!(std::fs::read(primary).unwrap(), original);
+    assert_eq!(std::fs::read(sidecar).unwrap(), recovery_bytes);
+}

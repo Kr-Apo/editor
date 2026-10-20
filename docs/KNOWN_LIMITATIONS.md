@@ -37,3 +37,17 @@
 No GUI, desktop automation, real inference or GPU benchmark was run for T-811.
 Headless WebGL used an installed browser, actual contexts and local assets only;
 final interactive and clean-machine checks remain separate.
+
+
+## T-813 local project-reliability candidate
+
+T-812's published binaries/archives remain immutable. T-813 is a separate local build
+awaiting maintainer GUI qualification. Unknown author members/values and unsupported
+versions/flags are refused; opaque presets remain preserved. Missing image bytes block
+Save/Save As/autosave until relink or explicit asset removal. Non-reopenable typed
+serialization is refused before any writes. Structural repair and hostile-file resource
+budgets are not comprehensively validated. No authentic v0/prototype converter, panic-time
+dump, permanent Undo history, recovery browser, automatic recovery purge or power-loss
+certification was added. Read [project recovery](project-recovery.md). The accepted T-811
+manual review was subsequently declared complete by the maintainer for public T-812;
+that declaration does not qualify this new T-813 build.
