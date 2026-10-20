@@ -1,5 +1,15 @@
 # Ankhimate — operational tasks and evidence
 
+## Local T-819 update — 2026-10-20
+
+**LOCAL_CANDIDATE / PENDING_MANUAL**. Explicit reviewed cross-project region
+subtree transfer is now implemented locally; same-document clipboard behavior
+and File/Open remain unchanged. Read [Cross-project transfer](cross-project-transfer.md).
+T-909 remains PARTIAL for advanced types and retargeting. No GUI, inference,
+runtime change, publication or B02/B03 correction. Earlier checkpoint notes below
+describe their historical scopes; T-818/T-819 are not public releases.
+
+
 ## Local T-818 update — 2026-10-20
 
 T-818 is a **LOCAL_CANDIDATE / PENDING_MANUAL** refinement of the T-817
@@ -95,7 +105,7 @@ The matrix is an operational summary; the archive retains all original criteria.
 | [T-904](FEATURE_INVENTORY.md#t-904) — Saved selection sets (not hierarchy folders) | ABSENT | NOT_TESTED | NOT_DISTRIBUTED | Stale SelectionSet comments are not an implementation; new optional schema needed if later authorized |
 | [T-907](FEATURE_INVENTORY.md#t-907) — Bone length edit carries its children | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Remembered carry preference/full canvas-length interaction not identified |
 | [T-908](FEATURE_INVENTORY.md#t-908) — Make the existing advantages discoverable | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | New user's no-source exercise pending; not an absent IK solver/weight brush |
-| [T-909](FEATURE_INVENTORY.md#t-909) — Rig transfer between skeletons | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Opening/replacing a document resets session clipboard; BoneClip carries attachment metadata and bone… |
+| [T-909](FEATURE_INVENTORY.md#t-909) — Rig transfer between skeletons | PARTIAL | PENDING_MANUAL | LOCAL_CANDIDATE | T-819 adds explicit default-skin region/asset/bone-key transfer with reviewed collisions and one native Undo; advanced types/retargeting remain excluded; prior intra-document scope remains PUBLIC_ALPHA |
 | [T-911](FEATURE_INVENTORY.md#t-911) — Physics stability harness | PARTIAL | AUTOMATED | PUBLIC_ALPHA | No complete debug overlay or broad unrelated-edit interaction qualification |
 
 ### Animation
@@ -213,6 +223,7 @@ The matrix is an operational summary; the archive retains all original criteria.
 | [T-812](FEATURE_INVENTORY.md#t-812) — Exact T-811 artifacts published as v0.2.0-alpha.1… | COMPLETE | MIXED | PUBLIC_ALPHA | Local T-813–T-816 not included; unsigned Windows, no new platform certificate |
 | [T-817](FEATURE_INVENTORY.md#t-817) — Operational inventory | COMPLETE | AUTOMATED | LOCAL_CANDIDATE | Documentary audit only; no product or graphical acceptance added |
 | [T-818](FEATURE_INVENTORY.md#t-818) — Bounded global diagnostics | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE | Read-only rules/cache/badge/list/navigation implemented; larger T-702 framing and latency criteria remain open |
+| [T-819](FEATURE_INVENTORY.md#t-819) — Safe cross-project region subtree transfer | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE | Bounded region/image/internal IK-Transform/bone-key workflow; no universal merge or world-pose retargeting |
 
 ## 4. Completed bounded scopes — retain, do not redevelop
 
@@ -245,7 +256,7 @@ exclude unqualified runtimes, platforms, artist quality and extended task promis
 | T-704 / T-912 | Graph selection/framing/overshoot and exact numeric tangents | Handle linking/normalize/marquee; T-814 numeric fields are already done |
 | T-708 / T-902 | Gizmos, region pivots, exact mesh/UV/path/polygon fields | Universal point coverage, expressions and neighbour snapping; T-815 fields are already done |
 | T-901 / T-903 / T-905 / T-907 | Bone rename, session isolation, per-bone offsets, carry-children | Other entity rename/regex, optional filters, per-track offset scope, remembered carry preference |
-| T-909 | Subtree slots/constraints/bone animation copy | Cross-document clipboard/asset ownership, conflict preview and explicit transfer; no AssetDb bytes in BoneClip |
+| T-909 | Same-document Copy/Paste plus reviewed T-819 source-project transfer | Advanced meshes/FFD/skins/constraints/events and universal retargeting remain outside the bounded local candidate |
 | T-910 / T-911 | Detached noncanvas panes; deterministic physics tests | Second render viewport/debug overlay/broader physics interaction acceptance, not a missing window/solver system |
 | T-801 / T-802 / T-908 | Published Jade, portable Windows, existing Tentacle and first-rig docs | Original samples/GIF/signing/platform breadth; new-user exercise in manual queue |
 
@@ -317,3 +328,16 @@ Badge/list and navigation use egui/session selection. Camera stays unchanged.
 Tests: `document/src/diagnostics/tests.rs`, `editor/src/diagnostics/tests.rs`,
 actual dirty-state and preflight integration regressions. No new Save blockers.
 See the [manual register](MANUAL_QA_PENDING.md); T-819 is proposed, not started.
+
+## T-819 checkpoint (local, not released)
+
+File → Import from Ankhimate Project… keeps the destination open. Review the
+source subtree, LOCAL parent behavior and exact name/image/clip mapping before
+confirmation. Compatible default-skin regions/sequences, image bytes, internal
+IK/Transform and bone tracks use native AddAssets/PasteBones on an isolated copy;
+one existing document-swap command publishes the validated result. No OS clipboard
+or File/Open semantic change. Save As creates an autonomous asset sidecar.
+Tests cover collision/reuse, source/destination staleness, native IDs, metadata,
+curves, rejection, three Undo/Redo cycles and real Save/Reload/native v2 export.
+Advanced types refuse instead of partially succeeding. T-909 remains partial.
+See [manual register](MANUAL_QA_PENDING.md); T-820 is proposed, not started.

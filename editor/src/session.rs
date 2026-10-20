@@ -728,6 +728,22 @@ impl Session {
     /// command that can delete bones or slots — a stale id would make the
     /// inspector and gizmos operate on nothing.
     pub fn prune_selection(&mut self, skeleton: &ankhimate_core::skeleton::Skeleton) {
+        // A whole-document transaction can remove the focused imported object
+        // while the older destination IDs remain valid. Prune the focus as well
+        // as the multi-selection lists; never retain a dangling inspector target.
+        let focus_valid = match &self.selection {
+            Some(Selection::Bone(id)) => skeleton.bones.contains_key(*id),
+            Some(Selection::Slot(id)) => skeleton.slots.contains_key(*id),
+            Some(Selection::Constraint(id)) => skeleton.constraints.contains_key(*id),
+            Some(Selection::Attachment { slot, name }) => {
+                skeleton.slots.contains_key(*slot)
+                    && skeleton.resolve(self.active_skin, *slot, name).is_some()
+            }
+            None => true,
+        };
+        if !focus_valid {
+            self.selection = None;
+        }
         self.selected_bones
             .retain(|&b| skeleton.bones.contains_key(b));
         self.selected_slots

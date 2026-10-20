@@ -1,5 +1,15 @@
 # Next roadmap — proposals after T-817 review
 
+## Local T-819 update — 2026-10-20
+
+**LOCAL_CANDIDATE / PENDING_MANUAL**. Explicit reviewed cross-project region
+subtree transfer is now implemented locally; same-document clipboard behavior
+and File/Open remain unchanged. Read [Cross-project transfer](cross-project-transfer.md).
+T-909 remains PARTIAL for advanced types and retargeting. No GUI, inference,
+runtime change, publication or B02/B03 correction. Earlier checkpoint notes below
+describe their historical scopes; T-818/T-819 are not public releases.
+
+
 ## Local T-818 update — 2026-10-20
 
 T-818 is a **LOCAL_CANDIDATE / PENDING_MANUAL** refinement of the T-817
@@ -43,7 +53,7 @@ Historical IDs: **T-702** · Priority **P1** · Effort: Medium, bounded rule set
 
 Historical IDs: **T-909 / T-209** · Priority **P1** · Effort: Medium/high; split before adding mesh transfer.
 
-- **Verified gap:** B01: reset_rig_session clears clipboard on Open; BoneClip lacks AssetDb bytes. Existing intra-document subtree/key paste already works.
+- **T-819 local implementation:** Explicit read-only source loading and reviewed region/image/bone-key transfer now address bounded B01. File/Open and existing clipboard behavior are retained.
 - **Already done — preserve:** Keep PasteBones, internal constraint/bone-key capture and existing one-step history.
 - **Bounded work:** Explicit reviewed copy-to-project operation for regions first, named conflict/asset ownership policy, image bytes and native target transaction. Refuse unresolved weighted/linked/FFD or external-reference cases until representable.
 - **Dependencies:** T-818 diagnostics useful; existing PasteBones/asset commands and target identity checks.
@@ -127,7 +137,14 @@ See [manual register](MANUAL_QA_PENDING.md) and the [inventory](FEATURE_INVENTOR
 ## After T-818
 
 Review the local diagnostics candidate and preserve the pending manual campaign.
-T-819 remains the next proposed bounded development mission; no implementation
-or authorization is implied. T-818 does not close B01, B02, B03 or every T-702
+T-819 was subsequently authorized and is now a local bounded transfer candidate.
+T-818 alone did not close B01, B02, B03 or every T-702
 camera/performance criterion. The 200 ms coalescing interval is a scheduling
 choice, not a guarantee that arbitrary scans complete within that duration.
+
+## After T-819
+
+Review the local transfer candidate; cumulative manual T-813–T-819 qualification
+remains deferred. T-820 linked Bezier handles is the next proposed development
+mission, not started or authorized by this checkpoint. Advanced T-909 transfer
+requires separate scope review; no universal retargeting claim is added.

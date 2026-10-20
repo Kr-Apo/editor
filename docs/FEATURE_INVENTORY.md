@@ -1,5 +1,15 @@
 # Feature inventory — exact T-816 product, T-817 documentary audit
 
+## Local T-819 update — 2026-10-20
+
+**LOCAL_CANDIDATE / PENDING_MANUAL**. Explicit reviewed cross-project region
+subtree transfer is now implemented locally; same-document clipboard behavior
+and File/Open remain unchanged. Read [Cross-project transfer](cross-project-transfer.md).
+T-909 remains PARTIAL for advanced types and retargeting. No GUI, inference,
+runtime change, publication or B02/B03 correction. Earlier checkpoint notes below
+describe their historical scopes; T-818/T-819 are not public releases.
+
+
 ## Local T-818 update — 2026-10-20
 
 T-818 is a **LOCAL_CANDIDATE / PENDING_MANUAL** refinement of the T-817
@@ -20,9 +30,9 @@ T-813–T-816: **PENDING MANUAL REVIEW**. No GUI, inference, browser or GPU run 
 
 ## Reading this inventory
 
-133 **entries**, consisting of 105 ID records (101 historical
-IDs plus T-804/T-812/T-817/T-818 context) and 28 linked scope refinements.
-These are not 133 independent nonoverlapping product features. Aggregates
+134 **entries**, consisting of 106 ID records (101 historical
+IDs plus T-804/T-812/T-817/T-818/T-819 context) and 28 linked scope refinements.
+These are not 134 independent nonoverlapping product features. Aggregates
 and their refinements overlap; counts are always reported separately.
 
 Implementation: **COMPLETE** = the explicitly bounded functional scope is implemented;
@@ -472,16 +482,16 @@ not the current availability matrix. The current [tasks](TASKS.md),
 <a id="t-909"></a>
 ### T-909 — Rig transfer between skeletons
 
-**PARTIAL / AUTOMATED / PUBLIC_ALPHA** · Origin: T-909.
+**PARTIAL / PENDING_MANUAL / LOCAL_CANDIDATE** · Origin: T-909 / T-819.
 
-- Delivered scope: Copies subtree slots/skin entries, internal constraints and bone animation keys
-- Entry point: Same-document subtree Copy/Paste.
-- Implementation: [`document/src/clipboard.rs`](../document/src/clipboard.rs), [`document/src/commands/bone_cmds.rs`](../document/src/commands/bone_cmds.rs), [`editor/src/app_state.rs`](../editor/src/app_state.rs).
-- Test/reference suites: [`document/src/commands/bone_cmds.rs`](../document/src/commands/bone_cmds.rs), [`editor/src/app_state.rs`](../editor/src/app_state.rs)
-- Example test symbols (suite references, not a coverage claim): `a_shifted_batch_rename_does_not_collide_with_itself`; `setup_mode_routes_a_pose_to_the_skeleton`.
-- Contradictory check / remaining historical criteria: Opening/replacing a document resets session clipboard; BoneClip carries attachment metadata and bone keys but no AssetDb bytes. Same-document paste exists; full cross-document artwork/asset-remap/move workflow does not (B01).
-- Latest relevant checkpoint: T-812 integration; audited exact T-816 source.
-- Recommended action: Work only on the explicit remainder; preserve existing paths. Priority: P1/P2 targeted remainder; see roadmap.
+- Prior PUBLIC_ALPHA scope: same-document subtree Copy/Paste, slots, internal constraints and bone tracks remains unchanged.
+- Local T-819 scope: explicit source-project reader, region/sequence image bytes, deterministic collision/reuse preview, unique new clips and one validated native transaction.
+- Entry: File → Import from Ankhimate Project… / Prepare / Confirm reviewed transfer.
+- Implementation: [`document/src/transfer.rs`](../document/src/transfer.rs), [`editor/src/transfer.rs`](../editor/src/transfer.rs), shared [`clipboard.rs`](../document/src/clipboard.rs) and native commands.
+- Tests: [`document/src/transfer/tests.rs`](../document/src/transfer/tests.rs), [`editor/src/transfer/tests.rs`](../editor/src/transfer/tests.rs); historical Copy/Paste suites retained.
+- Limits: default-skin regions/sequences, local coordinates, internal IK/Transform and bone keys only. Mesh/linked/FFD/clipping/path/physics, relevant alternate skins/external constraints or unsupported tracks refuse. No arbitrary timeline fusion, world-pose retargeting or global project merge.
+- Latest checkpoint: T-819 local candidate, parent exact T-818; GUI/manual campaign remains pending.
+- Next: review the bounded delivery; do not recreate existing clipboard/key/pose work.
 
 <a id="t-911"></a>
 ### T-911 — Physics stability harness
@@ -1961,13 +1971,12 @@ not the current availability matrix. The current [tasks](TASKS.md),
 
 ## Bugs/gaps recorded without correction
 
-**B01 / P1 — incomplete cross-document subtree transfer.** `BoneClip` captures
-attachment metadata/internal constraints/bone timelines but no AssetDb image bytes.
-`reset_rig_session` clears the clipboard when replacing the project, so a user
-cannot simply copy/open/paste across projects. Existing same-document paste is real
-and must be retained. This is a proven missing workflow, **not** a claim that the
-current File/Open UI allows an image-corrupting paste. A future focused transfer
-must define assets, conflicts, external references and atomic Undo before writing.
+**B01 / P1 — incomplete cross-document subtree transfer (T-817 finding).**
+Addressed by the bounded T-819 explicit region transfer workflow. BoneClip remains
+asset-free and File/Open intentionally resets its session clipboard; the new
+reviewed import transports required bytes separately using native asset commands.
+Original same-document Copy/Paste is retained. Advanced universal transfer is
+still partial and explicitly refused, not claimed complete or silently dropped.
 
 **B02 / P2 — transport FPS bypasses native history.** `ui/timeline/transport.rs`
 writes `state.doc.meta.fps` directly on change, without a native command. Source
@@ -2012,3 +2021,15 @@ in [manual QA](MANUAL_QA_PENDING.md).
 - Remaining broader T-702 scope: universal camera framing, worst-case resource/latency and deferred manual qualification; no blanket completeness of all historical production diagnostics.
 - Parent: exact T-817 `acc3f065c98856a8e734a22341637f29d2e38d9c`; local cumulative Windows build only, internal version unchanged.
 - Next step: maintainer review; T-819 remains a proposal.
+
+<a id="t-819"></a>
+### T-819 — Safe cross-project region transfer
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** · bounded refinement of T-909.
+
+- Scope, commands, source/destination guards, native transaction and limitations:
+  [Cross-project transfer](cross-project-transfer.md).
+- Parent exact T-818 `6e139b6a5deb65fa6922704fc7bb3127f2a21cde`.
+- Default-skin region/sequence bytes and compatible bone animation are supported;
+  advanced rig/project merge is not. GUI qualification stays deferred.
+- Prior source branches, binaries, historical oracles and releases remain intact.

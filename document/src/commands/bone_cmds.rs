@@ -421,6 +421,17 @@ impl PasteBones {
         }
     }
 
+    /// Read-only result maps used by reviewed native transfers.
+    pub fn created_bone_ids(&self) -> &[BoneId] {
+        &self.created_bones
+    }
+    pub fn created_slot_ids(&self) -> &[ankhimate_core::ids::SlotId] {
+        &self.created_slots
+    }
+    pub fn created_constraint_ids(&self) -> &[ankhimate_core::ids::ConstraintId] {
+        &self.created_constraints
+    }
+
     /// The bone the subtree's root landed on, for selecting it afterwards.
     pub fn root_id(&self) -> Option<BoneId> {
         self.created_bones.first().copied()

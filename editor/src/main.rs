@@ -26,6 +26,7 @@ pub mod session;
 pub mod spritesheet_export;
 pub mod system_open;
 pub mod theme;
+pub mod transfer;
 pub mod ui;
 pub mod video_export;
 

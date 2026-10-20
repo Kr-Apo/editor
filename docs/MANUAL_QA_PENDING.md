@@ -4,7 +4,7 @@ All **local T-813–T-816 GUI results remain PENDING_MANUAL / PENDING MANUAL REV
 This register requests no action now. The maintainer chose to continue development
 before grouped tests. No editor/browser/inference session was run by T-817.
 
-Use the **T-818 cumulative executable** for the grouped campaign; older binaries
+Use the **T-819 cumulative executable** for the grouped campaign; older binaries
 are retained for targeted comparisons, not substitutes. Internal version remains
 0.2.0-alpha.1 and cannot identify a candidate by itself. Check the SHA before use.
 
@@ -55,3 +55,13 @@ through T-816 checklists remain intact. No action is requested during developmen
 Follow the 14-step [diagnostics checklist](document-diagnostics.md#deferred-manual-checklist)
 and the prior cumulative campaign. No desktop GUI, browser or inference session
 was executed for T-818; in-memory egui tests are automated evidence only.
+
+## T-819 — cumulative main candidate, PENDING_MANUAL
+
+Artifact: `outputs/T819-Cross-Project-Transfer/Ankhimate-T819-dev.exe`.
+Use its exact delivery CHECKPOINT.json / WINDOWS-BUILD.json SHA; internal version
+0.2.0-alpha.1 alone is insufficient. Follow the 18-step transfer checklist plus
+all retained T-813–T-818 checklists. Native egui tests are not desktop qualification.
+No test is requested now and no previous manual gate is marked PASS. Previous
+binaries, including T-818 SHA dcbc852f0d39670acb82ca0fbc844dd264d683a1d17478d23cf8178bc9a3dec0,
+remain available for comparison. Source/destination fixtures are disposable copies.

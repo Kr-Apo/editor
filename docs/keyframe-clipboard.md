@@ -80,3 +80,10 @@ Redo intact. Existing T-210 pending property previews use the same rebasing hook
 on paste, Undo and Redo. This explicit key action writes keys even when auto-key
 is off, exactly like normal key-block paste; auto-key-off **pose** paste remains
 session preview only (T-209.2). Save/reopen preserves the authored keys/assets.
+
+## Cross-project rig parts (T-819 local candidate)
+
+Bone/pose/key Copy/Paste above is unchanged. Opening another project still resets
+the session clipboard. For compatible rig parts with their real image bytes, use
+the explicit [reviewed project transfer](cross-project-transfer.md), not OS
+clipboard data or an assumption that a BoneClip contains image bytes.

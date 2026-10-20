@@ -46,6 +46,7 @@ pub(crate) fn key_times(timeline: &ankhimate_core::animation::Timeline) -> Vec<f
 }
 
 pub struct AppState {
+    pub transfer: crate::transfer::Panel,
     pub diagnostics: crate::diagnostics::Cache,
     /// Session-only assistant; never serialized into a project or export.
     pub ai: crate::ai::Panel,
@@ -80,6 +81,7 @@ impl Default for AppState {
         let doc = Document::new();
         let session = Session::new(doc.skeleton.default_skin);
         let mut state = Self {
+            transfer: Default::default(),
             diagnostics: Default::default(),
             ai: crate::ai::Panel::default(),
             doc,
@@ -188,6 +190,7 @@ impl AppState {
     /// while retaining a cancelled export until its transaction has unwound.
     /// PSD replacement uses this without clearing its undoable import command.
     pub(crate) fn reset_rig_session(&mut self) {
+        self.transfer = Default::default();
         self.diagnostics = Default::default();
         self.ai.project_changed();
         // Keep the cancelled worker reachable until its transaction finishes;
@@ -421,7 +424,7 @@ impl AppState {
     /// loses half the limb, so the subtree is the unit whether or not the user
     /// selected every part of it.
     pub fn copy_selection(&mut self) {
-        use ankhimate_document::clipboard::{BoneClip, ClipBone, ClipSlot, Clipboard};
+        use ankhimate_document::clipboard::{BoneClip, Clipboard};
 
         let roots = self.selection_roots();
         if roots.is_empty() {
@@ -429,102 +432,11 @@ impl AppState {
             return;
         }
 
-        let mut clip = BoneClip::default();
-        // Bone id → index in the clip, so children can point at their parent.
-        let mut index_of: std::collections::HashMap<BoneId, usize> =
-            std::collections::HashMap::new();
-
-        for root in roots {
-            for id in self.subtree(root) {
-                let Some(bone) = self.doc.skeleton.bones.get(id) else {
-                    continue;
-                };
-                let parent = bone.parent.and_then(|p| index_of.get(&p).copied());
-                index_of.insert(id, clip.bones.len());
-                clip.bones.push(ClipBone {
-                    bone: bone.clone(),
-                    parent,
-                });
-            }
-        }
-
-        for (slot_id, slot) in self.doc.skeleton.slots.iter() {
-            let Some(&bone_index) = index_of.get(&slot.bone) else {
-                continue;
-            };
-            let entries = self
-                .doc
-                .skeleton
-                .skins
-                .iter()
-                .flat_map(|(_, skin)| {
-                    let skin_name = skin.name.clone();
-                    skin.names_for_slot(slot_id)
-                        .map(|n| n.to_string())
-                        .collect::<Vec<_>>()
-                        .into_iter()
-                        .filter_map(move |name| {
-                            skin.get(slot_id, &name)
-                                .map(|a| (skin_name.clone(), name, a.clone()))
-                        })
-                })
-                .collect();
-            clip.slots.push(ClipSlot {
-                slot: slot.clone(),
-                bone: bone_index,
-                entries,
-            });
-        }
-
-        // ── Constraints (T-909) ──────────────────────────────────────────
-        // Only those wholly inside the copy. One reaching a bone outside it
-        // cannot be rebuilt without inventing that bone, and a half-wired
-        // constraint that silently does nothing is worse than an honest report
-        // that it was left behind.
-        for (_, constraint) in self.doc.skeleton.constraints.iter() {
-            let affected = constraint.affected_bones();
-            if affected.is_empty() || !affected.iter().any(|b| index_of.contains_key(b)) {
-                continue;
-            }
-            let target = constraint.target();
-            let all_inside = affected.iter().all(|b| index_of.contains_key(b))
-                && target.is_none_or(|t| index_of.contains_key(&t));
-            if !all_inside {
-                clip.dropped_constraints.push(constraint.name().to_string());
-                continue;
-            }
-            clip.constraints
-                .push(ankhimate_document::clipboard::ClipConstraint {
-                    name: constraint.name().to_string(),
-                    constraint: constraint.clone(),
-                    bones: affected.iter().map(|b| index_of[b]).collect(),
-                    target: target.map(|t| index_of[&t]),
-                });
-        }
-
-        // ── Animation keys (T-909) ───────────────────────────────────────
-        // The half of a rig transfer the reference tool loses. Without these,
-        // moving a rigged and animated limb means re-animating it by hand.
-        for (_, animation) in self.doc.animations.iter() {
-            let timelines: Vec<(usize, ankhimate_core::animation::Timeline)> = animation
-                .timelines
-                .iter()
-                .filter_map(|t| {
-                    let bone = t.bone()?;
-                    let index = index_of.get(&bone)?;
-                    Some((*index, t.clone()))
-                })
-                .collect();
-            if timelines.is_empty() {
-                continue;
-            }
-            clip.animations
-                .push(ankhimate_document::clipboard::ClipAnimation {
-                    name: animation.name.clone(),
-                    duration: animation.duration,
-                    timelines,
-                });
-        }
+        let ids = roots
+            .into_iter()
+            .flat_map(|root| self.subtree(root))
+            .collect::<Vec<_>>();
+        let clip = BoneClip::capture(&self.doc, ids);
 
         let mut summary = format!("Copied {} bone(s)", clip.bones.len());
         if !clip.animations.is_empty() {

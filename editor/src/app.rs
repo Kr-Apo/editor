@@ -659,6 +659,7 @@ impl eframe::App for AnkhimateApp {
 
         self.poll_file_load();
         self.handle_psd_drop(ctx);
+        crate::transfer::poll(&mut self.state, ctx);
         crate::diagnostics::refresh(&mut self.state, ctx);
 
         if let Some(result) = self.marketplace.poll() {
@@ -870,6 +871,10 @@ impl eframe::App for AnkhimateApp {
                                     .clicked()
                                 {
                                     file_action = Some(FileAction::Open);
+                                    ui.close();
+                                }
+                                if ui.add_enabled(self.state.session.can_edit_structure(), egui::Button::new("Import from Ankhimate Project…")).clicked() {
+                                    file_action = Some(FileAction::TransferProject);
                                     ui.close();
                                 }
                                 ui.separator();
@@ -1422,6 +1427,9 @@ at startup.",
             crate::diagnostics::badge(ui, &mut self.state);
         });
         crate::diagnostics::window(ctx, &mut self.state);
+        if !self.confirm_unsaved && self.recovery.is_none() {
+            crate::transfer::window(ctx, &mut self.state);
+        }
 
         egui::TopBottomPanel::top("context_ribbon")
             .exact_height(crate::ui::context_ribbon::HEIGHT)
@@ -1827,6 +1835,7 @@ enum PoseAction {
 /// native dialog does not run mid-layout.
 #[derive(Clone, Debug, PartialEq)]
 enum FileAction {
+    TransferProject,
     New,
     Close,
     Open,
@@ -2481,6 +2490,23 @@ impl AnkhimateApp {
     fn execute_file_action(&mut self, action: FileAction) {
         use crate::fileops;
         let outcome = match action {
+            FileAction::TransferProject => {
+                if !self.state.session.can_edit_structure() {
+                    self.state
+                        .session
+                        .set_status("Switch to Setup mode to transfer a project subtree");
+                    return;
+                }
+                if let Some(path) = rfd::FileDialog::new()
+                    .add_filter("Ankhimate project", &["ankh", "json"])
+                    .set_title("Choose read-only source Ankhimate project")
+                    .pick_file()
+                {
+                    crate::transfer::start(&mut self.state, path);
+                    self.show_startup = false;
+                }
+                return;
+            }
             FileAction::Close => {
                 self.file_load = None;
                 self.close_allowed = true;

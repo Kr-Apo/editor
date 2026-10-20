@@ -89,6 +89,109 @@ pub struct BoneClip {
     pub animations: Vec<ClipAnimation>,
 }
 
+impl BoneClip {
+    /// Capture existing ordered subtree IDs by value. Callers define selection;
+    /// this is the same capture used by same-document Copy.
+    pub fn capture(
+        doc: &crate::Document,
+        ids: impl IntoIterator<Item = ankhimate_core::ids::BoneId>,
+    ) -> Self {
+        let mut clip = BoneClip::default();
+        // Bone id → index in the clip, so children can point at their parent.
+        let mut index_of: std::collections::HashMap<ankhimate_core::ids::BoneId, usize> =
+            std::collections::HashMap::new();
+
+        for id in ids {
+            let Some(bone) = doc.skeleton.bones.get(id) else {
+                continue;
+            };
+            let parent = bone.parent.and_then(|p| index_of.get(&p).copied());
+            index_of.insert(id, clip.bones.len());
+            clip.bones.push(ClipBone {
+                bone: bone.clone(),
+                parent,
+            });
+        }
+
+        for (slot_id, slot) in doc.skeleton.slots.iter() {
+            let Some(&bone_index) = index_of.get(&slot.bone) else {
+                continue;
+            };
+            let entries = doc
+                .skeleton
+                .skins
+                .iter()
+                .flat_map(|(_, skin)| {
+                    let skin_name = skin.name.clone();
+                    skin.names_for_slot(slot_id)
+                        .map(|n| n.to_string())
+                        .collect::<Vec<_>>()
+                        .into_iter()
+                        .filter_map(move |name| {
+                            skin.get(slot_id, &name)
+                                .map(|a| (skin_name.clone(), name, a.clone()))
+                        })
+                })
+                .collect();
+            clip.slots.push(ClipSlot {
+                slot: slot.clone(),
+                bone: bone_index,
+                entries,
+            });
+        }
+
+        // ── Constraints (T-909) ──────────────────────────────────────────
+        // Only those wholly inside the copy. One reaching a bone outside it
+        // cannot be rebuilt without inventing that bone, and a half-wired
+        // constraint that silently does nothing is worse than an honest report
+        // that it was left behind.
+        for (_, constraint) in doc.skeleton.constraints.iter() {
+            let affected = constraint.affected_bones();
+            if affected.is_empty() || !affected.iter().any(|b| index_of.contains_key(b)) {
+                continue;
+            }
+            let target = constraint.target();
+            let all_inside = affected.iter().all(|b| index_of.contains_key(b))
+                && target.is_none_or(|t| index_of.contains_key(&t));
+            if !all_inside {
+                clip.dropped_constraints.push(constraint.name().to_string());
+                continue;
+            }
+            clip.constraints.push(ClipConstraint {
+                name: constraint.name().to_string(),
+                constraint: constraint.clone(),
+                bones: affected.iter().map(|b| index_of[b]).collect(),
+                target: target.map(|t| index_of[&t]),
+            });
+        }
+
+        // ── Animation keys (T-909) ───────────────────────────────────────
+        // The half of a rig transfer the reference tool loses. Without these,
+        // moving a rigged and animated limb means re-animating it by hand.
+        for (_, animation) in doc.animations.iter() {
+            let timelines: Vec<(usize, ankhimate_core::animation::Timeline)> = animation
+                .timelines
+                .iter()
+                .filter_map(|t| {
+                    let bone = t.bone()?;
+                    let index = index_of.get(&bone)?;
+                    Some((*index, t.clone()))
+                })
+                .collect();
+            if timelines.is_empty() {
+                continue;
+            }
+            clip.animations.push(ClipAnimation {
+                name: animation.name.clone(),
+                duration: animation.duration,
+                timelines,
+            });
+        }
+
+        clip
+    }
+}
+
 /// A copied pose: bone **names** to local transforms.
 ///
 /// Names, so a pose can be pasted onto the same rig after any amount of
