@@ -1,5 +1,14 @@
 # Feature inventory — exact T-816 product, T-817 documentary audit
 
+## Local T-818 update — 2026-10-20
+
+T-818 is a **LOCAL_CANDIDATE / PENDING_MANUAL** refinement of the T-817
+inventory. The prior T-817 audit below remains historical evidence; it is no
+longer a statement that global diagnostics are absent in this local candidate.
+Read [Document diagnostics](document-diagnostics.md) for the bounded contract.
+No GUI/inference test, publication, runtime change or B01/B02/B03 correction.
+
+
 Audit date: **2026-10-20**. Product source frozen at T-816
 `009e67898317d779d943c23a0210bd48ed9d63bd`. T-817 changes documentation only.
 Public editor: `9233b8e888c811e7c71300101f865a9e74b3f489`; public external runtime:
@@ -11,9 +20,9 @@ T-813–T-816: **PENDING MANUAL REVIEW**. No GUI, inference, browser or GPU run 
 
 ## Reading this inventory
 
-132 **entries**, consisting of 104 ID records (101 historical
-IDs plus T-804/T-812/T-817 context) and 28 linked scope refinements.
-These are not 132 independent nonoverlapping product features. Aggregates
+133 **entries**, consisting of 105 ID records (101 historical
+IDs plus T-804/T-812/T-817/T-818 context) and 28 linked scope refinements.
+These are not 133 independent nonoverlapping product features. Aggregates
 and their refinements overlap; counts are always reported separately.
 
 Implementation: **COMPLETE** = the explicitly bounded functional scope is implemented;
@@ -39,7 +48,7 @@ Code and test links were checked against the audited local trees. Runtime links
 are pinned to the protected commit, inspected locally; remote page availability
 is not a substitute for inspection. Test references name suites, not universal
 coverage. T-816's executed 1596/4 baseline and T-817 rerun results are distinguished
-in the delivery VALIDATION.json. No tests, thresholds or fixtures were changed.
+in the delivery VALIDATION.json. That T-817 documentary audit changed no tests, thresholds or fixtures. T-818 adds dedicated tests without weakening historical oracles.
 
 The original acceptance text and all historical references remain byte-exact in
 [TASKS-before-T817.md](TASKS-before-T817.md). That root location deliberately keeps
@@ -1630,16 +1639,15 @@ not the current availability matrix. The current [tasks](TASKS.md),
 <a id="t-702"></a>
 ### T-702 — Diagnostics / warnings
 
-**PARTIAL / AUTOMATED / PUBLIC_ALPHA** · Origin: T-702.
+**PARTIAL / PENDING_MANUAL / LOCAL_CANDIDATE** · Origin: T-702, refined T-818.
 
-- Delivered scope: Export preflight/consent, loader reports and local IK diagnostics
-- Entry point: Export preflight / load report.
-- Implementation: [`export/src/preflight.rs`](../export/src/preflight.rs), [`editor/src/export_preflight.rs`](../editor/src/export_preflight.rs), [`editor/src/ui/mod.rs`](../editor/src/ui/mod.rs).
-- Test/reference suites: [`export/tests/preflight.rs`](../export/tests/preflight.rs), [`export/tests/preflight_paths.rs`](../export/tests/preflight_paths.rs)
-- Example test symbols (suite references, not a coverage claim): `valid_runtime_has_no_unjustified_warning_and_preserves_its_input`; `inspection_reuses_portable_path_and_json_checks_without_creating_a_directory`.
-- Contradictory check / remaining historical criteria: No global debounced document rules/badge/dock and offender navigation; not an absent export pipeline
-- Latest relevant checkpoint: T-812 integration; audited exact T-816 source.
-- Recommended action: Work only on the explicit remainder; preserve existing paths. Priority: P1/P2 targeted remainder; see roadmap.
+- Delivered scope: Prior PUBLIC_ALPHA export/load diagnostics, plus LOCAL_CANDIDATE global author-document rules, debounce, badge/list and safe offender selection.
+- Entry point: Bottom Diagnostics badge / Document diagnostics window; export preflight remains independent.
+- Implementation: [`document/src/diagnostics.rs`](../document/src/diagnostics.rs), [`editor/src/diagnostics.rs`](../editor/src/diagnostics.rs), [`export/src/preflight.rs`](../export/src/preflight.rs).
+- Tests: [`document/src/diagnostics/tests.rs`](../document/src/diagnostics/tests.rs), [`editor/src/diagnostics/tests.rs`](../editor/src/diagnostics/tests.rs); original publication tests retained.
+- Remainder: No universal frame-offender camera, no historical numeric debounce budget, no worst-case resource/latency certification. GUI remains pending. Unsupported runtime features remain export fidelity concerns.
+- Latest relevant checkpoint: T-818 local candidate, direct parent T-817. No release/version change.
+- Recommended action: Review T-818 and run deferred cumulative manual campaign; do not rebuild the existing export pipeline.
 
 <a id="t-705"></a>
 ### T-705 — Localization
@@ -1757,15 +1765,15 @@ not the current availability matrix. The current [tasks](TASKS.md),
 <a id="cap-01"></a>
 ### CAP-01 — Global document diagnostics
 
-**ABSENT / NOT_TESTED / NOT_DISTRIBUTED** · Origin: T-702.
+**PARTIAL / PENDING_MANUAL / LOCAL_CANDIDATE** · Origin: T-702 / T-818.
 
-- Delivered scope: No document-wide debounced diagnostics dock/badge/selection navigation identified
-- Entry point: Existing surface described in code, or no entry point for absent scope.
-- Implementation: [`editor/src/ui/mod.rs`](../editor/src/ui/mod.rs), [`export/src/preflight.rs`](../export/src/preflight.rs).
-- Test/reference suites: No dedicated executed test identified for this absent/unknown scope; static search only.
-- Contradictory check / remaining historical criteria: Existing export preflight must be reused, not replaced
-- Latest relevant checkpoint: Exact T-816 source / accepted historical evidence.
-- Recommended action: Retain the existing subset; no implementation in this audit. Priority: See linked historical task remainder.
+- Delivered scope: Deterministic read-only global inspection, typed locations, severity/code/context, cache/document tickets, coalesced refresh and navigation with stale refusal.
+- Entry point: Diagnostics badge and closable egui list; no automatic popup.
+- Implementation: [`document/src/diagnostics.rs`](../document/src/diagnostics.rs), [`editor/src/diagnostics.rs`](../editor/src/diagnostics.rs).
+- Test suites: [`document/src/diagnostics/tests.rs`](../document/src/diagnostics/tests.rs), [`editor/src/diagnostics/tests.rs`](../editor/src/diagnostics/tests.rs), native lifecycle/preflight tests. Includes egui clicks in memory and 500-bone CPU counters.
+- Remaining: Explicit selection without camera reframing; assets/document-level and ambiguous locations are report-only. Full scans are synchronous and decode in-memory images once per coalesced revision. No broad latency or GUI guarantee.
+- Latest checkpoint: T-818 local cumulative executable, internal version 0.2.0-alpha.1 unchanged.
+- Recommended action: Deferred manual qualification; publication preflight remains authoritative.
 
 <a id="cap-06"></a>
 ### CAP-06 — Second render viewport
@@ -1993,3 +2001,14 @@ declarations and bounded proposals/approval. See [multimodal](native-ai-multimod
 [weights](native-ai-weights.md), [assembly](native-ai-assembly.md). Their early
 "pending" records are not erased; later narrow maintainer reports are time-scoped
 in [manual QA](MANUAL_QA_PENDING.md).
+
+<a id="t-818"></a>
+### T-818 — Bounded global document diagnostics
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** · Origin: T-702 / CAP-01.
+
+- Delivered bounded scope: read-only rules, coalesced revision/metadata cache, badge/list, guarded selection and native tests.
+- Implementation and test paths: see [Document diagnostics](document-diagnostics.md) and CAP-01 above.
+- Remaining broader T-702 scope: universal camera framing, worst-case resource/latency and deferred manual qualification; no blanket completeness of all historical production diagnostics.
+- Parent: exact T-817 `acc3f065c98856a8e734a22341637f29d2e38d9c`; local cumulative Windows build only, internal version unchanged.
+- Next step: maintainer review; T-819 remains a proposal.

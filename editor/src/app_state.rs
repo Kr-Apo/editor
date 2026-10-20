@@ -46,6 +46,7 @@ pub(crate) fn key_times(timeline: &ankhimate_core::animation::Timeline) -> Vec<f
 }
 
 pub struct AppState {
+    pub diagnostics: crate::diagnostics::Cache,
     /// Session-only assistant; never serialized into a project or export.
     pub ai: crate::ai::Panel,
     /// Physics simulation for the viewport (T-503, ADR 0007).
@@ -79,6 +80,7 @@ impl Default for AppState {
         let doc = Document::new();
         let session = Session::new(doc.skeleton.default_skin);
         let mut state = Self {
+            diagnostics: Default::default(),
             ai: crate::ai::Panel::default(),
             doc,
             session,
@@ -186,6 +188,7 @@ impl AppState {
     /// while retaining a cancelled export until its transaction has unwound.
     /// PSD replacement uses this without clearing its undoable import command.
     pub(crate) fn reset_rig_session(&mut self) {
+        self.diagnostics = Default::default();
         self.ai.project_changed();
         // Keep the cancelled worker reachable until its transaction finishes;
         // it owns an immutable snapshot, never the newly opened document.

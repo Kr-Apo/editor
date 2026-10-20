@@ -479,6 +479,44 @@ mod tests {
     }
 
     #[test]
+    fn t818_global_inspection_does_not_change_review_consent_inventory_or_writer() {
+        let mut state = AppState::default();
+        let temp = tempfile::tempdir().unwrap();
+        let mut first = review(&state, temp.path().to_path_buf());
+        let receipt = first.receipt("before");
+        state
+            .diagnostics
+            .poll(&state.doc, state.revision, std::time::Duration::ZERO);
+        let second = review(&state, temp.path().to_path_buf());
+        assert_eq!(receipt, second.receipt("before"));
+        assert_eq!(std::fs::read_dir(temp.path()).unwrap().count(), 0);
+        first.accept_warnings = true;
+        first
+            .publish(&mut state, &egui::Context::default())
+            .unwrap();
+        let mut repeated = review(&state, temp.path().to_path_buf());
+        assert!(!repeated.ready()); // replacement consent still mandatory
+        state.diagnostics.poll(
+            &state.doc,
+            state.revision,
+            std::time::Duration::from_secs(1),
+        );
+        assert!(!repeated.ready());
+        repeated.accept_replacements = true;
+        assert!(repeated.ready());
+        state.doc.meta.fps = 0;
+        let invalid = Review::from_plan(
+            &state,
+            temp.path().join("invalid"),
+            ankhimate_formats::convert::to_schema(&state.doc.as_project_ref()),
+            Target::Runtime,
+            Err("blocked plan".into()),
+        );
+        assert!(!invalid.ready());
+        assert!(!temp.path().join("invalid").exists());
+    }
+
+    #[test]
     fn phaser_atlas_page_checks_follow_the_real_plan_even_with_nested_stems() {
         let mut state = AppState::default();
         let mut bytes = std::io::Cursor::new(Vec::new());

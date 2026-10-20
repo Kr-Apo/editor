@@ -4,6 +4,43 @@ use ankhimate_core::{math::Transform, skeleton::Bone};
 use ankhimate_document::commands::bone_cmds::CreateBone;
 
 #[test]
+fn t818_inspection_list_and_navigation_preserve_dirty_saved_snapshot_and_redo() {
+    let mut app = edited();
+    app.state.undo();
+    let before = document_snapshot(&app.state);
+    let dirty = app.is_dirty();
+    let saved = app.saved_document.clone();
+    let history = (app.state.history.undo_depth(), app.state.history.can_redo());
+    app.state.diagnostics.poll(
+        &app.state.doc,
+        app.state.revision,
+        std::time::Duration::ZERO,
+    );
+    let _ = egui::Context::default().run_ui(Default::default(), |ui| {
+        crate::diagnostics::badge(ui, &mut app.state);
+        crate::diagnostics::list(ui, &mut app.state);
+    });
+    let index = app
+        .state
+        .diagnostics
+        .issues
+        .iter()
+        .position(|i| i.code == "empty-skin")
+        .unwrap();
+    let ticket = app.state.diagnostics.ticket(index).unwrap();
+    assert!(crate::diagnostics::navigate(&mut app.state, &ticket));
+    assert_eq!(before, document_snapshot(&app.state));
+    assert_eq!(dirty, app.is_dirty());
+    assert_eq!(saved, app.saved_document);
+    assert_eq!(
+        history,
+        (app.state.history.undo_depth(), app.state.history.can_redo())
+    );
+    app.state.redo();
+    assert!(app.is_dirty());
+}
+
+#[test]
 fn close_waits_for_png_cancellation_before_issuing_the_close_command() {
     let mut app = edited();
     let mut snapshot = app.state.doc.clone();

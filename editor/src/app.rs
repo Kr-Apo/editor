@@ -659,6 +659,7 @@ impl eframe::App for AnkhimateApp {
 
         self.poll_file_load();
         self.handle_psd_drop(ctx);
+        crate::diagnostics::refresh(&mut self.state, ctx);
 
         if let Some(result) = self.marketplace.poll() {
             match result {
@@ -1413,8 +1414,14 @@ at startup.",
             self.show_recovery_prompt(ctx);
             self.show_unsaved_confirmation(ctx);
             self.poll_autosave(ctx, std::time::Instant::now());
+            crate::diagnostics::refresh(&mut self.state, ctx);
             return;
         }
+
+        egui::TopBottomPanel::bottom("document_diagnostics_status").show(ctx, |ui| {
+            crate::diagnostics::badge(ui, &mut self.state);
+        });
+        crate::diagnostics::window(ctx, &mut self.state);
 
         egui::TopBottomPanel::top("context_ribbon")
             .exact_height(crate::ui::context_ribbon::HEIGHT)
@@ -1799,6 +1806,7 @@ at startup.",
         // Arm after edits, settings and file actions resolved in this frame so
         // even the final interaction before an idle period has a wakeup.
         self.poll_autosave(ctx, std::time::Instant::now());
+        crate::diagnostics::refresh(&mut self.state, ctx);
     }
 
     fn ui(&mut self, _ui: &mut egui::Ui, _frame: &mut eframe::Frame) {}

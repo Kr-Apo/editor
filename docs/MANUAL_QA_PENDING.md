@@ -4,7 +4,7 @@ All **local T-813–T-816 GUI results remain PENDING_MANUAL / PENDING MANUAL REV
 This register requests no action now. The maintainer chose to continue development
 before grouped tests. No editor/browser/inference session was run by T-817.
 
-Use the **T-816 cumulative executable** for the grouped campaign; older binaries
+Use the **T-818 cumulative executable** for the grouped campaign; older binaries
 are retained for targeted comparisons, not substitutes. Internal version remains
 0.2.0-alpha.1 and cannot identify a candidate by itself. Check the SHA before use.
 
@@ -45,3 +45,13 @@ steps, PASS/FAIL/NOT RUN and reproducible expected/actual result. A missing run
 stays pending. Keep original projects/assets/recoveries intact. Reproduce B03's
 bone-name versus icon context target deliberately; do not infer a fix from a workaround.
 No result should authorize an automatic release or close the development roadmap.
+
+## T-818 — cumulative main candidate, PENDING_MANUAL
+
+Artifact: `outputs/T818-Global-Diagnostics/Ankhimate-T818-dev.exe`.
+Read its exact SHA-256 in the delivery CHECKPOINT.json / WINDOWS-BUILD.json;
+version 0.2.0-alpha.1 alone is insufficient. Earlier executables and all T-813
+through T-816 checklists remain intact. No action is requested during development.
+Follow the 14-step [diagnostics checklist](document-diagnostics.md#deferred-manual-checklist)
+and the prior cumulative campaign. No desktop GUI, browser or inference session
+was executed for T-818; in-memory egui tests are automated evidence only.

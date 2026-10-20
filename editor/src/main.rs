@@ -7,6 +7,7 @@ pub mod app;
 pub mod app_state;
 pub mod autosave;
 pub mod config;
+pub mod diagnostics;
 pub mod edit_router;
 pub mod export_preflight;
 pub mod fileops;

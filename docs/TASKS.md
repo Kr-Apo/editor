@@ -1,5 +1,14 @@
 # Ankhimate — operational tasks and evidence
 
+## Local T-818 update — 2026-10-20
+
+T-818 is a **LOCAL_CANDIDATE / PENDING_MANUAL** refinement of the T-817
+inventory. The prior T-817 audit below remains historical evidence; it is no
+longer a statement that global diagnostics are absent in this local candidate.
+Read [Document diagnostics](document-diagnostics.md) for the bounded contract.
+No GUI/inference test, publication, runtime change or B01/B02/B03 correction.
+
+
 Audit date: **2026-10-20**. Product source frozen at T-816
 `009e67898317d779d943c23a0210bd48ed9d63bd`. T-817 changes documentation only.
 Public editor: `9233b8e888c811e7c71300101f865a9e74b3f489`; public external runtime:
@@ -179,7 +188,7 @@ The matrix is an operational summary; the archive retains all original criteria.
 | ID / scope | Implementation | Validation | Availability | Remainder / priority |
 |---|---|---|---|---|
 | [T-701](FEATURE_INVENTORY.md#t-701) — Settings, keymap, autosave | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Original exhaustive settings list/restart acceptance incomplete; unsaved-doc autosave policy retained |
-| [T-702](FEATURE_INVENTORY.md#t-702) — Diagnostics / warnings | PARTIAL | AUTOMATED | PUBLIC_ALPHA | No global debounced document rules/badge/dock and offender navigation; not an absent export pipeline |
+| [T-702](FEATURE_INVENTORY.md#t-702) — Diagnostics / warnings | PARTIAL | PENDING_MANUAL | LOCAL_CANDIDATE | T-818 adds read-only global rules, status badge/list, revision/metadata debounce and safe selection; camera framing and GUI/broad performance qualification remain open. Prior export scope remains PUBLIC_ALPHA |
 | [T-705](FEATURE_INVENTORY.md#t-705) — Localization | DEFERRED | NOT_TESTED | NOT_DISTRIBUTED | i18n implementation absent and deliberately deferred; no locale certificate |
 | [T-706](FEATURE_INVENTORY.md#t-706) — Performance pass | PARTIAL | AUTOMATED | SOURCE_ONLY | No dedicated core benchmark target/xtask bench/CI trend or general 500-bone/iGPU 60-FPS qualification… |
 | [T-708](FEATURE_INVENTORY.md#t-708) — Viewport interaction polish | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | No universal snapping/expression-on-drag/pivot editing for every attachment; framing acceptance… |
@@ -203,6 +212,7 @@ The matrix is an operational summary; the archive retains all original criteria.
 | [T-804](FEATURE_INVENTORY.md#t-804) — Unofficial community fork provenance | COMPLETE | MIXED | PUBLIC_ALPHA | No upstream endorsement or npm publication implied |
 | [T-812](FEATURE_INVENTORY.md#t-812) — Exact T-811 artifacts published as v0.2.0-alpha.1… | COMPLETE | MIXED | PUBLIC_ALPHA | Local T-813–T-816 not included; unsigned Windows, no new platform certificate |
 | [T-817](FEATURE_INVENTORY.md#t-817) — Operational inventory | COMPLETE | AUTOMATED | LOCAL_CANDIDATE | Documentary audit only; no product or graphical acceptance added |
+| [T-818](FEATURE_INVENTORY.md#t-818) — Bounded global diagnostics | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE | Read-only rules/cache/badge/list/navigation implemented; larger T-702 framing and latency criteria remain open |
 
 ## 4. Completed bounded scopes — retain, do not redevelop
 
@@ -230,7 +240,7 @@ exclude unqualified runtimes, platforms, artist quality and extended task promis
 | T-505 / T-507 | Presentation/skins/default fallback | Advanced blend fidelity and composition/image-assignment boundaries; never infer adapter parity |
 | T-601 | CPU images/pages and deterministic multi-clip exports | General backgrounds/physics stepping/performance/viewport acceptance; reuse current renderer |
 | T-605 / T-701 / T-707 | Profiles/specification, safe refusal, keymap/autosave/recovery | Authentic legacy migration, hostile resource limits, original settings/panic/update/feedback criteria; maintain writer guarantees |
-| T-702 | Export integrity/fidelity preflight | Live global document diagnostics + navigation is absent; reuse rules and native reads, never weaken publication checks |
+| T-702 | Export integrity/fidelity preflight plus local T-818 diagnostics | Preserve publication checks. Global selection is implemented; universal framing, bounded worst-case latency and GUI qualification remain open |
 | T-703 | Ghost passes, selected-only, frame/key steps | Theme/opacity controls, more boundary coverage and visual/performance qualification |
 | T-704 / T-912 | Graph selection/framing/overshoot and exact numeric tangents | Handle linking/normalize/marquee; T-814 numeric fields are already done |
 | T-708 / T-902 | Gizmos, region pivots, exact mesh/UV/path/polygon fields | Universal point coverage, expressions and neighbour snapping; T-815 fields are already done |
@@ -252,7 +262,7 @@ exclude unqualified runtimes, platforms, artist quality and extended task promis
 
 ## 7. Prioritized development backlog (proposals only)
 
-See [ROADMAP_NEXT.md](ROADMAP_NEXT.md): T-818 global diagnostics, T-819 bounded
+See [ROADMAP_NEXT.md](ROADMAP_NEXT.md): review local T-818 diagnostics; next proposed T-819 bounded
 cross-document transfer, T-820 tangent linking, T-821 FFD-key authoring, T-822
 explicit PSD path-change resolution. They are five **new proposed IDs**, not
 implemented checkpoints or publication authorization. T-817 Diagnostics was only
@@ -293,3 +303,17 @@ Before any future mission: read the row's code/tests and explicit remainder, ver
 its exact checkpoint, reuse native commands/mode gates, preserve originals and
 immutable releases. Do not use old checkmarks or internal version strings alone.
 No current push, merge, tag, release, Actions, package or product change is authorized.
+
+## T-818 checkpoint (local, not released)
+
+**COMPLETE bounded implementation / PENDING_MANUAL / LOCAL_CANDIDATE**.
+Read-only document inspection reuses export integrity checks without consumer
+fidelity warnings. Native supplements cover weight sums/binds, fallback, IK,
+track addressing and draw-order duplicates. Results are revision/document-scoped;
+rapid edits coalesce for 200 ms and stale results cannot navigate. Native
+commands, AI, Undo/Redo and project replacement retain their original paths.
+Metadata name/FPS are observed cheaply; B02's undoable metadata repair is excluded.
+Badge/list and navigation use egui/session selection. Camera stays unchanged.
+Tests: `document/src/diagnostics/tests.rs`, `editor/src/diagnostics/tests.rs`,
+actual dirty-state and preflight integration regressions. No new Save blockers.
+See the [manual register](MANUAL_QA_PENDING.md); T-819 is proposed, not started.

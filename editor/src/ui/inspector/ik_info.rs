@@ -6,27 +6,9 @@ pub(super) fn summary(
     ik: &IkConstraint,
 ) -> Result<Vec<(&'static str, String)>, String> {
     let skel = &state.doc.skeleton;
-    let Some(&root) = ik.bones.first() else {
-        return Err("Invalid IK: empty chain".into());
-    };
-    if !skel.bones.contains_key(ik.target) {
-        return Err("Invalid IK: missing target".into());
-    }
-    if ik.bones.contains(&ik.target) {
-        return Err("Invalid IK: target belongs to the chain".into());
-    }
-    for (i, bone) in ik.bones.iter().enumerate() {
-        if !skel.bones.contains_key(*bone) {
-            return Err("Invalid IK: missing chain bone".into());
-        }
-        if ik.bones[..i].contains(bone) {
-            return Err("Invalid IK: repeated chain bone".into());
-        }
-        if i > 0 && !skel.is_descendant(*bone, ik.bones[i - 1]) {
-            return Err(
-                "Invalid IK presentation: chain must be ordered ancestor to descendant".into(),
-            );
-        }
+    ankhimate_document::diagnostics::ik_structure(skel, ik)?;
+    let root = ik.bones[0];
+    for bone in &ik.bones {
         if !state.pose.worlds.contains_key(*bone) {
             return Err("IK span unavailable: pose not evaluated".into());
         }

@@ -1,5 +1,14 @@
 # Next roadmap — proposals after T-817 review
 
+## Local T-818 update — 2026-10-20
+
+T-818 is a **LOCAL_CANDIDATE / PENDING_MANUAL** refinement of the T-817
+inventory. The prior T-817 audit below remains historical evidence; it is no
+longer a statement that global diagnostics are absent in this local candidate.
+Read [Document diagnostics](document-diagnostics.md) for the bounded contract.
+No GUI/inference test, publication, runtime change or B01/B02/B03 correction.
+
+
 Audit date: **2026-10-20**. Product source frozen at T-816
 `009e67898317d779d943c23a0210bd48ed9d63bd`. T-817 changes documentation only.
 Public editor: `9233b8e888c811e7c71300101f865a9e74b3f489`; public external runtime:
@@ -9,9 +18,8 @@ labels in FEATURES/RELEASE_READINESS, old alpha-scope and docs/alpha/ do not ove
 that publication record. They also do not qualify the newer local candidates.
 T-813–T-816: **PENDING MANUAL REVIEW**. No GUI, inference, browser or GPU run in T-817.
 
-Five bounded development missions below balance project diagnostics, real game-asset
-reuse, animation authoring and PSD workflow. They are **not authorized** by this
-audit. Manual T-813–T-816 QA is a parallel qualification queue, not a missing-feature
+The original five bounded development proposals below balance project diagnostics, real game-asset
+reuse, animation authoring and PSD workflow. T-818 was subsequently authorized and implemented locally; T-819 and later remain **not authorized** by this audit. Manual T-813–T-816 QA is a parallel qualification queue, not a missing-feature
 development task, and is not an artificial prerequisite imposed on the maintainer.
 
 No demonstrated new P0 incident was found. P0 prevention/triage remains first when
@@ -22,7 +30,7 @@ P2 production usability; P3 platforms/localization/second viewport stay deferred
 
 Historical IDs: **T-702** · Priority **P1** · Effort: Medium, bounded rule set first.
 
-- **Verified gap:** CAP-01: only export/load/local IK diagnostics exist; no debounced global document pass or dock.
+- **T-818 implementation:** Local bounded diagnostics, revision/metadata debounce, badge/list and stale-safe navigation now exist. This replaces the historical absence finding for the local candidate only.
 - **Already done — preserve:** Reuse export preflight schema/rules and native document reads; do not create another export pipeline.
 - **Bounded work:** Read-only structured rules for missing asset/attachment, invalid clip/time, stale deform vertex counts, draw-order and missing IK refs; debounced revision-keyed results; badge/dock and select offender without authoring changes.
 - **Dependencies:** Current T-816 document/session and existing export preflight; no need to wait artificially for GUI campaign.
@@ -115,3 +123,11 @@ recovery code. Performance budgets, localization, browser editor, second viewpor
 advanced runtime constraints/physics/blends and broad platform certification remain
 explicit later decisions, not hidden commitments in one of these five missions.
 See [manual register](MANUAL_QA_PENDING.md) and the [inventory](FEATURE_INVENTORY.md).
+
+## After T-818
+
+Review the local diagnostics candidate and preserve the pending manual campaign.
+T-819 remains the next proposed bounded development mission; no implementation
+or authorization is implied. T-818 does not close B01, B02, B03 or every T-702
+camera/performance criterion. The 200 ms coalescing interval is a scheduling
+choice, not a guarantee that arbitrary scans complete within that duration.

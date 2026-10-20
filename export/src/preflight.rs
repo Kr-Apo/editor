@@ -59,6 +59,8 @@ impl Report {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Target {
+    /// Author-document integrity only, never a publication capability profile.
+    Document,
     Runtime,
     /// Exact native template shipped before static dark RGBA transmission.
     LegacyRuntime,
@@ -449,11 +451,12 @@ pub fn inspect(
                             );
                         }
                         for weights in &g.weights {
-                            if weights.is_empty()
+                            if (weights.is_empty() && target != Target::Document)
                                 || weights.iter().any(|(bone, w)| {
                                     !bones.contains(bone.as_str()) || !w.is_finite() || *w < 0.0
                                 })
-                                || weights.iter().map(|(_, w)| w).sum::<f32>() <= 0.0
+                                || (!weights.is_empty()
+                                    && weights.iter().map(|(_, w)| w).sum::<f32>() <= 0.0)
                             {
                                 out.push(Error,"invalid-weights",&subject,"Missing bone, negative/non-finite weight or empty influence set");
                                 break;
@@ -480,7 +483,9 @@ pub fn inspect(
                             "Clipping end slot does not exist",
                         );
                     }
-                    out.push(Warning,"clipping-unqualified",&subject,"Clipping code exists; complex clipping fidelity is not qualified for this target");
+                    if target != Target::Document {
+                        out.push(Warning,"clipping-unqualified",&subject,"Clipping code exists; complex clipping fidelity is not qualified for this target");
+                    }
                     (None, None)
                 }
                 _ => (None, None),
@@ -566,7 +571,7 @@ pub fn inspect(
                 out.push(Warning,"runtime-physics-incompatible",&constraint.name,"Known incompatibility: the native export uses target with an empty bones list, while the current TypeScript runtime reads bones[0]. Physics does not activate on real native exports; it is excluded from the alpha runtime scope");
             }
         }
-        if constraint.kind == "path" {
+        if constraint.kind == "path" && target != Target::Document {
             out.push(
                 Warning,
                 "path-unqualified",
@@ -826,7 +831,9 @@ pub fn inspect(
                         );
                     }
                 }
-                out.push(Warning,"deform-unqualified",&clip.name,"Deformation code exists; complex/weighted/linked game or rendered parity has not been qualified");
+                if target != Target::Document {
+                    out.push(Warning,"deform-unqualified",&clip.name,"Deformation code exists; complex/weighted/linked game or rendered parity has not been qualified");
+                }
             }
         }
         if target == Target::Rendered && !clip.events.is_empty() {
