@@ -12,6 +12,7 @@ fn project() -> ankhimate_formats::schema::Project {
     let mut animations = SlotMap::with_key();
     animations.insert(a);
     ankhimate_formats::convert::to_schema(&ankhimate_formats::ProjectRef {
+        animation_order: &[],
         skeleton: &s,
         animations: &animations,
         assets: &AssetDb::new(),

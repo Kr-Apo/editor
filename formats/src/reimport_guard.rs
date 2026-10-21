@@ -26,6 +26,7 @@ pub fn verify_source(path: &Path) -> Result<(), String> {
         return Err("Project has unresolved or lossy data; reimport refused".into());
     }
     let view = crate::ProjectRef {
+        animation_order: &[],
         skeleton: &p.skeleton,
         animations: &p.animations,
         assets: &p.assets,

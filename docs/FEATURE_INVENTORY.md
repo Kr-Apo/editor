@@ -1,5 +1,7 @@
 # Feature inventory — reconciled at exact T-831 / T-832 documentation
 
+T-835 local addendum: **Animation Clip Reordering — implemented / PENDING_MANUAL / LOCAL_CANDIDATE**. [Manager guide](animation-manager.md). T-208 remains PARTIAL for its original frame-display and manager-selection mode criteria; frozen T-832 matrix/categories remain unchanged. 24 new automated tests; Windows qualification deferred.
+
 T-834 local addendum: **Safe FFD Key Clipboard — COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** in its same-document/exact-owned-mesh scope. See [the contract](ffd-key-clipboard.md). T-209/T-404 remain PARTIAL. The T-832 101-ID matrix/categories, its 352 manual scenarios and the 28 T-833 controls stay unchanged; T-834 adds 37 pending controls. No GUI/inference/publication.
 
 T-833 local addendum: selected-bone offsets are implemented; see [the contract](selected-bone-key-offset.md). T-211 and T-905 remain PARTIAL; the frozen T-832 101-ID matrix and original 352 manual scenarios stay unchanged. T-833 adds 28 pending controls. No GUI/inference/public operation.
@@ -339,16 +341,16 @@ No lack of manual testing alone keeps an implemented scope PARTIAL.
 <a id="t-208"></a>
 ### T-208 — Animation manager
 
-**PARTIAL / AUTOMATED / PUBLIC_ALPHA**. Public base: PUBLIC_ALPHA. T-817 implementation: PARTIAL.
+**PARTIAL / PENDING_MANUAL / LOCAL_CANDIDATE**. Public base: PUBLIC_ALPHA. T-817 implementation: PARTIAL.
 
 - Historical criteria fulfilled: Clip create/rename/duplicate/delete/duration/loop manager retained.
-- Remaining condition / qualification or scope limit: Clip reordering remains absent from the manager; do not recreate its existing operations.
+- Remaining condition / qualification or scope limit: T-835 adds persistent adjacent Move Up/Down with native Undo/Redo. Original manager duration-in-frames display and switching to Animate on manager-row selection remain unimplemented; no claim of full T-208 completion.
 - Evidence checkpoints: .
 - Code: [`editor/src/ui/animations.rs`](../editor/src/ui/animations.rs); [`document/src/commands/key_cmds.rs`](../document/src/commands/key_cmds.rs); [`editor/src/ui/timeline/transport.rs`](../editor/src/ui/timeline/transport.rs).
 - Tests: [`document/src/commands/key_cmds.rs`](../document/src/commands/key_cmds.rs); [`editor/src/ui/animations.rs`](../editor/src/ui/animations.rs).
 - Automated validation: T-831 accepted checkpoint: 2058/0/4; referenced suites present (not rerun in T-832).
 - Manual validation: No new T-832 manual test; no universal GUI certificate.
-- Status rationale: Inspected the current implementation and named tests; later work closes the stated sub-scope only. Clip reordering remains absent from the manager; do not recreate its existing operations.
+- Status rationale: Inspected the current implementation and named tests; later work closes the stated sub-scope only. T-835 adds persistent adjacent Move Up/Down with native Undo/Redo. Original manager duration-in-frames display and switching to Animate on manager-row selection remain unimplemented; no claim of full T-208 completion.
 - Confidence: HIGH.
 
 <a id="t-209"></a>
@@ -1890,3 +1892,7 @@ Implemented destructive key-time offset for explicitly selected BoneIds, seven d
 ## T-834 — Safe FFD Key Clipboard (local addendum)
 
 Same-project, exact unique owner/mesh only; rigid per-vertex and weighted per-influence vectors retained by value. Explicit existing nonempty Deform row, playhead placement, preserved interpolation, full topology/Setup/bind equality and strict collision refusal. Pure Copy/preview, leased consented Apply, one native Undo and exact Save/reopen. Linked/shared/overridden/sequence meshes and cross-project retargeting remain refused. Loader topology migration is still separate T-404 debt. Manual Windows qualification remains pending.
+
+## T-835 local animation ordering evidence
+
+The [manager guide](animation-manager.md) describes native author order, adjacent swaps, persistence, identity-preserving interleaved history and stale menu refusal. Automated in-memory egui/command/Save/Reload/CPU/export checks exercise the implemented scope; no Windows interaction was run. T-208 remains PARTIAL for its original frame-display and manager-mode-selection criteria, rather than promoting from the shorthand T-832 reorder remainder alone. The frozen 101-row T-832 CSV and all 101 anchors remain preserved; counts stay 62/33/1/3/2. T-209, T-404 and T-502 are unchanged.

@@ -426,6 +426,7 @@ fn an_overshooting_handle_survives_an_ankh_round_trip() {
     }
 
     let json = ankhimate_formats::to_json(&ankhimate_formats::convert::ProjectRef {
+        animation_order: &[],
         skeleton: &imported.skeleton,
         animations: &imported.animations,
         assets: &imported.assets,

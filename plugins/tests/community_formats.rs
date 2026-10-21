@@ -364,6 +364,7 @@ fn spine_plugin_preserves_constraint_channels_and_per_axis_curves() {
     );
 
     let json = ankhimate_formats::to_json(&ankhimate_formats::ProjectRef {
+        animation_order: &[],
         skeleton: &loaded.skeleton,
         animations: &loaded.animations,
         assets: &loaded.assets,
@@ -451,6 +452,7 @@ fn spine_plugin_converts_weighted_meshes_and_keeps_deform_streams() {
         .remove(0);
     let loaded = Importer::read(&importer, &path).expect("imports");
     let json = ankhimate_formats::to_json(&ankhimate_formats::ProjectRef {
+        animation_order: &[],
         skeleton: &loaded.skeleton,
         animations: &loaded.animations,
         assets: &loaded.assets,
@@ -511,6 +513,7 @@ fn dragonbones_plugin_converts_axes_duration_and_slot_switches() {
     assert_eq!(loaded.name, "hero");
     assert_eq!(loaded.fps, 10);
     let json = ankhimate_formats::to_json(&ankhimate_formats::ProjectRef {
+        animation_order: &[],
         skeleton: &loaded.skeleton,
         animations: &loaded.animations,
         assets: &loaded.assets,
@@ -639,6 +642,7 @@ fn dragonbones_plugin_folds_referenced_sprite_armatures_into_sequences() {
         .remove(0);
     let loaded = Importer::read(&importer, &path).expect("imports");
     let json = ankhimate_formats::to_json(&ankhimate_formats::ProjectRef {
+        animation_order: &[],
         skeleton: &loaded.skeleton,
         animations: &loaded.animations,
         assets: &loaded.assets,
@@ -817,6 +821,7 @@ fn spine_community_exporter_uses_its_packaged_preset() {
 
 fn project_value(loaded: &ankhimate_formats::Loaded) -> serde_json::Value {
     let json = ankhimate_formats::to_json(&ankhimate_formats::ProjectRef {
+        animation_order: &[],
         skeleton: &loaded.skeleton,
         animations: &loaded.animations,
         assets: &loaded.assets,

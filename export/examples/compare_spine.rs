@@ -30,6 +30,7 @@ fn main() {
     let (loaded, _) = ankhimate_formats::load(Path::new(&rig))
         .unwrap_or_else(|e| panic!("could not read '{rig}': {e}"));
     let _ = ProjectRef {
+        animation_order: &[],
         skeleton: &loaded.skeleton,
         animations: &loaded.animations,
         assets: &loaded.assets,

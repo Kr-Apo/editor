@@ -43,7 +43,7 @@ and general performance/artistic guarantees remain separate. T-905 beyond per-bo
 offsets and T-902 expressions/neighbour snapping are real remaining extensions.
 
 P2: reproduce B03 with a physical target/focus record before changing menus;
-add clip reorder only (T-208), not a new animation manager; audit remaining
+qualify T-835 clip ordering manually (local candidate), then audit remaining
 metadata commands without reopening closed FPS B02; measure remaining large
 command/model/payload cost rather than repeating T-827/T-829 optimizations.
 For T-912 decide the historical opt-in snapping intent versus existing default
@@ -58,3 +58,7 @@ exports and exclusions; absence of advanced parity is not automatically P0.
 No GPU/inference/GUI work or product development occurs in this reconciliation.
 
 The old T-818–T-831 proposals are implemented checkpoints, never next work to recreate. See [current inventory](FEATURE_INVENTORY.md), [manual map](cumulative-manual-qa-map.md), [format policy boundary](format-release-compatibility.md) and [historical notes](checkpoint-journal-before-T832.md).
+
+## T-835 checkpoint scope
+
+Native clip reordering is implemented locally; it is no longer an absent development task. [Manager guide](animation-manager.md). T-208 remains PARTIAL for original duration-frame display and manager selection entering Animate. Those are unapproved follow-up scopes. Cumulative manual campaign remains pending (444 instances through T-835); no next milestone or release is started. PathPosition minimum-reader communication policy remains a future alpha prerequisite.

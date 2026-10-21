@@ -303,6 +303,7 @@ fn nested_save_and_reopen_preserve_the_entire_import_and_asset_bytes() {
     let imported = read(NESTED);
     let animations = Default::default();
     let project = ankhimate_formats::ProjectRef {
+        animation_order: &[],
         skeleton: &imported.skeleton,
         animations: &animations,
         assets: &imported.assets,
@@ -318,6 +319,7 @@ fn nested_save_and_reopen_preserve_the_entire_import_and_asset_bytes() {
     let (loaded, _) = ankhimate_formats::load(&path).unwrap();
     assert!(loaded.report.is_clean());
     let after = ankhimate_formats::ProjectRef {
+        animation_order: &[],
         skeleton: &loaded.skeleton,
         animations: &loaded.animations,
         assets: &loaded.assets,

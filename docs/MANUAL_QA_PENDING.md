@@ -47,3 +47,7 @@ All are **PENDING MANUAL REVIEW**. The 352 baseline controls remain verbatim in 
 ## T-834 — 37 additional pending controls
 
 All are **PENDING MANUAL REVIEW** in the T-834 delivery checklist. Prior 352 T-832 +28 T-833 controls remain unchanged and pending. Cumulative population:417 scenario instances, not unique tests or a completion percentage. Exercise Copy/Paste, exact mesh/row, collisions, topology/shared refusals, cancellation, three history cycles, Save/reopen and scalar/pose non-regression only on disposable fixtures. No manual execution requested during this mission.
+
+## T-835 — Animation ordering
+
+27 additional controls, all **PENDING MANUAL REVIEW**, are listed in the local T-835 delivery. Prior 417 instances through T-834 remain pending and intact; cumulative population **444 scenario instances** (not unique tests or a completion percentage). Test disposable projects, exact candidate binary and assets, native row context actions, boundaries, active clip, interleaved history, FFD/PathPosition and all author save profiles. No GUI or inference execution was performed for T-835. See [manager steps](animation-manager.md).

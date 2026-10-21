@@ -36,6 +36,9 @@ impl Default for DocumentMeta {
 pub struct Document {
     pub skeleton: Skeleton,
     pub animations: SlotMap<AnimationId, Animation>,
+    /// Saved author order, represented on disk by the existing animation list.
+    /// Missing new IDs append; removed IDs are ignored when read.
+    pub animation_order: Vec<AnimationId>,
     /// Imported images (T-301). Attachments reference these by name, so the
     /// library outlives any one attachment that samples it.
     pub assets: AssetDb,
@@ -66,6 +69,7 @@ impl Document {
         Self {
             skeleton: Skeleton::new(),
             animations: SlotMap::with_key(),
+            animation_order: Vec::new(),
             assets: AssetDb::new(),
             meta: DocumentMeta::default(),
             psd_layer_paths: std::collections::HashMap::new(),
@@ -81,6 +85,7 @@ impl Document {
     pub fn from_loaded(loaded: ankhimate_formats::Loaded) -> Self {
         Self {
             skeleton: loaded.skeleton,
+            animation_order: loaded.animations.keys().collect(),
             animations: loaded.animations,
             assets: loaded.assets,
             meta: DocumentMeta {
@@ -90,6 +95,17 @@ impl Document {
             psd_layer_paths: loaded.psd_layer_paths,
             export_presets: loaded.export_presets,
         }
+    }
+
+    /// Complete native author order, also supporting legacy headless inserts.
+    pub fn animation_ids(&self) -> Vec<AnimationId> {
+        let mut seen = std::collections::HashSet::new();
+        self.animation_order
+            .iter()
+            .copied()
+            .chain(self.animations.keys())
+            .filter(|id| self.animations.contains_key(*id) && seen.insert(*id))
+            .collect()
     }
 
     /// The presets, parsed. Anything that no longer deserializes is skipped
@@ -105,6 +121,7 @@ impl Document {
     /// Borrow the whole document for serialization.
     pub fn as_project_ref(&self) -> ankhimate_formats::ProjectRef<'_> {
         ankhimate_formats::ProjectRef {
+            animation_order: &self.animation_order,
             skeleton: &self.skeleton,
             animations: &self.animations,
             assets: &self.assets,

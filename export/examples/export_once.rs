@@ -22,6 +22,7 @@ fn main() {
         .unwrap_or_else(|e| panic!("could not read '{input}': {e}"));
 
     let project = ankhimate_formats::convert::to_schema(&ProjectRef {
+        animation_order: &[],
         skeleton: &loaded.skeleton,
         animations: &loaded.animations,
         assets: &loaded.assets,

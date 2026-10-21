@@ -153,6 +153,7 @@ fn historical_crapaud_native_attachment_fields_match_documented_projection() {
         .join("../demos/m0070-crapaud-pharaon/projet/Crapaud-Pharaon.ankh");
     let (p, _) = ankhimate_formats::load(&path).unwrap();
     let view = ProjectRef {
+        animation_order: &[],
         skeleton: &p.skeleton,
         animations: &p.animations,
         assets: &p.assets,

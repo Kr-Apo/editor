@@ -497,14 +497,14 @@ fn pick_clip_combo(ui: &mut egui::Ui, state: &mut AppState) {
         .map(|a| a.name.clone())
         .unwrap_or_else(|| "—".to_string());
 
-    egui::ComboBox::from_id_salt("clip_combo")
+    let picker = egui::ComboBox::from_id_salt("clip_combo")
         .selected_text(current)
         .show_ui(ui, |ui| {
             let clips: Vec<_> = state
                 .doc
-                .animations
-                .iter()
-                .map(|(id, a)| (id, a.name.clone()))
+                .animation_ids()
+                .into_iter()
+                .map(|id| (id, state.doc.animations[id].name.clone()))
                 .collect();
             for (id, name) in clips {
                 let selected = state.session.active_animation == Some(id);
@@ -517,6 +517,10 @@ fn pick_clip_combo(ui: &mut egui::Ui, state: &mut AppState) {
                 }
             }
         });
+    #[cfg(test)]
+    ui.data_mut(|d| d.insert_temp(egui::Id::new(("t835", "picker")), picker.response.rect));
+    #[cfg(not(test))]
+    let _ = picker;
 }
 
 fn create_clip(state: &mut AppState) {
@@ -552,3 +556,6 @@ mod t829_reference_graph;
     reason = "Pinned T828 logical rendering reference; not product code"
 )]
 mod t829_reference_sheet;
+
+#[cfg(test)]
+mod t835_tests;

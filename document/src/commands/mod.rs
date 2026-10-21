@@ -26,6 +26,7 @@
 //! them, so undo, drag-merge and the T-207 mode rule keep their single
 //! enforcement point.
 
+pub mod animation_order;
 pub mod asset_cmds;
 pub mod attachment_cmds;
 pub mod bone_cmds;

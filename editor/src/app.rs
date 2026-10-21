@@ -2927,3 +2927,7 @@ mod selected_offset_tests;
 #[cfg(test)]
 #[path = "app_ffd_clipboard_tests.rs"]
 mod ffd_clipboard_tests;
+
+#[cfg(test)]
+#[path = "app_animation_order_tests.rs"]
+mod animation_order_tests;

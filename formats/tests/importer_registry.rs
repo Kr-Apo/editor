@@ -102,6 +102,7 @@ fn psd_provenance_survives_a_save_and_reopen() {
     let assets = AssetDb::new();
     let paths = std::collections::HashMap::from([("arm".to_string(), "torso/arm".to_string())]);
     let json = ankhimate_formats::to_json(&ankhimate_formats::ProjectRef {
+        animation_order: &[],
         skeleton: &skeleton,
         animations: &animations,
         assets: &assets,
@@ -128,6 +129,7 @@ fn a_rig_that_never_saw_a_psd_omits_provenance() {
     let animations: SlotMap<AnimationId, Animation> = SlotMap::with_key();
     let assets = AssetDb::new();
     let json = ankhimate_formats::to_json(&ankhimate_formats::ProjectRef {
+        animation_order: &[],
         skeleton: &skeleton,
         animations: &animations,
         assets: &assets,

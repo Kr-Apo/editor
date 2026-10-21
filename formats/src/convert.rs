@@ -34,6 +34,9 @@ use std::collections::HashMap;
 pub struct ProjectRef<'a> {
     pub skeleton: &'a Skeleton,
     pub animations: &'a SlotMap<AnimationId, anim::Animation>,
+    /// Saved through the existing Project.animations list, never a new disk field.
+    /// An empty view retains legacy occupied-slot iteration.
+    pub animation_order: &'a [AnimationId],
     pub assets: &'a AssetDb,
     pub name: &'a str,
     pub fps: u32,
@@ -255,6 +258,7 @@ pub fn to_schema(project: &ProjectRef<'_>) -> schema::Project {
     let ProjectRef {
         skeleton,
         animations,
+        animation_order,
         psd_layer_paths,
         assets,
         name,
@@ -461,9 +465,17 @@ pub fn to_schema(project: &ProjectRef<'_>) -> schema::Project {
         })
         .collect();
 
-    let animations = animations
-        .iter()
-        .map(|(_, a)| schema::Animation {
+    let mut ordered = Vec::with_capacity(animations.len());
+    let mut seen = std::collections::HashSet::new();
+    for id in animation_order.iter().copied().chain(animations.keys()) {
+        if animations.contains_key(id) && seen.insert(id) {
+            ordered.push(id);
+        }
+    }
+    let animations = ordered
+        .into_iter()
+        .map(|id| &animations[id])
+        .map(|a| schema::Animation {
             name: a.name.clone(),
             duration: a.duration,
             looping: a.looping,

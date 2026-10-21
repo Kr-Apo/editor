@@ -489,6 +489,7 @@ fn main() {
     ankhimate_formats::save(
         &path,
         &ProjectRef {
+            animation_order: &[],
             skeleton: &skel,
             animations: &animations,
             assets: &assets,

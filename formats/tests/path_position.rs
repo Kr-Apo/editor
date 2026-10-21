@@ -25,6 +25,7 @@ fn project() -> schema::Project {
     let mut animations = SlotMap::with_key();
     animations.insert(a);
     convert::to_schema(&ProjectRef {
+        animation_order: &[],
         skeleton: &s,
         animations: &animations,
         assets: &AssetDb::new(),
@@ -36,6 +37,7 @@ fn project() -> schema::Project {
 }
 fn as_ref(p: &ankhimate_formats::Loaded) -> ProjectRef<'_> {
     ProjectRef {
+        animation_order: &[],
         skeleton: &p.skeleton,
         animations: &p.animations,
         assets: &p.assets,

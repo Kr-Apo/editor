@@ -1344,10 +1344,22 @@ impl EditCommand for ClearBoneAnimation {
 
 // ── Animation clip create/delete (kept from the T-107 stub) ──────────────────
 
-/// Create an animation clip.
+/// Collection-only history state: preserve generations without remapping other commands.
+/// This clones clip data, never skeletons or asset bytes.
+type AnimationCollection = (
+    ankhimate_core::slotmap::SlotMap<AnimationId, Animation>,
+    Vec<AnimationId>,
+);
+fn exchange_animations(doc: &mut Document, other: &mut AnimationCollection) {
+    std::mem::swap(&mut doc.animations, &mut other.0);
+    std::mem::swap(&mut doc.animation_order, &mut other.1);
+}
+
+/// Create an animation clip, retaining its identity across Undo/Redo.
 pub struct CreateAnimation {
     animation: Animation,
     created: Option<AnimationId>,
+    other: Option<AnimationCollection>,
 }
 
 impl CreateAnimation {
@@ -1355,6 +1367,7 @@ impl CreateAnimation {
         Self {
             animation: Animation::new(name, duration),
             created: None,
+            other: None,
         }
     }
 
@@ -1365,12 +1378,21 @@ impl CreateAnimation {
 
 impl EditCommand for CreateAnimation {
     fn apply(&mut self, doc: &mut Document) {
-        self.created = Some(doc.animations.insert(self.animation.clone()));
+        if let Some(other) = self.other.as_mut() {
+            exchange_animations(doc, other);
+            return;
+        }
+        self.other = Some((doc.animations.clone(), doc.animation_order.clone()));
+        let mut order = doc.animation_ids();
+        let id = doc.animations.insert(self.animation.clone());
+        order.push(id);
+        doc.animation_order = order;
+        self.created = Some(id);
     }
 
     fn revert(&mut self, doc: &mut Document) {
-        if let Some(id) = self.created.take() {
-            doc.animations.remove(id);
+        if let Some(other) = self.other.as_mut() {
+            exchange_animations(doc, other);
         }
     }
 
@@ -1443,6 +1465,7 @@ impl EditCommand for RenameAnimation {
 pub struct DuplicateAnimation {
     source: AnimationId,
     created: Option<AnimationId>,
+    other: Option<AnimationCollection>,
 }
 
 impl DuplicateAnimation {
@@ -1450,6 +1473,7 @@ impl DuplicateAnimation {
         Self {
             source,
             created: None,
+            other: None,
         }
     }
 
@@ -1460,6 +1484,11 @@ impl DuplicateAnimation {
 
 impl EditCommand for DuplicateAnimation {
     fn apply(&mut self, doc: &mut Document) {
+        if let Some(other) = self.other.as_mut() {
+            exchange_animations(doc, other);
+            return;
+        }
+
         let Some(source) = doc.animations.get(self.source).cloned() else {
             return;
         };
@@ -1472,12 +1501,17 @@ impl EditCommand for DuplicateAnimation {
             }
             n += 1;
         };
-        self.created = Some(doc.animations.insert(copy));
+        self.other = Some((doc.animations.clone(), doc.animation_order.clone()));
+        let mut order = doc.animation_ids();
+        let id = doc.animations.insert(copy);
+        order.push(id);
+        doc.animation_order = order;
+        self.created = Some(id);
     }
 
     fn revert(&mut self, doc: &mut Document) {
-        if let Some(id) = self.created.take() {
-            doc.animations.remove(id);
+        if let Some(other) = self.other.as_mut() {
+            exchange_animations(doc, other);
         }
     }
 
@@ -1556,29 +1590,34 @@ impl EditCommand for SetAnimationMeta {
 /// Delete an animation clip.
 pub struct DeleteAnimation {
     target: AnimationId,
-    removed: Option<Animation>,
-    restored: Option<AnimationId>,
+    // SlotMap cannot reinsert the same generation ID. Preserve only this
+    // collection so older rename/key/reorder commands retain their target.
+    before: Option<AnimationCollection>,
 }
 
 impl DeleteAnimation {
     pub fn new(target: AnimationId) -> Self {
         Self {
             target,
-            removed: None,
-            restored: None,
+            before: None,
         }
     }
 }
 
 impl EditCommand for DeleteAnimation {
     fn apply(&mut self, doc: &mut Document) {
-        let id = self.restored.take().unwrap_or(self.target);
-        self.removed = doc.animations.remove(id);
+        if !doc.animations.contains_key(self.target) {
+            return;
+        }
+        self.before = Some((doc.animations.clone(), doc.animation_order.clone()));
+        doc.animations.remove(self.target);
+        doc.animation_order.retain(|id| *id != self.target);
     }
 
     fn revert(&mut self, doc: &mut Document) {
-        if let Some(anim) = self.removed.take() {
-            self.restored = Some(doc.animations.insert(anim));
+        if let Some((animations, order)) = self.before.take() {
+            doc.animations = animations;
+            doc.animation_order = order;
         }
     }
 

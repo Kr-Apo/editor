@@ -18,6 +18,7 @@ fn manifest() -> Value {
 }
 fn project(p: &Loaded) -> ProjectRef<'_> {
     ProjectRef {
+        animation_order: &[],
         skeleton: &p.skeleton,
         animations: &p.animations,
         assets: &p.assets,

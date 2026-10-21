@@ -20,6 +20,7 @@ fn main() {
 
     let assets = ankhimate_core::assets::AssetDb::new();
     let project = ankhimate_formats::ProjectRef {
+        animation_order: &[],
         skeleton: &skeleton,
         animations: &animations,
         assets: &assets,

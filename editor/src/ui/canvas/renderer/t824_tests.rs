@@ -629,3 +629,47 @@ fn t824_theme_alpha_multiplies_ghost_opacity_only() {
         [1.; 4]
     );
 }
+
+#[test]
+fn t835_onion_and_graph_model_keep_same_logical_clip_after_reorder() {
+    use ankhimate_document::commands::animation_order::{Direction, MoveAnimation};
+    let mut s = fixture();
+    let active = s.session.active_animation.unwrap();
+    let other = s.doc.animations.insert(Animation::new("Other", 4.));
+    let before = onion_poses(&s, &Theme::default());
+    assert!(!before.is_empty());
+    let model = |s: &AppState| {
+        crate::ui::timeline::model::TimelineModel::build(s, s.session.active_animation.unwrap())
+            .groups
+            .into_iter()
+            .flat_map(|g| {
+                g.rows.into_iter().map(|p| {
+                    (
+                        p.addr,
+                        p.keys
+                            .iter()
+                            .map(|k| (k.index, k.time, k.interp))
+                            .collect::<Vec<_>>(),
+                        p.channels.into_iter().map(|c| c.values).collect::<Vec<_>>(),
+                    )
+                })
+            })
+            .collect::<Vec<_>>()
+    };
+    let before_model = model(&s);
+    let c = MoveAnimation::prepare(&s.doc, active, Direction::Down)
+        .unwrap()
+        .unwrap();
+    s.dispatch(Box::new(c));
+    assert_eq!(s.doc.animation_ids(), vec![other, active]);
+    assert_eq!(s.session.active_animation, Some(active));
+    assert_eq!(model(&s), before_model);
+    let after = onion_poses(&s, &Theme::default());
+    assert_eq!(before.len(), after.len());
+    for ((a, ta), (b, tb)) in before.iter().zip(&after) {
+        assert_eq!(ta, tb);
+        assert_eq!(a.locals, b.locals);
+        assert_eq!(a.worlds, b.worlds);
+        assert_eq!(a.deforms, b.deforms);
+    }
+}

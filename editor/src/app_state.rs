@@ -227,7 +227,7 @@ impl AppState {
 
         if mode == WorkMode::Animate {
             if self.session.active_animation.is_none() {
-                let existing = self.doc.animations.iter().next().map(|(id, _)| id);
+                let existing = self.doc.animation_ids().first().copied();
                 match existing {
                     Some(id) => self.session.active_animation = Some(id),
                     None => {
@@ -267,7 +267,7 @@ impl AppState {
             1.0,
         );
         self.dispatch(Box::new(cmd));
-        if let Some((id, _)) = self.doc.animations.iter().last() {
+        if let Some(id) = self.doc.animation_ids().last().copied() {
             self.session.active_animation = Some(id);
             self.session.playhead = 0.0;
             self.refresh_pose();
@@ -1221,6 +1221,7 @@ mod tests {
             psd_layer_paths: Default::default(),
             export_presets: loaded.export_presets.clone(),
             skeleton: loaded.skeleton,
+            animation_order: loaded.animations.keys().collect(),
             animations: loaded.animations,
             assets: loaded.assets,
             meta: ankhimate_document::doc::DocumentMeta {
@@ -1900,6 +1901,7 @@ mod tests {
             psd_layer_paths: Default::default(),
             export_presets: loaded.export_presets.clone(),
             skeleton: loaded.skeleton,
+            animation_order: loaded.animations.keys().collect(),
             animations: loaded.animations,
             assets: loaded.assets,
             meta: ankhimate_document::doc::DocumentMeta {

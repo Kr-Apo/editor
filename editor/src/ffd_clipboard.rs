@@ -17,6 +17,10 @@ use ankhimate_document::{
 use eframe::egui;
 use std::sync::Arc;
 
+#[cfg(test)]
+#[path = "ffd_clipboard/t835_tests.rs"]
+mod order_tests;
+
 fn context(s: &AppState, anim: AnimationId, addr: &TimelineAddr) -> Result<(), String> {
     if !s.session.is_animating() || s.session.active_animation != Some(anim) {
         return Err("Select the active clip in Animate".into());

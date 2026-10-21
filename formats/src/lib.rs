@@ -252,6 +252,7 @@ mod tests {
         fps: u32,
     ) -> ProjectRef<'a> {
         ProjectRef {
+            animation_order: &[],
             skeleton,
             animations,
             assets,
@@ -869,6 +870,7 @@ mod tests {
         let assets = AssetDb::new();
         let psd_paths = Default::default();
         let mut value = serde_json::to_value(convert::to_schema(&ProjectRef {
+            animation_order: &[],
             skeleton: &skeleton,
             animations: &animations,
             assets: &assets,
@@ -1546,6 +1548,7 @@ mod tests {
         })];
 
         let json = to_json(&ProjectRef {
+            animation_order: &[],
             skeleton: &skeleton,
             animations: &animations,
             assets: &assets,
@@ -1575,6 +1578,7 @@ mod tests {
         })];
 
         let json = to_json(&ProjectRef {
+            animation_order: &[],
             skeleton: &skeleton,
             animations: &animations,
             assets: &assets,

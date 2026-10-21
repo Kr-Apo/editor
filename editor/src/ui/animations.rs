@@ -10,10 +10,48 @@
 
 use crate::app_state::AppState;
 use ankhimate_core::ids::AnimationId;
+use ankhimate_document::commands::animation_order::{Direction, MoveAnimation};
 use ankhimate_document::commands::key_cmds::{
     CreateAnimation, DeleteAnimation, DuplicateAnimation, RenameAnimation, SetAnimationMeta,
 };
 use eframe::egui;
+
+/// Popup identity is independent of its host row's index/clip name.
+#[derive(Clone, PartialEq)]
+struct MenuLease {
+    document: u64,
+    revision: u64,
+    active: Option<AnimationId>,
+    mode: crate::session::WorkMode,
+}
+impl MenuLease {
+    fn new(s: &AppState) -> Self {
+        Self {
+            document: s.diagnostics.document_identity(),
+            revision: s.revision,
+            active: s.session.active_animation,
+            mode: s.session.work_mode,
+        }
+    }
+}
+#[derive(Clone)]
+struct MenuFrame {
+    lease: MenuLease,
+    frame: u64,
+}
+fn move_clip(state: &mut AppState, id: AnimationId, direction: Direction) {
+    match MoveAnimation::prepare(&state.doc, id, direction) {
+        Ok(Some(c)) => {
+            state.dispatch(Box::new(c));
+        }
+        Ok(None) => {}
+        Err(e) => state.session.set_status(e),
+    }
+}
+#[cfg(test)]
+fn probe(ui: &egui::Ui, key: impl std::hash::Hash, r: &egui::Response) {
+    ui.data_mut(|d| d.insert_temp(egui::Id::new(("t835", key)), (r.rect, r.enabled())));
+}
 
 pub fn ui(ui: &mut egui::Ui, state: &mut AppState, theme: &crate::theme::Theme) {
     ui.columns(2, |columns| {
@@ -29,7 +67,7 @@ pub fn ui(ui: &mut egui::Ui, state: &mut AppState, theme: &crate::theme::Theme) 
             if state.dispatch(Box::new(CreateAnimation::new(name, 1.0))) {
                 // Select what was just made: creating a clip and then having to
                 // find it in the list is two steps for one intention.
-                if let Some(id) = state.doc.animations.keys().last() {
+                if let Some(id) = state.doc.animation_ids().last().copied() {
                     state.session.active_animation = Some(id);
                 }
             }
@@ -49,11 +87,12 @@ pub fn ui(ui: &mut egui::Ui, state: &mut AppState, theme: &crate::theme::Theme) 
     });
     ui.separator();
 
-    let mut clips: Vec<(AnimationId, String, f32, bool, usize, usize)> = state
+    let clips: Vec<(AnimationId, String, f32, bool, usize, usize)> = state
         .doc
-        .animations
-        .iter()
-        .map(|(id, a)| {
+        .animation_ids()
+        .into_iter()
+        .map(|id| {
+            let a = &state.doc.animations[id];
             (
                 id,
                 a.name.clone(),
@@ -64,10 +103,6 @@ pub fn ui(ui: &mut egui::Ui, state: &mut AppState, theme: &crate::theme::Theme) 
             )
         })
         .collect();
-    // Alphabetical: slotmap order is insertion order, which is meaningless to
-    // anyone looking for `walk`.
-    clips.sort_by_key(|c| c.1.to_lowercase());
-
     if clips.is_empty() {
         ui.add_space(12.0);
         ui.vertical_centered(|ui| {
@@ -139,7 +174,52 @@ pub fn ui(ui: &mut egui::Ui, state: &mut AppState, theme: &crate::theme::Theme) 
                     ui.visuals().weak_text_color(),
                 );
 
+                #[cfg(test)]
+                probe(ui, (*id, "row"), &response);
+                let lease_id = ui.make_persistent_id(("animation-menu-lease", id));
+                let frame = ui.ctx().cumulative_frame_nr();
+                let now = MenuLease::new(state);
+                if response.secondary_clicked() {
+                    ui.data_mut(|d| {
+                        d.insert_temp(
+                            lease_id,
+                            MenuFrame {
+                                lease: now.clone(),
+                                frame,
+                            },
+                        )
+                    });
+                }
+                let valid = ui
+                    .data(|d| d.get_temp::<MenuFrame>(lease_id))
+                    .is_some_and(|old| old.lease == now && old.frame.saturating_add(1) >= frame);
+                if valid {
+                    ui.data_mut(|d| d.insert_temp(lease_id, MenuFrame { lease: now, frame }));
+                }
                 response.context_menu(|ui| {
+                    if !valid {
+                        ui.close();
+                        return;
+                    }
+                    for (label, direction, key) in [
+                        ("Move Up", Direction::Up, "up"),
+                        ("Move Down", Direction::Down, "down"),
+                    ] {
+                        let enabled = matches!(
+                            MoveAnimation::prepare(&state.doc, *id, direction),
+                            Ok(Some(_))
+                        );
+                        let action = ui.add_enabled(enabled, egui::Button::new(label));
+                        #[cfg(test)]
+                        probe(ui, (*id, key), &action);
+                        #[cfg(not(test))]
+                        let _ = key;
+                        if action.clicked() {
+                            move_clip(state, *id, direction);
+                            ui.close();
+                        }
+                    }
+                    ui.separator();
                     if crate::ui::action_button(ui, crate::ui::icons::EDIT, "Rename…").clicked() {
                         rename = Some((*id, name.clone()));
                         ui.close();
@@ -162,7 +242,7 @@ pub fn ui(ui: &mut egui::Ui, state: &mut AppState, theme: &crate::theme::Theme) 
     if let Some(id) = delete {
         state.dispatch(Box::new(DeleteAnimation::new(id)));
         if state.session.active_animation == Some(id) {
-            state.session.active_animation = state.doc.animations.keys().next();
+            state.session.active_animation = state.doc.animation_ids().first().copied();
         }
     }
     if let Some((id, name)) = rename {
@@ -258,3 +338,7 @@ fn rename_popup(ui: &mut egui::Ui, state: &mut AppState, theme: &crate::theme::T
         ui.data_mut(|d| d.insert_temp(id, (anim, name)));
     }
 }
+
+#[cfg(test)]
+#[path = "animations/t835_tests.rs"]
+mod t835_tests;

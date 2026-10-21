@@ -1,5 +1,7 @@
 # Ankhimate — Current operational task status after T-831
 
+T-835 local addendum: **Animation Clip Reordering — implemented / PENDING_MANUAL / LOCAL_CANDIDATE**. [Manager guide](animation-manager.md). T-208 remains PARTIAL for its original frame-display and manager-selection mode criteria; frozen T-832 matrix/categories remain unchanged. 24 new automated tests; Windows qualification deferred.
+
 T-834 local addendum: **Safe FFD Key Clipboard — COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** in its same-document/exact-owned-mesh scope. See [the contract](ffd-key-clipboard.md). T-209/T-404 remain PARTIAL. The T-832 101-ID matrix/categories, its 352 manual scenarios and the 28 T-833 controls stay unchanged; T-834 adds 37 pending controls. No GUI/inference/publication.
 
 T-833 local addendum: selected-bone offsets are implemented; see [the contract](selected-bone-key-offset.md). T-211 and T-905 remain PARTIAL; the frozen T-832 101-ID matrix and original 352 manual scenarios stay unchanged. T-833 adds 28 pending controls. No GUI/inference/public operation.
@@ -82,7 +84,7 @@ There are 101 historical IDs,3 original context IDs,28 original refinement recor
 | [T-204](FEATURE_INVENTORY.md#t-204) — Draw-order animation UI | COMPLETE | AUTOMATED | PUBLIC_ALPHA / PUBLIC_ALPHA | Generic dopesheet order-key clipboard remains excluded |
 | [T-205](FEATURE_INVENTORY.md#t-205) — Slot timelines UI | COMPLETE | AUTOMATED | PUBLIC_ALPHA / PUBLIC_ALPHA | Static dark tint is separate; no animated-dark channel is invented |
 | [T-207](FEATURE_INVENTORY.md#t-207) — Setup mode / Animate mode | COMPLETE | AUTOMATED | PUBLIC_ALPHA / PUBLIC_ALPHA | Every future edit surface still needs mode semantics; legacy metadata writes audited separately |
-| [T-208](FEATURE_INVENTORY.md#t-208) — Animation manager | PARTIAL | AUTOMATED | PUBLIC_ALPHA / PUBLIC_ALPHA | Clip reordering remains absent from the manager; do not recreate its existing operations. |
+| [T-208](FEATURE_INVENTORY.md#t-208) — Animation manager | PARTIAL | PENDING_MANUAL | LOCAL_CANDIDATE / PUBLIC_ALPHA | T-835 adds persistent adjacent Move Up/Down with native Undo/Redo. Original manager duration-in-frames display and switching to Animate on manager-row selection remain unimplemented; no claim of full T-208 completion. |
 | [T-209](FEATURE_INVENTORY.md#t-209) — Clipboard: copy / paste / duplicate | PARTIAL | PENDING_MANUAL | LOCAL_CANDIDATE / PUBLIC_ALPHA | T-834 supports owned same-mesh FFD key blocks on an explicit existing row. Cross-project/cross-mesh, linked/shared/overridden sources, empty-row creation, constraints, draw-order and event blocks remain excluded. Scalar replacement semantics remain unchanged. |
 | [T-209.2](FEATURE_INVENTORY.md#t-209-2) — Validated normal/mirrored multibone pose paste in one native transaction | COMPLETE | AUTOMATED | PUBLIC_ALPHA / PUBLIC_ALPHA | Auto-key-off retains preview policy; not a retargeter |
 | [T-209.3](FEATURE_INVENTORY.md#t-209-3) — Explicit bone-row mirrored offsets; signs | COMPLETE | AUTOMATED | PUBLIC_ALPHA / PUBLIC_ALPHA | Offsets, not asymmetric absolute setup poses; no slot/FFD/event mirror |
@@ -218,3 +220,9 @@ B01 is addressed for T-819 region copy only; T-909 remains PARTIAL. B02 is local
 The only whole historical ABSENT task is T-904 selection sets. T-705 localization and T-803 browser editor remain DEFERRED. T-303 built-in importer, T-508 performance alias and T-603 hardcoded exporter are SUPERSEDED. Authentic v0 qualification and broad performance/resource budgets remain uncertain subordinate criteria; no whole historical ID is UNKNOWN.
 
 [CSV with all evidence columns](task-status-matrix.csv). This is a documentation-only local checkpoint; no product/test/dependency/format/runtime change, no binary, no GUI/inference/remote operation.
+
+## T-835 — Persistent animation ordering (local candidate)
+
+[Animation manager guide](animation-manager.md): right-click a clip row, choose Move Up or Move Down. The native author list is saved through the existing `.ankh` animation array. IDs and complete clip payloads remain unchanged; one click is one Undo. Manager/picker share the order. Boundaries and stale popup contexts refuse before dispatch. No schema, sampler, evaluator, runtime, shortcut or release change.
+
+T-208 stays **PARTIAL / PENDING_MANUAL / LOCAL_CANDIDATE**: auditing its original criteria found the existing seconds display and Setup-preserving manager selection. These are separate from the delivered ordering scope and were not changed. Counts remain **62 COMPLETE /33 PARTIAL /1 ABSENT /3 SUPERSEDED /2 DEFERRED =101**. The byte-identical T-832 CSV is a historical snapshot; its old reorder-gap wording is superseded by this explicit T-835 addendum. T-209/T-404/T-502 remain partial. PathPosition minimum-reader release policy remains pending.
