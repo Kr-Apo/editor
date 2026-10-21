@@ -406,18 +406,32 @@ enum OnionSide {
 }
 
 fn frame_onion_times(now: f32, duration: f32, fps: u32, steps: u8) -> Vec<(f32, OnionSide, u8)> {
-    let frame = 1.0 / fps.max(1) as f32;
+    if !valid_onion_clock(now, duration) || fps == 0 {
+        return Vec::new();
+    }
+    let frame = 1.0 / fps as f32;
     let mut times = Vec::new();
-    for step in 1..=steps {
+    for step in 1..=steps.min(5) {
         let delta = frame * step as f32;
-        if now - delta >= 0.0 {
-            times.push((now - delta, OnionSide::Past, step));
-        }
-        if now + delta <= duration {
-            times.push((now + delta, OnionSide::Future, step));
+        for (time, side) in [
+            (now - delta, OnionSide::Past),
+            (now + delta, OnionSide::Future),
+        ] {
+            if time.is_finite()
+                && time >= 0.0
+                && time <= duration
+                && time != now
+                && !times.iter().any(|(previous, _, _)| *previous == time)
+            {
+                times.push((time, side, step));
+            }
         }
     }
     times
+}
+
+fn valid_onion_clock(now: f32, duration: f32) -> bool {
+    now.is_finite() && duration.is_finite() && duration > 0.0 && now >= 0.0 && now <= duration
 }
 
 fn key_onion_times(
@@ -425,11 +439,14 @@ fn key_onion_times(
     animation: &ankhimate_core::animation::Animation,
     steps: u8,
 ) -> Vec<(f32, OnionSide, u8)> {
+    if !valid_onion_clock(now, animation.duration) {
+        return Vec::new();
+    }
     let mut keys: Vec<f32> = animation
         .timelines
         .iter()
         .flat_map(crate::app_state::key_times)
-        .filter(|time| time.is_finite())
+        .filter(|time| time.is_finite() && *time >= 0.0 && *time <= animation.duration)
         .collect();
     keys.sort_by(f32::total_cmp);
     keys.dedup_by(|a, b| (*a - *b).abs() < 1e-5);
@@ -445,18 +462,39 @@ fn key_onion_times(
         .filter(|time| *time > now + 1e-5)
         .collect();
     let mut times = Vec::new();
-    for (index, time) in past.iter().rev().take(steps as usize).enumerate() {
+    for (index, time) in past.iter().rev().take(steps.min(5) as usize).enumerate() {
         times.push((*time, OnionSide::Past, index as u8 + 1));
     }
-    for (index, time) in future.iter().take(steps as usize).enumerate() {
+    for (index, time) in future.iter().take(steps.min(5) as usize).enumerate() {
         times.push((*time, OnionSide::Future, index as u8 + 1));
     }
     times
 }
 
-fn onion_poses(state: &AppState) -> Vec<(Pose, [f32; 4])> {
+fn onion_poses(state: &AppState, theme: &crate::theme::Theme) -> Vec<(Pose, [f32; 4])> {
+    onion_poses_counted(state, theme, || {})
+}
+
+// A per-call observer measures real ghost evaluations without shared test counters
+// or changes to the evaluator. No persistent cache can retain a stale document.
+fn onion_poses_counted(
+    state: &AppState,
+    theme: &crate::theme::Theme,
+    mut evaluated: impl FnMut(),
+) -> Vec<(Pose, [f32; 4])> {
     let settings = state.session.onion_skin;
-    if !settings.enabled || !state.session.is_animating() || !state.session.show_artwork {
+    if !settings.enabled
+        || !state.session.is_animating()
+        || !state.session.show_artwork
+        || settings.alpha(1) == 0.0
+        || (settings.selected_only
+            && !state
+                .doc
+                .skeleton
+                .bones
+                .keys()
+                .any(|bone| state.session.is_bone_selected(bone)))
+    {
         return Vec::new();
     }
     let Some(animation_id) = state.session.active_animation else {
@@ -480,16 +518,26 @@ fn onion_poses(state: &AppState) -> Vec<(Pose, [f32; 4])> {
         .into_iter()
         .map(|(time, side, step)| {
             let mut pose = Pose::new();
+            evaluated();
             ankhimate_core::pose::evaluate(
                 &state.doc.skeleton,
                 &[(animation, time, 1.0)],
                 &mut pose,
             );
-            let alpha = 0.32 / (step as f32).sqrt();
-            let tint = match side {
-                OnionSide::Past => [1.0, 0.35, 0.35, alpha],
-                OnionSide::Future => [0.35, 1.0, 0.45, alpha],
-            };
+            // Reuse existing theme channel tokens: shear is reddish, rotate
+            // greenish in bundled themes. Custom themes control these roles.
+            let color = theme
+                .channel_color(match side {
+                    OnionSide::Past => "shear",
+                    OnionSide::Future => "rotate",
+                })
+                .to_srgba_unmultiplied();
+            let tint = [
+                color[0] as f32 / 255.0,
+                color[1] as f32 / 255.0,
+                color[2] as f32 / 255.0,
+                settings.alpha(step) * color[3] as f32 / 255.0,
+            ];
             (pose, tint)
         })
         .collect()
@@ -1917,7 +1965,7 @@ pub fn render_bones(
     // bone's local space, and the slots it masks are on other bones; converting
     // once here is the only place both spaces are in hand.
     let mut sprite_draws: Vec<SpriteDraw> = Vec::new();
-    for (pose, tint) in onion_poses(state) {
+    for (pose, tint) in onion_poses(state, theme) {
         append_pose_sprites(
             state,
             &pose,
@@ -1951,7 +1999,7 @@ mod onion_tests {
     #[test]
     fn disabled_onion_skin_does_not_evaluate_extra_poses() {
         let state = AppState::default();
-        assert!(onion_poses(&state).is_empty());
+        assert!(onion_poses(&state, &crate::theme::Theme::default()).is_empty());
     }
 
     #[test]
@@ -2003,3 +2051,6 @@ mod texture_tests {
         assert!(prepare_textures(&mut state).is_empty());
     }
 }
+
+#[cfg(test)]
+mod t824_tests;

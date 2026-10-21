@@ -4,7 +4,7 @@ All **local T-813–T-816 GUI results remain PENDING_MANUAL / PENDING MANUAL REV
 This register requests no action now. The maintainer chose to continue development
 before grouped tests. No editor/browser/inference session was run by T-817.
 
-Use the **T-821 cumulative executable** for the grouped campaign; older binaries
+Use the **T-824 cumulative executable** for the grouped campaign; older binaries
 are retained for targeted comparisons, not substitutes. Internal version remains
 0.2.0-alpha.1 and cannot identify a candidate by itself. Check the SHA before use.
 
@@ -109,3 +109,15 @@ FFD/linked/lock refusals, Cancel, three Undo/Redo, painting, Save As/reopen and
 diagnostics, plus cumulative T-813–T-822 controls. No check is marked PASS.
 All earlier binaries/fixtures remain. In-memory egui events and numeric Setup
 checks are not desktop, GPU, DPI/theme, visual quality or artistic evidence.
+
+## T-824 — onion skinning refinement
+
+**PENDING MANUAL REVIEW**, together with T-813–T-823. Use the local delivery
+`outputs/T824-Onion-Skin-Refinement/Ankhimate-T824-dev.exe` and verify its SHA in
+CHECKPOINT.json. Its twenty-step MANUAL-CHECKLIST.md covers toggle, past/future,
+light/dark palette, opacity/falloff, 1–5 steps, boundaries, frames/keys, irregular
+keys, selected-only/IK/weighted art, scrubbing, clip changes, Setup/Animate,
+normal rendering, Save/Reload and perceived performance. Headless egui events
+and CPU measurements are not a desktop or artistic certificate. Historical
+video process tests retain their concurrency sensitivity; no assertion or
+ignore was changed. No human action is requested by this development task.

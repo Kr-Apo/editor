@@ -1,5 +1,20 @@
 # Next roadmap — proposals after T-817 review
 
+## Local T-824 update — 2026-10-21
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for bounded onion-skin refinement.
+The existing ghost passes now use theme shear/rotate colors, Session opacity and
+step-distance falloff. Frame/key sampling omits out-of-clip and duplicate/current
+times; Setup and invisible/off paths perform no ghost evaluations. Key references
+remain global Timeline keys, including Deform, excluding events/markers. Full rig
+evaluation precedes the selected slot-owner visual filter. No pose cache was
+added; up to ten stateless evaluations per rendered view, measured separately.
+Read [Onion skinning](onion-skinning.md). Historical T-703 remains PARTIAL pending
+real scrubbing/theme/performance acceptance. Cumulative T-813–T-824 desktop QA is
+**PENDING MANUAL REVIEW**; no GUI/GPU/inference or public operation was performed.
+Core, rendered exports, native formats, runtime and prior references are unchanged.
+
+
 ## Local T-823 update — 2026-10-21
 
 **COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for safe retracing of compatible

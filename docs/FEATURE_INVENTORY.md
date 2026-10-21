@@ -746,16 +746,17 @@ not the current availability matrix. The current [tasks](TASKS.md),
 <a id="t-703"></a>
 ### T-703 — Onion skinning
 
-**PARTIAL / AUTOMATED / PUBLIC_ALPHA** · Origin: T-703.
+**PARTIAL / PENDING_MANUAL / LOCAL_CANDIDATE** · Origin: T-703.
 
+- Public baseline: earlier ghost implementation remains PUBLIC_ALPHA; this refinement is local only.
 - Delivered scope: Ghost passes, 1–5 steps, selected-only, frame/key stepping and disabled early return
 - Entry point: Onion toggle and context menu.
 - Implementation: [`editor/src/ui/canvas/renderer.rs`](../editor/src/ui/canvas/renderer.rs), [`editor/src/ui/timeline/transport.rs`](../editor/src/ui/timeline/transport.rs).
 - Test/reference suites: [`editor/src/ui/canvas/renderer.rs`](../editor/src/ui/canvas/renderer.rs)
 - Example test symbols (suite references, not a coverage claim): `disabled_onion_skin_does_not_evaluate_extra_poses`.
-- Contradictory check / remaining historical criteria: Tint/alpha hardcoded; key-mode/boundary coverage, theme controls, performance and desktop qualification incomplete
-- Latest relevant checkpoint: T-812 integration; audited exact T-816 source.
-- Recommended action: Work only on the explicit remainder; preserve existing paths. Priority: Retain scoped implementation.
+- Local T-824: Theme channel shear/rotate tints, Session opacity/falloff, bounded frame/key times and deterministic counters; [contract](onion-skinning.md). Historical scrubbing/desktop acceptance remains pending.
+- Latest relevant checkpoint: T-824 LOCAL_CANDIDATE, automated refinement; PUBLIC_ALPHA baseline remains separate.
+- Recommended action: Deferred manual onion qualification.
 
 <a id="t-704"></a>
 ### T-704 — Curve editor refinement
@@ -886,15 +887,14 @@ not the current availability matrix. The current [tasks](TASKS.md),
 <a id="cap-16"></a>
 ### CAP-16 — Onion theme/opacity controls
 
-**ABSENT / NOT_TESTED / NOT_DISTRIBUTED** · Origin: T-703.
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** · Origin: T-703 / T-824.
 
-- Delivered scope: Past/future colors and 0.32/sqrt(step) alpha are hardcoded, not theme/user controls
-- Entry point: Existing surface described in code, or no entry point for absent scope.
-- Implementation: [`editor/src/ui/canvas/renderer.rs`](../editor/src/ui/canvas/renderer.rs), [`editor/src/ui/timeline/transport.rs`](../editor/src/ui/timeline/transport.rs).
-- Test/reference suites: No dedicated executed test identified for this absent/unknown scope; static search only.
-- Contradictory check / remaining historical criteria: Retain existing 1–5 steps, selected-only and frame/key stepping
-- Latest relevant checkpoint: Exact T-816 source / accepted historical evidence.
-- Recommended action: Retain the existing subset; no implementation in this audit. Priority: See linked historical task remainder.
+- Delivered scope: existing theme shear/rotate colors; Session opacity 0..1 and falloff exponent 0..2 in existing context menu.
+- Contract: [Onion skinning](onion-skinning.md); no author data or new .ankh fields.
+- Implementation: [`renderer.rs`](../editor/src/ui/canvas/renderer.rs), [`transport.rs`](../editor/src/ui/timeline/transport.rs), [`session.rs`](../editor/src/session.rs).
+- Tests: [`render/time/counter tests`](../editor/src/ui/canvas/renderer/t824_tests.rs), [`egui controls`](../editor/src/ui/timeline/transport/t824_tests.rs).
+- Limits: uses shared channel palette roles; custom themes can remove past/future contrast. Theme/colorblindness, real scrubbing and perceived performance remain pending.
+- Historical T-703 stays PARTIAL until desktop acceptance; no new public release.
 
 
 <a id="meshes"></a>
@@ -2004,7 +2004,7 @@ not the current availability matrix. The current [tasks](TASKS.md),
 2. `core/src/skeleton.rs` mentions SelectionSet in comments, but current structs,
    schema and UI implement hierarchy folders, not saved overlapping selection sets.
 3. Onion skinning is implemented: renderer `onion_poses`/ghost passes and transport
-   controls exist. Its theme/opacity settings and broad performance/visual acceptance
+   controls exist. T-824 supplies local theme/opacity settings; broad visual acceptance
    are not complete. The disabled path returns before additional pose evaluation;
    the existing test is not an instrumented universal performance counter.
 4. Native physics code/fields exist in both languages. That does not activate the

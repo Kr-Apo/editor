@@ -155,6 +155,10 @@ pub struct OnionSkinSettings {
     pub selected_only: bool,
     /// Step through authored key times instead of evenly spaced frames.
     pub key_steps: bool,
+    /// Session-only ghost opacity; finite 0..=1 at the render boundary.
+    pub opacity: f32,
+    /// Exponent in opacity / step^falloff, finite 0..=2.
+    pub falloff: f32,
 }
 
 impl Default for OnionSkinSettings {
@@ -164,7 +168,25 @@ impl Default for OnionSkinSettings {
             frames: 1,
             selected_only: false,
             key_steps: false,
+            opacity: 0.32,
+            falloff: 0.5,
         }
+    }
+}
+
+impl OnionSkinSettings {
+    pub fn alpha(self, step: u8) -> f32 {
+        let opacity = if self.opacity.is_finite() {
+            self.opacity.clamp(0.0, 1.0)
+        } else {
+            0.32
+        };
+        let falloff = if self.falloff.is_finite() {
+            self.falloff.clamp(0.0, 2.0)
+        } else {
+            0.5
+        };
+        opacity / f32::from(step.clamp(1, 5)).powf(falloff)
     }
 }
 

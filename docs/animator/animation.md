@@ -309,7 +309,7 @@ stepped draw-order key as offsets from Setup order. When the first later key is
 created, a frame-zero baseline preserves the Setup stack before it. The dopesheet
 shows draw-order timing but edits remain in the Draw Order panel.
 
-See [Rigging fundamentals: draw order](/animator/rigging/#draw-order) for the
+See [Rigging fundamentals: draw order](/animator/rigging/#setup-draw-order) for the
 relationship between slot hierarchy and the rendered stack.
 
 ### Mesh deformation
@@ -422,16 +422,14 @@ current time, not a block of dopesheet keys with their spacing.
 
 ## Onion skinning
 
-**Experimental:** onion skinning is available in Animate mode with an active
-clip. Toggle the onion icon in the transport, then right-click it to configure:
+In Animate mode with an active clip, click the onion transport icon. Right-click
+it for 1–5 steps per side, frame/key stepping, selected bones, opacity and distance
+falloff. Past ghosts use the theme's shear color; future ghosts use rotate color.
+The current pose is unchanged. View settings are not saved or undone.
 
-- `1`–`5` neighboring steps;
-- stepping between authored keys instead of adjacent frames;
-- limiting ghosts to selected bones.
-
-Onion settings are session view state, not animation data. The feature is useful
-for spacing checks, but the complete T-703 interaction acceptance pass is still
-open; do not treat its current presentation as a stable production workflow.
+Read [Onion skinning](../onion-skinning.md) for bounds, key families, performance
+and persistence. T-824 is a local candidate: real desktop scrubbing, contrast
+and perceived performance remain **PENDING MANUAL REVIEW**.
 
 ## Troubleshooting animation
 

@@ -1,5 +1,20 @@
 # Ankhimate — operational tasks and evidence
 
+## Local T-824 update — 2026-10-21
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for bounded onion-skin refinement.
+The existing ghost passes now use theme shear/rotate colors, Session opacity and
+step-distance falloff. Frame/key sampling omits out-of-clip and duplicate/current
+times; Setup and invisible/off paths perform no ghost evaluations. Key references
+remain global Timeline keys, including Deform, excluding events/markers. Full rig
+evaluation precedes the selected slot-owner visual filter. No pose cache was
+added; up to ten stateless evaluations per rendered view, measured separately.
+Read [Onion skinning](onion-skinning.md). Historical T-703 remains PARTIAL pending
+real scrubbing/theme/performance acceptance. Cumulative T-813–T-824 desktop QA is
+**PENDING MANUAL REVIEW**; no GUI/GPU/inference or public operation was performed.
+Core, rendered exports, native formats, runtime and prior references are unchanged.
+
+
 ## Local T-823 update — 2026-10-21
 
 **COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for safe retracing of compatible
@@ -172,7 +187,7 @@ The matrix is an operational summary; the archive retains all original criteria.
 | [T-209.3](FEATURE_INVENTORY.md#t-209-3) — Explicit bone-row mirrored offsets; signs | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Offsets, not asymmetric absolute setup poses; no slot/FFD/event mirror |
 | [T-210](FEATURE_INVENTORY.md#t-210) — Keyed-value affordances in the inspector | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Does not add IK key dots or every future property; no whole-app accessibility certificate |
 | [T-211](FEATURE_INVENTORY.md#t-211) — Pose tools | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Arbitrary numeric retime dialog and broader original UI acceptance remain |
-| [T-703](FEATURE_INVENTORY.md#t-703) — Onion skinning | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Tint/alpha hardcoded; key-mode/boundary coverage, theme controls, performance and desktop qualification… |
+| [T-703](FEATURE_INVENTORY.md#t-703) — Onion skinning | PARTIAL | PENDING_MANUAL | LOCAL_CANDIDATE | Local T-824 theme/opacity and stepping qualified headlessly; desktop scrubbing and perceived performance pending. |
 | [T-704](FEATURE_INVENTORY.md#t-704) — Curve editor refinement | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | T-820 adds local single-junction linking; normalized overlay, graph marquee and broad GUI qualification remain |
 | [T-814](FEATURE_INVENTORY.md#t-814) — Shared key selection | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE | Broader T-704 stays partial; combined graph edits retain existing granularity; GUI pending |
 | [T-905](FEATURE_INVENTORY.md#t-905) — Non-destructive timeline offset | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Not arbitrary per-track/per-selection offsets for slots/constraints/deforms |

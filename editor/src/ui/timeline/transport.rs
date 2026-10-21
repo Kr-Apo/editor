@@ -132,13 +132,7 @@ pub fn ui(ui: &mut egui::Ui, state: &mut AppState) {
         state.session.onion_skin.enabled = !onion;
     }
     onion_resp.context_menu(|ui| {
-        ui.label("Onion skin");
-        ui.add(egui::Slider::new(&mut state.session.onion_skin.frames, 1..=5).text("steps"));
-        ui.checkbox(&mut state.session.onion_skin.key_steps, "Step between keys");
-        ui.checkbox(
-            &mut state.session.onion_skin.selected_only,
-            "Selected bones only",
-        );
+        onion_controls(ui, &mut state.session.onion_skin);
     });
 
     ui.separator();
@@ -178,3 +172,28 @@ pub fn toggle_play(state: &mut AppState) {
     }
     state.session.playing = !state.session.playing;
 }
+
+/// The existing onion context menu edits only view state.
+fn onion_controls(ui: &mut egui::Ui, settings: &mut crate::session::OnionSkinSettings) {
+    ui.label("Onion skin — view only");
+    ui.add(egui::Slider::new(&mut settings.frames, 1..=5).text("steps per side"));
+    ui.checkbox(&mut settings.key_steps, "Step between keys");
+    ui.checkbox(&mut settings.selected_only, "Selected bones only");
+    ui.add(egui::Slider::new(&mut settings.opacity, 0.0..=1.0).text("Opacity"));
+    ui.add(egui::Slider::new(&mut settings.falloff, 0.0..=2.0).text("Distance falloff"));
+    ui.horizontal(|ui| {
+        ui.colored_label(
+            crate::theme::current_icon_color(ui.ctx(), crate::theme::IconRole::Shear),
+            "Past",
+        );
+        ui.label("Current: unchanged");
+        ui.colored_label(
+            crate::theme::current_icon_color(ui.ctx(), crate::theme::IconRole::Rotate),
+            "Future",
+        );
+    });
+    ui.small("Out-of-clip poses omitted. Settings are not saved in the project.");
+}
+
+#[cfg(test)]
+mod t824_tests;

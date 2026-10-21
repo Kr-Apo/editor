@@ -147,3 +147,21 @@ retains its historical projection behavior; it is not newly qualified as distort
 free. Release performance measurements cover one synthetic 512x512 ring fixture,
 not a universal image/mesh or GUI budget. T-402 remains PARTIAL. Manual review stays
 pending, and no public build, model, renderer, runtime or format is changed.
+
+## T-824 local onion-skin candidate
+
+[Onion skinning](onion-skinning.md) remains PENDING MANUAL REVIEW. Ghosts are
+artwork sprites, not a bone-overlay/motion-trail system. Past/future reuse theme
+shear/rotate roles, so custom themes must retain contrast; changing those roles
+also affects timeline channels. Settings are transient Session state and reset
+on new application state, not project preferences. Key stepping uses global
+Timeline times (FFD included), not selected-track times, events or markers.
+No loop wrapping; unavailable ghosts are omitted. Selected-only means slot-owner
+selection, not every influenced vertex. All rig dependencies still evaluate.
+Physics ghosts are stateless reference poses, not accumulated playback physics.
+No existing safe ghost cache exists: appearance-only changes recompute valid
+poses (at most ten per visible render), without scheduling continuous repaints.
+Measured CPU timings are configuration-specific; no universal performance claim.
+T-823's six historical video/process timeout failures at default concurrency
+remain an open environment/concurrency risk. Final gates use four test threads;
+no timeout assertion or ignored-test policy was weakened.
