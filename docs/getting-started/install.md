@@ -1,30 +1,12 @@
 ---
 title: Install and make the first save
-description: Build Ankhimate, open a shipped sample, and save a first project safely.
+description: Distinguish the public alpha from the local test candidate and start safely with Jade Sentinel.
 ---
 
 # Install and make the first save
 
-Ankhimate currently has a source-first workflow. Install the Rust toolchain named
-by `rust-toolchain.toml` and a Git client, clone the repository, then run:
+The accepted public v0.2.0-alpha.1 has its own frozen archive. The local T836 Windows-Test-Candidate is a separate unsigned development folder, identified by commit and SHA, not its unchanged internal version. It includes the EXE, authorized Jade project/assets, notices and README; no Rust/Node/model is needed to open/play/save. Keep the full folder, work on a copy, then **File → Save As** before edits.
 
-```console
-cargo run -p ankhimate-editor
-```
+[Jade workflow](../jade-sentinel.md), [compatibility](../release-compatibility.md), [source build](../CANDIDATE_BUILD.md). Existing technical samples/PSDs remain for focused tests, not additional primary character demos. Preserve `.ankh` plus adjacent `.assets`, autosaves and backups. Current physical Windows testing remains pending.
 
-A GPU supporting Vulkan, Metal, DirectX 12, or OpenGL is required by wgpu. From
-the startup screen, create a project or open one of `samples/minimal.ankh`,
-`samples/walker.ankh`, or `samples/tentacle.ankh`.
-
-Save a new project with **File → Save As** and choose a `.ankh` path. Keep its
-matching `<name>.assets/` directory beside it when moving or backing up the
-project. External assets are not a version-control strategy. The editor binary is locked on
-Windows while running, so close it before `cargo build`; `cargo check` is unaffected.
-
-Build this website with the locked Bun dependencies:
-
-```console
-bun install --frozen-lockfile
-bun run check
-bun run build
-```
+From a reviewed source checkout with pinned Rust1.95/MSVC and pinned community plugins: `cargo run --locked -p ankhimate-editor`. Close the app before replacing its EXE. Website builds remain `bun install --frozen-lockfile`, `bun run check`, `bun run build`; these are development commands, not certification of an editor release.

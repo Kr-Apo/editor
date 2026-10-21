@@ -1,3 +1,5 @@
+> **HISTORICAL FIXTURE ONLY — T836.** Not an active user demo or Windows candidate. Retained unchanged below for old regressions/evidence. Use [Jade Sentinel](../../docs/jade-sentinel.md) for the current workflow. Do not edit the historical project/assets.
+
 # Ankhimate — Le Crapaud Pharaon
 
 **Animation simple livrée pour revue locale, non publiée.**

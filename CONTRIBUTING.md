@@ -37,7 +37,7 @@ Use the pinned Rust 1.95.0 toolchain. Windows builds need MSVC build tools/SDK.
 
 ```sh
 cargo fmt --all -- --check
-cargo test --workspace --locked --all-targets
+cargo test --workspace --locked --all-targets -- --test-threads=4
 cargo clippy --workspace --locked --all-targets
 cargo build --workspace --locked
 cargo check --locked -p ankhimate-core --target wasm32-unknown-unknown
@@ -51,3 +51,7 @@ mutations in undoable document commands, and Setup/Animate semantics distinct.
 Do not weaken staged publication, rollback or project recovery protections.
 There are three accepted baseline editor deprecation warnings; identify them
 explicitly and introduce none. This is not permission to hide new warnings.
+
+## Current local preparation
+
+See [T836 workflow](docs/prealpha-workflow.md) and [Jade](docs/jade-sentinel.md). Keep controlled test runs separate from Windows release builds; preserve the first GIF sharing-lock failure if it recurs. Do not discard old evidence/caches/unknown autosaves in a cleanup. Public v0.2.0-alpha.1 is accepted historical publication; local T813–T836 features are not implicitly public. No new release/version is authorized by validation.

@@ -6,6 +6,8 @@ it on a timeline, export a runtime format. MIT OR Apache-2.0.
 > The `CLAUDE.md` one directory up describes an older Tauri/React/PixiJS
 > prototype. **This workspace is the project**; ignore that file.
 
+> T836 status note: architecture/mutation rules remain normative. Old “Current state” and dated handoff sections below are historical, not current feature absences. Read README, docs/prealpha-workflow.md and docs/TASKS.md for the local T835/T836 scope. Jade is the only active user character; preserve technical/historical fixtures and all old evidence. No product feature/format/runtime/publication change in cleanup.
+
 ## Workspace
 
 | Crate | What it is |

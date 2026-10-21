@@ -20,5 +20,4 @@ all outputs are planned before writes begin, existing files may be replaced, not
 is deleted, and orphaned old outputs are reported. Plugin exporters use the same
 safety boundary.
 
-**Planned:** PNG sequence, spritesheet animation, and video file export. MCP frame
-rendering is current, but it is not the editor's rendered-output workflow.
+**Available locally:** PNG/JPEG/WebP sequences, PNG spritesheets and batch/framing/trim/padding use the deterministic CPU renderer. MP4/GIF use separately installed FFmpeg. Default skin/Normal blending only, physics refused; JPEG requires an opaque background. Read [current Jade workflow](../jade-sentinel.md), [rendered batch contract](../batch-export.md), [MP4](../EXPORT-MP4.md) and [sharing compatibility](../release-compatibility.md). Ankhimate spritesheet JSON is not a native Phaser atlas contract.

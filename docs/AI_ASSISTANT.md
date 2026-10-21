@@ -1,4 +1,4 @@
-# Native AI assistant — candidate guide
+# Native AI assistant — current local guide
 
 The Windows candidate includes T-805 through T-809. Open the **AI Assistant**
 pane from View and configure the exact provider, endpoint and model. Supported
@@ -37,3 +37,7 @@ Detailed manuals: [assistant](native-ai.md), [vision](native-ai-vision.md),
 [assembly](native-ai-assembly.md), [weights](native-ai-weights.md),
 [multimodal budgets](native-ai-multimodal.md), [tool manual](ai/ANKHIMATE-AI.md).
 Never attach credentials or private projects to public bug reports.
+
+## T836 independent validation
+
+Use [Jade](jade-sentinel.md) on a disposable copy. Qwen handoff prepares native connector/tool/consent/atomicity tests and manual prompts; no model/server/cloud inference is run by cleanup. Historical narrow maintainer reports above remain scoped reports, not a new candidate certificate. No unsaved edited rig is reconstructed. See [current workflow](prealpha-workflow.md).

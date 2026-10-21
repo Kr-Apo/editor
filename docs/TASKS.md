@@ -1,4 +1,11 @@
-# Ankhimate — Current operational task status after T-831
+# Current task status through T835 / T836 preparation
+
+This checkout is the **T836 local pre-alpha preparation**, based on accepted T835 `514c6aa8a6eeae8bb9dcb8c22e0dc35c48bb2cc2`. No product feature, version, format, runtime or public artifact is changed. The accepted public Alpha is **v0.2.0-alpha.1**, editor `9233b8e888c811e7c71300101f865a9e74b3f489`, runtime `c4c38df269cfcb30f941221454b7202f40d3fa5b`, as recorded by T812; this is not a fresh remote audit. RC2 remains a different, frozen archive.
+
+Use [Jade Sentinel](jade-sentinel.md) as the only active user character. [Current local workflow](prealpha-workflow.md), [compatibility](release-compatibility.md), and [manual campaign](MANUAL_QA_PENDING.md) distinguish implemented features from physical Windows acceptance. **444 manual scenario instances remain PENDING MANUAL REVIEW**. Baseline T835:2,133 Rust passes/4 historical ignores; T836 results are in its delivery, not invented here. No real inference, paid call, GUI or GPU certification.
+
+<details>
+<summary>Historical T832–T835 checkpoint context (not current test results)</summary>
 
 T-835 local addendum: **Animation Clip Reordering — implemented / PENDING_MANUAL / LOCAL_CANDIDATE**. [Manager guide](animation-manager.md). T-208 remains PARTIAL for its original frame-display and manager-selection mode criteria; frozen T-832 matrix/categories remain unchanged. 24 new automated tests; Windows qualification deferred.
 
@@ -19,6 +26,8 @@ Accepted **T-831** evidence is 2,058 Rust passes / 0 failures / 4 existing ignor
 **T-832 does not rerun that suite** and adds no tests or executable. Relative to
 T-816/T-817's 1,596 passes, the historical registration increase is 462, not 462
 new tests executed by this documentation mission.
+
+</details>
 
 ## Fixed historical population and current result
 

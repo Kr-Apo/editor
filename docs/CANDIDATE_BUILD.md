@@ -1,38 +1,27 @@
-# Building the local T-811 candidates
+# Build and validate the local T836 candidate
 
-No publication command is part of this procedure. Proposed version 0.2.0-alpha.1
-must be approved together with the documentation and new archive. Never alter RC2.
+This is source/candidate preparation, not a publication procedure. Select the reviewed clean `chore/t836-prealpha-cleanup` commit from CHECKPOINT.json. Local T813–T836 changes are not assumed available on public main. Do not amend, merge, push, tag or publish as part of validation.
 
-Clone the maintainer forks into new directories, recurse the pinned editor
-`community-plugins` submodule, and select the reviewed candidate commits. Do not
-push private source histories. The candidate records a content-only integration
-from editor b299d04 and runtime 2b149cb onto public 8badcc0 / c620ddd.
+Rust1.95.0 is pinned. Windows x64 needs MSVC C++ tools and Windows SDK. Obtain the committed `community-plugins` submodule at its pinned revision for importer integration fixtures; do not silently substitute another package. Python3 is only needed for optional local evidence scripts; Windows users need no toolchain to open the EXE. No model or FFmpeg is bundled.
 
-Use pinned Rust 1.95/MSVC and the committed npm lockfile. Run fmt, workspace Rust
-locked/all-targets tests, Clippy, workspace build, core WASM and `xtask docs-check`.
-Generated reference Markdown must be LF (the candidate adds a targeted Git rule).
-For runtime: npm ci, tests, build, typecheck, check:syntax, the 457-snapshot compare
-and matching local package install/type/ESM checks. No ESLint is configured.
+```sh
+cargo fmt --all -- --check
+cargo test --workspace --locked --all-targets -- --test-threads=4
+cargo clippy --workspace --locked --all-targets
+cargo build --workspace --locked
+cargo check --locked -p ankhimate-core --target wasm32-unknown-unknown
+cargo run --locked -p xtask -- docs-check
+```
 
-For a portable Windows release, use `cargo build --locked --release -p ankhimate-editor`
-with `-C target-feature=+crt-static`, stripped symbols, no debug info,
-`-C link-arg=/PDBALTPATH:Ankhimate.pdb`, and remap Rust source/home/build prefixes
-to neutral paths. Also set the MSVC native C flags via
-`CFLAGS_x86_64_pc_windows_msvc=/experimental:deterministic /pathmap:<absolute-cargo-target>=native-build`:
-QuickJS C assert paths are UTF-16 and Rust remapping alone does not remove them.
-Audit both ASCII and UTF-16 strings and PE imports; do not patch binary bytes.
-No VC-runtime redistributable imports are allowed in the portable profile.
+Run the controlled workspace suite without a concurrent Windows release build. Keep all logs and four historical ignored tests. If GIF Windows error32 recurs, retain the first failure and exact test, compare unchanged source, replay in isolation, then run the controlled full suite without a build in parallel. Never weaken assertions/timeouts/ignores. No fixed root cause or repair is claimed by cleanup.
 
-Assemble the verified binary, matching compiled runtime modules (including nested
-`core/render`), the already-licensed local demo launcher and pinned browser bundles,
-Jade Sentinel only, current English docs and current Windows normal/build dependency
-notices. Keep the project's assets/export bytes unchanged. Include the
-`@ankhimate/runtime/render` mapping in browser import maps. Source-map comments may
-be removed from distributed JS only with source/destination hashes in the manifest.
-Do not ship node_modules, target, FFmpeg, models, credentials, logs or private projects.
+For a local portable executable in PowerShell (after the suite):
 
-Generate checksums and manifests, create a new ZIP exclusively, extract to an
-isolated path and verify all hashes, module references, licenses and archive
-contents. Record manual GUI/clean-PC checks as pending until performed. Historical
-`release/alpha` / old packaging scripts describe RC2 and must not be used blindly
-for this candidate. No tag, push, npm publish, Actions change or Release is authorized.
+```powershell
+$env:RUSTFLAGS='-C target-feature=+crt-static -C strip=symbols -C debuginfo=0'
+cargo build --locked --release -p ankhimate-editor
+```
+
+The delivery build additionally remaps build paths and validates PE architecture/DLL imports. Plain developer builds do not automatically have those properties. Close a running editor before overwriting its EXE. Build outputs belong in a separate disposable cache; never purge historical deliveries/checkpoints or autosaves. Product code/dependencies are unchanged by T836.
+
+The local Windows-Test-Candidate includes only current EXE, authorized Jade project/assets, licenses and instructions; no PSD sources, Crapaud, models, credentials, caches or browser runtime are required. Source images are already present as project asset bytes; duplicate original PNGs are excluded. Verify every SHA before copying for tests. No new ZIP/alpha packaging is performed. The former M006/M007 packager is [retired source text](../tools/history/package-m0072-alpha.ps1.txt), not the current entry point. See [local workflow](prealpha-workflow.md).

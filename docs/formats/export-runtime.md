@@ -62,3 +62,7 @@ Animated PathPosition is author-only. Native v2 and all template/plugin data
 exports reject it before publication; PixiJS/Phaser are unchanged. CPU sequences
 and spritesheets use the existing native evaluator under their existing exclusions.
 See the [contract](../path-position-animation.md). Static path warnings remain.
+
+## Current local candidate and sample
+
+[Jade workflow](../jade-sentinel.md) is the active example; [compatibility](../release-compatibility.md) separates old/new author files, runtime-v2 and PathPosition refusal. T835 author order reaches the existing template animation list; old editor resaves need not preserve it. Existing batch keeps its own source-index convention. No runtime code/support is added by T836.

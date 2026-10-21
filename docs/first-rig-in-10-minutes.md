@@ -6,13 +6,13 @@ description: Explore the existing eight-bone IK example and weight brush on disp
 # First rig in ten minutes
 
 Ankhimate — Kr-Apo Community Fork (Unofficial). This exercise uses existing tools;
-it does not certify artistic results. T-813–T-816 desktop qualification is
+it does not certify artistic results. Cumulative physical Windows qualification is
 **PENDING MANUAL REVIEW**. No AI, internet connection, compiler or FFmpeg is needed.
 Ten minutes is a suggested exercise, not a measured completion time.
 
 ## 1. Open a disposable example (minutes 0–2)
 
-Start the local T-816 development executable. Use **File → Open** to open
+For the primary character workflow use [Jade Sentinel](jade-sentinel.md) and the current local executable. The following optional bones-only Tentacle exercise remains a technical IK lesson, not another active character demo. Its T-816 screenshots/acceptance remain historical. Use **File → Open** to open
 [`samples/tentacle.ankh`](../samples/tentacle.ankh) from the source tree, or
 `Samples/Tentacle/tentacle.ankh` beside this delivery. It has no external images:
 this is a bones-only rig, so enable bones in the viewport if hidden. Do not expect

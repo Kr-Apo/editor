@@ -1,0 +1,31 @@
+{
+  "sample": "Jade Sentinel",
+  "source": "Accepted T811/T812 Alpha project; same RC2 left-arm-placement revision",
+  "projectSHA256": "576347fe1a5e6e32633019fadda0e6141e48b1d891fb734ad10e2a8e175d3fa6",
+  "assets": {
+    "Sentinelle.assets/49/49f8e640f008a8b590c47c3015d667e297c30f5fa4f669ad2cf5d5d775a42d26.png": {
+      "bytes": 720,
+      "sha256": "49f8e640f008a8b590c47c3015d667e297c30f5fa4f669ad2cf5d5d775a42d26"
+    },
+    "Sentinelle.assets/88/8826a66f8294cd4c72a6c025775a40361a1dda989be8c376f960f73a91f4a3ab.png": {
+      "bytes": 336,
+      "sha256": "8826a66f8294cd4c72a6c025775a40361a1dda989be8c376f960f73a91f4a3ab"
+    },
+    "Sentinelle.assets/8f/8f018cbcdf3153f6ee2d73d221957e1e767a10463e89ff92a2f7bd1f20698add.png": {
+      "bytes": 297,
+      "sha256": "8f018cbcdf3153f6ee2d73d221957e1e767a10463e89ff92a2f7bd1f20698add"
+    },
+    "Sentinelle.assets/cd/cd7d7a7abf26dd17314011ad89a4229b3d7ae778221c88d643c0030100c1d392.png": {
+      "bytes": 1043,
+      "sha256": "cd7d7a7abf26dd17314011ad89a4229b3d7ae778221c88d643c0030100c1d392"
+    },
+    "Sentinelle.assets/db/db6b550b5d001babf8aa5c797c5f052dac66e85d12924d639bdb2c7f0d4479de.png": {
+      "bytes": 402,
+      "sha256": "db6b550b5d001babf8aa5c797c5f052dac66e85d12924d639bdb2c7f0d4479de"
+    }
+  },
+  "sourceArt": "Five procedural PNGs, no associated PSD identified",
+  "license": "ASSET-LICENSE.txt",
+  "projectAndAssetBytesChanged": false,
+  "excluded": "Browser demo, runtime libraries, duplicate Sources PNGs and unrelated historical characters"
+}

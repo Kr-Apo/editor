@@ -1,42 +1,19 @@
-# T-811 candidate context (unpublished)
+# Ankhimate — local pre-alpha context through T835 / T836 preparation
 
-Proposed Editor/Core/Phaser/PixiJS version: 0.2.0-alpha.1, local review only.
-Use matching candidate package archives and the core/render import-map subpath.
-The public RC2 remains unchanged. This candidate adds native approved AI tools,
-consented viewport vision, mesh-weight assistance and simple external-FFmpeg MP4.
-125 actual headless framebuffer comparisons passed fixed thresholds (104 exact)
-on one ANGLE/NVIDIA configuration; manual GUI and broad GPU review remain distinct.
-No model/FFmpeg is bundled. Do not infer unsupported runtime constraints/blends.
-Jade Sentinel is unchanged RC2; the maintainer's unsaved Qwen edits are not included.
+Unofficial Kr-Apo community fork; preserve upstream licenses/attributions. Public v0.2.0-alpha.1 was accepted/published in T812; RC2 remains a separate unchanged archive. This checkout is a local candidate, not a new release; internal version is not artifact identity. No inference/model package/publication authorized by cleanup.
 
-- [Candidate features](docs/FEATURES.md)
-- [Limitations](docs/KNOWN_LIMITATIONS.md)
-- [Readiness](docs/RELEASE_READINESS.md)
+Jade Sentinel is the only active user character. Technical synthetic and historical Crapaud fixtures remain solely for regression/evidence and are not in the local Windows test folder. Never invent the unsaved Qwen rig or a Jade PSD. Current candidate has native save/recovery/diagnostics, bounded rig transfer, FFD/Graph/PSD/weighted tools, numeric retime/selected offsets, owned FFD clipboard and saved clip ordering. Implementation is not universal manual/artist/model acceptance;444 manual instances remain pending.
 
-## Historical RC2 context follows
+Author schema1/envelope1/runtime v2/app0.2.0-alpha.1 are separate. PathPosition requires a recent editor; old readers reject it and current game export refuses it. Old editor resaves may change clip order. PixiJS/Phaser are external protected subset consumers; never infer all editor features are supported. No silent downgrade or hand-edited JSON workaround.
 
-# Ankhimate — Windows + PixiJS experimental alpha
-
-> The editor authors projects; the TypeScript core evaluates native exports and
-> the PixiJS adapter renders only the documented native v2 WebGL2 subset.
-
-## Start here
-- [Getting Started](docs/alpha/GETTING_STARTED.md)
-- [PixiJS public APIs and ownership](docs/alpha/PIXIJS_INTEGRATION.md)
-- [Compatibility and exclusions](docs/alpha/RUNTIME_COMPATIBILITY.md)
-- [Native runtime v2](docs/alpha/FORMAT_V2.md)
-- [Troubleshooting](docs/alpha/TROUBLESHOOTING.md)
-- [AI integration context](docs/alpha/AI_INTEGRATION_CONTEXT.md)
-- [Licenses](docs/ALPHA-LICENSES.md)
-
-## Rules for integrations
-Use real public APIs; do not invent constraint, blend, linked-mesh or audio support.
-Core v1 reading does not mean the PixiJS adapter accepts v1. Do not invert export
-coordinates, change normalized curves or reinterpret weighted FFD offsets.
-Events at t=0 are ignored on startup and every loop. Interrupted crossfades may
-jump. Explicitly clean up instances before their asset. Jade Sentinel is the only
-official sample. No AI model is bundled or required.
-
-## Repositories
-- [Editor](https://github.com/Kr-Apo/ankhimate)
-- [Runtime](https://github.com/Kr-Apo/ankhimate-runtime)
+- [Current workflow](docs/prealpha-workflow.md)
+- [Jade Sentinel](docs/jade-sentinel.md)
+- [Inventory](docs/FEATURE_INVENTORY.md)
+- [Tasks](docs/TASKS.md)
+- [Known limitations](docs/KNOWN_LIMITATIONS.md)
+- [Compatibility](docs/release-compatibility.md)
+- [Build](docs/CANDIDATE_BUILD.md)
+- [AI consent and tools](docs/AI_ASSISTANT.md)
+- [Native tool manual](docs/ai/ANKHIMATE-AI.md)
+- [Manual campaign](docs/MANUAL_QA_PENDING.md)
+- [Historical records](docs/history/README.md)

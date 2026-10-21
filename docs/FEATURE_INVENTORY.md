@@ -1,4 +1,11 @@
-# Feature inventory — reconciled at exact T-831 / T-832 documentation
+# Feature inventory — current local scopes through T835
+
+This checkout is the **T836 local pre-alpha preparation**, based on accepted T835 `514c6aa8a6eeae8bb9dcb8c22e0dc35c48bb2cc2`. No product feature, version, format, runtime or public artifact is changed. The accepted public Alpha is **v0.2.0-alpha.1**, editor `9233b8e888c811e7c71300101f865a9e74b3f489`, runtime `c4c38df269cfcb30f941221454b7202f40d3fa5b`, as recorded by T812; this is not a fresh remote audit. RC2 remains a different, frozen archive.
+
+Use [Jade Sentinel](jade-sentinel.md) as the only active user character. [Current local workflow](prealpha-workflow.md), [compatibility](release-compatibility.md), and [manual campaign](MANUAL_QA_PENDING.md) distinguish implemented features from physical Windows acceptance. **444 manual scenario instances remain PENDING MANUAL REVIEW**. Baseline T835:2,133 Rust passes/4 historical ignores; T836 results are in its delivery, not invented here. No real inference, paid call, GUI or GPU certification.
+
+<details>
+<summary>Historical T832–T835 checkpoint context (not current test results)</summary>
 
 T-835 local addendum: **Animation Clip Reordering — implemented / PENDING_MANUAL / LOCAL_CANDIDATE**. [Manager guide](animation-manager.md). T-208 remains PARTIAL for its original frame-display and manager-selection mode criteria; frozen T-832 matrix/categories remain unchanged. 24 new automated tests; Windows qualification deferred.
 
@@ -40,6 +47,8 @@ No lack of manual testing alone keeps an implemented scope PARTIAL.
 | DEFERRED | 2 | 2 | +0 |
 | UNKNOWN | 0 | 0 | +0 |
 | Total | 101 | 101 | 0 |
+
+</details>
 
 ## Population and evidence method
 
