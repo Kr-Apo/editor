@@ -1,5 +1,25 @@
 # Feature inventory — exact T-816 product, T-817 documentary audit
 
+## Local T-829 update — 2026-10-21
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for large-selection highlighting.
+Graph point rings and Dopesheet spans/dots use a temporary full typed-address/index
+membership view; up to 64 refs retain linear lookup. This is an algorithm choice,
+not a selection limit. The authoritative ordered KeySelection and T827 native
+capture remain unchanged. The index is rebuilt after accepted local selection
+mutations in the same traversal; never persisted or used to authorize editing.
+Idle Broken handles no longer scan selection when no handle drag is occurring;
+all handle geometry/interactions and linked tangent rules remain.
+Exact T828 ordered logical shapes, colors, positions and registered key hitboxes
+are compared with the local candidate, including interaction frames and 10000
+keys. Paired headless CPU measurements record the scoped speedup separately from
+remaining native read, model, handle and egui work. This is not Windows/GPU or
+universal responsiveness certification. Move/destination resolution is unchanged.
+T704/T912 remain PARTIAL; T813–T829 manual qualification is **PENDING MANUAL REVIEW**.
+No runtime, sampler, format, FPS history, public reference or publication change.
+Earlier notes below retain their historical scope.
+
+
 ## Local T-828 update — 2026-10-21
 
 **COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for project FPS history.
@@ -2183,3 +2203,12 @@ Native `SetProjectFps`; one validated gesture, one Undo entry; no-op/refusal
 preserves Redo and revision. Egui draft cancels on stale context and Escape.
 Seconds, keys, curves, clips, assets and formats are unchanged. Dirty, lifecycle,
 diagnostics and temporal regression tests are deterministic, without desktop QA.
+
+### T-829 — Large selection highlighting performance
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE**. Scoped render-only membership
+lookup, exact typed equality and immediate intra-frame refresh. Independent T828
+render reference; full ordered shapes and hitboxes, interactions, stale context,
+FFD refusal, non-mutation and CPU measurements. Native validation, selection
+Vec/order/duplicates and document/history are unchanged. Full desktop perceived
+performance, move_keys and destination resolution remain outside this result.

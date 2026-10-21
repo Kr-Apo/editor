@@ -346,6 +346,9 @@ pub fn ui(
                 interp_edit = Some(edit);
             }
 
+            // Handles may have changed the local selection. Keep this lookup
+            // within the channel, and refresh immediately after a point gesture.
+            let mut membership = super::membership::Membership::new(&selection);
             // Key points, draggable in value (y) and time (x).
             for k in &data.keys {
                 let Some(&value) = ch.values.get(k.index) else {
@@ -405,8 +408,9 @@ pub fn ui(
                         selection = vec![kref.clone()];
                     }
                     crate::key_selection::set(state, anim, selection.clone());
+                    membership = super::membership::Membership::new(&selection);
                 }
-                if selection.contains(&kref) {
+                if membership.contains(&selection, &kref) {
                     painter.circle_stroke(
                         center,
                         KEY_R + 2.0,
@@ -418,7 +422,7 @@ pub fn ui(
                 if resp.dragged()
                     && !normalized
                     && !editing_blocked
-                    && selection.contains(&kref)
+                    && membership.contains(&selection, &kref)
                     && let Some(p) = resp.interact_pointer_pos()
                 {
                     // New value from the vertical position; new time from x.
@@ -725,12 +729,9 @@ fn bezier_handles(
                     .data_mut(|d| d.insert_temp(token_id, NEXT.fetch_add(1, Ordering::Relaxed)));
             }
             let gesture = ui.ctx().data(|d| d.get_temp::<u64>(token_id)).unwrap_or(0);
-            let selected_handle = if linked {
-                true
-            } else {
-                selection.contains(&kref)
-            };
-            let Some(p) = (selected_handle && response.dragged())
+            // Membership only gates a live drag. Retain every handle/interaction,
+            // but do not scan the whole selection for idle handles.
+            let Some(p) = (response.dragged() && (linked || selection.contains(&kref)))
                 .then(|| response.interact_pointer_pos())
                 .flatten()
             else {
@@ -1136,3 +1137,8 @@ mod t825_tests;
 
 #[cfg(test)]
 mod t826_tests;
+
+#[cfg(test)]
+pub(super) mod t829_phases {
+    include!("graph/t829_phases.rs");
+}

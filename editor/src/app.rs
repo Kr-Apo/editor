@@ -2900,3 +2900,7 @@ mod pose_paste_menu_tests;
 #[cfg(test)]
 #[path = "app_fps_tests.rs"]
 mod fps_tests;
+
+#[cfg(test)]
+#[path = "app_highlight_tests.rs"]
+mod highlight_tests;

@@ -80,6 +80,7 @@ pub fn ui(
     let mut selection = Selection {
         keys: crate::key_selection::read(state, anim),
     };
+    let mut membership = super::membership::Membership::new(&selection.keys);
     let mut selection_revision = state.revision;
     let drag_id = ui.id().with("tl_keydrag");
     let mut drag: KeyDrag = ui
@@ -226,9 +227,13 @@ pub fn ui(
                     let x0 = layout.time_to_x(key.time).clamp(rect.left(), rect.right());
                     let x1 = layout.time_to_x(end).clamp(rect.left(), rect.right());
                     if x1 > x0 {
-                        let selected = selection.keys.iter().any(|selected| {
-                            selected.addr == data.addr && selected.index == key.index
-                        });
+                        let selected = membership.contains(
+                            &selection.keys,
+                            &KeyRef {
+                                addr: data.addr.clone(),
+                                index: key.index,
+                            },
+                        );
                         let color = if selected {
                             style.theme.primary()
                         } else {
@@ -249,7 +254,7 @@ pub fn ui(
                         addr: data.addr.clone(),
                         index: k.index,
                     };
-                    let selected = selection.contains(&kref);
+                    let selected = membership.contains(&selection.keys, &kref);
                     // Keys wear the same channel colour as their graph curve.
                     draw_key(
                         &painter,
@@ -332,7 +337,7 @@ pub fn ui(
                             }
                         }
                     }
-                    resp.context_menu(|ui| {
+                    let context = resp.context_menu(|ui| {
                         if !selection.contains(&kref) {
                             selection.set_single(kref.clone());
                         }
@@ -341,6 +346,12 @@ pub fn ui(
                             key_context_menu(ui, state, anim, &selection, style.operators);
                         }
                     });
+                    // Click, drag-start or context menu can change the local
+                    // Vec during traversal. Later dots must see that change in
+                    // this frame, exactly as they did before the render index.
+                    if resp.clicked() || resp.drag_started() || context.is_some() {
+                        membership = super::membership::Membership::new(&selection.keys);
+                    }
                 }
             }
         }

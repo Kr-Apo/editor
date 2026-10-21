@@ -1,0 +1,706 @@
+//! The dopesheet body: banded rows, keyed spans, key ticks, playhead.
+//!
+//! Iterates the same [`VisibleRow`] list as the name tree so every key sits on
+//! its label's row. Interactions: click/ctrl-click select, drag selected keys in
+//! time (one merged [`MoveKeys`]), drag off the bottom to delete, right-click for
+//! the context menu.
+
+use super::model::{TimelineModel, VisibleRow};
+use super::tree::{band_color, is_folded};
+use super::{Layout, ROW_H, ViewState};
+use crate::app_state::AppState;
+use ankhimate_core::animation::Interp;
+use ankhimate_core::ids::AnimationId;
+use ankhimate_document::commands::key_cmds::{DeleteKeys, KeyRef, SetInterp};
+use eframe::egui;
+
+const KEY_HIT_R: f32 = 5.0;
+const DELETE_DROP_MARGIN: f32 = 36.0;
+
+/// Transient view of the shared session selection (never undoable).
+#[derive(Clone, Default)]
+pub struct Selection {
+    pub keys: Vec<KeyRef>,
+}
+
+impl Selection {
+    fn contains(&self, r: &KeyRef) -> bool {
+        self.keys.contains(r)
+    }
+    fn toggle(&mut self, r: KeyRef) {
+        if let Some(i) = self.keys.iter().position(|k| k == &r) {
+            self.keys.remove(i);
+        } else {
+            self.keys.push(r);
+        }
+    }
+    fn set_single(&mut self, r: KeyRef) {
+        self.keys.clear();
+        self.keys.push(r);
+    }
+}
+
+#[derive(Clone, Default)]
+struct KeyDrag {
+    active: bool,
+    start_x: f32,
+    last_delta_frames: i64,
+    ffd: Option<crate::ffd_keys::Lease>,
+    token: u64,
+}
+
+/// In-progress rubber-band box select.
+#[derive(Clone, Copy, Default)]
+struct BoxSelect {
+    active: bool,
+    start: egui::Pos2,
+}
+
+// Eight parameters, all of them distinct things the panel needs and none of
+// which group into a struct that would mean anything on its own.
+#[allow(clippy::too_many_arguments)]
+pub fn ui(
+    ui: &mut egui::Ui,
+    state: &mut AppState,
+    anim: AnimationId,
+    model: &TimelineModel,
+    view: &mut ViewState,
+    layout: &Layout,
+    rect: egui::Rect,
+    style: super::Style<'_>,
+) {
+    let painter = ui.painter_at(rect);
+    let visuals = ui.visuals().clone();
+    painter.rect_filled(rect, 0.0, sheet_bg(&visuals));
+
+    // A key index from another clip must never become a destination by accident.
+    let mut selection = Selection {
+        keys: crate::key_selection::read(state, anim),
+    };
+    let mut selection_revision = state.revision;
+    let drag_id = ui.id().with("tl_keydrag");
+    let mut drag: KeyDrag = ui
+        .ctx()
+        .memory(|m| m.data.get_temp(drag_id))
+        .unwrap_or_default();
+    if drag.ffd.as_ref().is_some_and(|l| !l.matches(state)) {
+        drag = KeyDrag::default();
+    }
+    let box_id = ui.id().with("tl_boxsel");
+    let mut boxsel: BoxSelect = ui
+        .ctx()
+        .memory(|m| m.data.get_temp(box_id))
+        .unwrap_or_default();
+
+    // `K` sets a key on the active bone's active property.
+    if ui.ctx().input(|i| i.key_pressed(egui::Key::K)) {
+        super::graph::set_key_for_active_bone(state, anim);
+    }
+
+    // Background interaction is registered FIRST (lowest z), so the per-key
+    // widgets drawn afterward sit on top and win clicks. Middle-drag pans the
+    // time axis; left-drag on empty space starts a box select.
+    let bg = ui.interact(
+        rect,
+        ui.id().with("tl_sheet_bg"),
+        egui::Sense::click_and_drag(),
+    );
+
+    let folded = |id: u64| is_folded(ui, id);
+    let rows = model.visible_rows(&folded);
+    // Where the clip ends, for the row fills below.
+    let duration = state
+        .doc
+        .animations
+        .get(anim)
+        .map(|a| a.duration)
+        .unwrap_or(0.0);
+
+    let mut y = rect.top() - view.scroll_y;
+    let mut hit_any_key = false;
+    // Screen centres of every editable key this frame, for box-select.
+    let mut key_positions: Vec<(KeyRef, egui::Pos2)> = Vec::new();
+
+    for (i, row) in rows.iter().enumerate() {
+        let row_rect =
+            egui::Rect::from_min_size(egui::pos2(rect.left(), y), egui::vec2(rect.width(), ROW_H));
+        if row_rect.bottom() < rect.top() || row_rect.top() > rect.bottom() {
+            y += ROW_H;
+            continue;
+        }
+        // Two fills per row, not one. The sheet used to paint the tree's own
+        // band colour edge to edge, which made a twelve-bone rig a wall of
+        // alternating grey with no shape to it — and painted rows out to the
+        // right margin forever, so most of what you were reading was empty
+        // track that could never hold a key.
+        //
+        // Inside the clip the band is the tree's, damped: the tree column is
+        // where names are read and deserves the contrast, while the sheet is a
+        // backdrop for diamonds. Past the clip's end it drops to a flat dark
+        // fill, so "where this animation stops" is visible without counting
+        // frames on the ruler.
+        let is_group = matches!(row, VisibleRow::Group { .. });
+        let band = band_color(style.theme, is_group);
+        let end_x = layout.time_to_x(duration).clamp(rect.left(), rect.right());
+        painter.rect_filled(
+            egui::Rect::from_min_max(row_rect.min, egui::pos2(end_x, row_rect.bottom())),
+            0.0,
+            band,
+        );
+        if end_x < rect.right() {
+            painter.rect_filled(
+                egui::Rect::from_min_max(egui::pos2(end_x, row_rect.top()), row_rect.max),
+                0.0,
+                band.gamma_multiply(0.72),
+            );
+        }
+        // Paint the grid after the lane fill. Drawing it once behind all rows
+        // made every band cover it, leaving the dopesheet without a frame
+        // rhythm even though the grid code existed.
+        draw_frame_grid(&painter, layout, row_rect.intersect(rect), &visuals);
+        painter.line_segment(
+            [row_rect.left_bottom(), row_rect.right_bottom()],
+            egui::Stroke::new(
+                1.0,
+                visuals
+                    .widgets
+                    .noninteractive
+                    .bg_stroke
+                    .color
+                    .gamma_multiply(0.7),
+            ),
+        );
+        // A row filtered out by soloing keeps its keys on screen but greyed:
+        // hiding them outright would make the dopesheet lie about what the clip
+        // contains, which is the one thing it is for.
+        let shown = row.is_soloed(&view.soloed);
+
+        match row {
+            VisibleRow::Group { .. } => {}
+            VisibleRow::Property { data, .. } => {
+                let channel = style.theme.channel_color(data.label);
+                let ffd = matches!(
+                    data.addr,
+                    ankhimate_document::commands::key_cmds::TimelineAddr::Deform { .. }
+                );
+                let reason = if ffd && !data.keys.is_empty() {
+                    crate::ffd_keys::reason(
+                        state,
+                        anim,
+                        KeyRef {
+                            addr: data.addr.clone(),
+                            index: 0,
+                        },
+                    )
+                } else {
+                    None
+                };
+                let readonly = data.read_only || reason.is_some();
+                if let Some(reason) = &reason {
+                    ui.interact(
+                        row_rect,
+                        ui.id().with(("ffd_unavailable", data.row_id)),
+                        egui::Sense::hover(),
+                    )
+                    .on_hover_text(reason);
+                    painter.text(
+                        egui::pos2(rect.right() - 4., y + ROW_H / 2.),
+                        egui::Align2::RIGHT_CENTER,
+                        format!("FFD unavailable: {reason}"),
+                        egui::FontId::proportional(9.),
+                        visuals.weak_text_color(),
+                    );
+                }
+                // A dopesheet describes held motion, not only isolated moments.
+                // Join each key to the next, and the final key to clip end, so a
+                // glance shows where a channel is active across time.
+                for (index, key) in data.keys.iter().enumerate() {
+                    let end = data
+                        .keys
+                        .get(index + 1)
+                        .map_or(duration, |next| next.time)
+                        .max(key.time);
+                    let x0 = layout.time_to_x(key.time).clamp(rect.left(), rect.right());
+                    let x1 = layout.time_to_x(end).clamp(rect.left(), rect.right());
+                    if x1 > x0 {
+                        let selected = selection.keys.iter().any(|selected| {
+                            selected.addr == data.addr && selected.index == key.index
+                        });
+                        let color = if selected {
+                            style.theme.primary()
+                        } else {
+                            channel
+                        }
+                        .gamma_multiply(if shown { 0.9 } else { 0.3 });
+                        draw_key_span(&painter, x0, x1, y + ROW_H / 2.0, color);
+                    }
+                }
+                for k in &data.keys {
+                    let x = layout.time_to_x(k.time);
+                    if x < rect.left() - KEY_HIT_R || x > rect.right() + KEY_HIT_R {
+                        continue;
+                    }
+                    let center_y = y + ROW_H / 2.0;
+                    let center = egui::pos2(x, center_y);
+                    let kref = KeyRef {
+                        addr: data.addr.clone(),
+                        index: k.index,
+                    };
+                    let selected = selection.contains(&kref);
+                    // Keys wear the same channel colour as their graph curve.
+                    draw_key(
+                        &painter,
+                        center,
+                        k.interp,
+                        selected,
+                        readonly || !shown,
+                        &visuals,
+                        channel,
+                    );
+
+                    // A greyed row is not editable either: dragging a key you
+                    // cannot properly see is how keys end up somewhere nobody
+                    // meant to put them.
+                    if readonly || !shown {
+                        continue;
+                    }
+                    key_positions.push((kref.clone(), center));
+                    let hit =
+                        egui::Rect::from_center_size(center, egui::vec2(KEY_HIT_R * 2.4, ROW_H));
+                    let resp = ui.interact(
+                        hit,
+                        // The row index is part of the id because a document may
+                        // legally hold two timelines for one property — an
+                        // importer that emits X and Y as separate tracks, say.
+                        // Addressing by target alone made those rows share ids,
+                        // and egui reports the clash across the whole panel.
+                        ui.id().with(("tl_key", i, data.addr.stable_id(), k.index)),
+                        egui::Sense::click_and_drag(),
+                    );
+                    if resp.hovered() || selected {
+                        painter.rect_stroke(
+                            egui::Rect::from_center_size(
+                                egui::pos2(center.x, center_y),
+                                egui::vec2(7.0, ROW_H - 1.0),
+                            ),
+                            2.0,
+                            egui::Stroke::new(
+                                if selected { 2.0 } else { 1.0 },
+                                if selected {
+                                    style.theme.primary()
+                                } else {
+                                    visuals.strong_text_color()
+                                },
+                            ),
+                            egui::StrokeKind::Middle,
+                        );
+                    }
+                    if resp.clicked() {
+                        hit_any_key = true;
+                        if ui.ctx().input(|i| i.modifiers.ctrl) {
+                            selection.toggle(kref.clone());
+                        } else {
+                            selection.set_single(kref.clone());
+                        }
+                    }
+                    if resp.clicked() {
+                        crate::key_selection::set(state, anim, selection.keys.clone());
+                    }
+                    if resp.drag_started() {
+                        if !selection.contains(&kref) {
+                            selection.set_single(kref.clone());
+                        }
+                        drag.active = true;
+                        drag.start_x = resp.interact_pointer_pos().map(|p| p.x).unwrap_or(x);
+                        drag.last_delta_frames = 0;
+                        if ffd {
+                            // egui starts a drag after its movement threshold;
+                            // measure the FFD gesture from the actual press.
+                            drag.start_x =
+                                ui.input(|i| i.pointer.press_origin()).map_or(x, |p| p.x);
+                            selection.set_single(kref.clone());
+                            crate::key_selection::set(state, anim, selection.keys.clone());
+                            drag.ffd = crate::ffd_keys::selected(state, anim).ok();
+                            use std::sync::atomic::{AtomicU64, Ordering};
+                            static NEXT: AtomicU64 = AtomicU64::new(1);
+                            drag.token = NEXT.fetch_add(1, Ordering::Relaxed);
+                            if drag.ffd.is_none() {
+                                drag = KeyDrag::default();
+                            }
+                        }
+                    }
+                    resp.context_menu(|ui| {
+                        if !selection.contains(&kref) {
+                            selection.set_single(kref.clone());
+                        }
+                        if state.revision == selection_revision {
+                            crate::key_selection::set(state, anim, selection.keys.clone());
+                            key_context_menu(ui, state, anim, &selection, style.operators);
+                        }
+                    });
+                }
+            }
+        }
+        y += ROW_H;
+    }
+
+    let sheet_bottom = y.min(rect.bottom());
+
+    // Unlike context_menu's default, a primary click on this wide host must
+    // not close the popup before a button within the sheet receives that click.
+    egui::Popup::context_menu(&bg)
+        .open_memory(
+            bg.secondary_clicked()
+                .then_some(egui::SetOpenCommand::Bool(true)),
+        )
+        .show(|ui| clipboard_menu(ui, state, anim, &selection, style.operators));
+
+    // Playhead over the sheet.
+    let px = layout.time_to_x(state.session.playhead);
+    if px >= rect.left() && px <= rect.right() {
+        painter.line_segment(
+            [egui::pos2(px, rect.top()), egui::pos2(px, rect.bottom())],
+            egui::Stroke::new(1.0, playhead_color().gamma_multiply(0.7)),
+        );
+    }
+
+    // A context command may have reordered/deleted keys since this frame began.
+    if state.revision != selection_revision {
+        if selection.keys.iter().any(|r| {
+            matches!(
+                r.addr,
+                ankhimate_document::commands::key_cmds::TimelineAddr::Deform { .. }
+            )
+        }) {
+            selection.keys = crate::key_selection::read(state, anim);
+            selection_revision = state.revision;
+        } else {
+            selection.keys.clear();
+        }
+        drag = KeyDrag::default();
+    }
+    // Selection drag.
+    if drag.active {
+        let pointer = ui.ctx().input(|i| i.pointer.interact_pos());
+        let released = ui.ctx().input(|i| i.pointer.any_released());
+        if let Some(p) = pointer {
+            let dx_time = (p.x - drag.start_x) / layout.px_per_sec;
+            let delta_frames = (dx_time * layout.fps as f32).round() as i64;
+            if delta_frames != drag.last_delta_frames {
+                let step = (delta_frames - drag.last_delta_frames) as f32 / layout.fps as f32;
+                drag.last_delta_frames = delta_frames;
+                let moved = if drag.ffd.is_some() {
+                    match crate::ffd_keys::move_delta(state, anim, step, Some(drag.token)) {
+                        Ok(refs) => Some(refs),
+                        Err(e) => {
+                            state.session.set_status(e);
+                            None
+                        }
+                    }
+                } else {
+                    crate::key_selection::move_keys(state, anim, &selection.keys, step)
+                };
+                if let Some(moved) = moved {
+                    selection.keys = moved;
+                    selection_revision = state.revision;
+                    if drag.ffd.is_some() {
+                        drag.ffd = crate::ffd_keys::selected(state, anim).ok();
+                    }
+                } else {
+                    drag = KeyDrag::default();
+                }
+            }
+            if released && drag.active {
+                if p.y > sheet_bottom + DELETE_DROP_MARGIN && !selection.keys.is_empty() {
+                    if let Some(l) = &drag.ffd {
+                        if let Err(e) = crate::ffd_keys::apply(
+                            state,
+                            l,
+                            ankhimate_document::ffd_keys::Action::Delete,
+                            Some(drag.token),
+                        ) {
+                            state.session.set_status(e);
+                        }
+                    } else {
+                        state.dispatch(Box::new(DeleteKeys::new(anim, selection.keys.clone())));
+                    }
+                    selection.keys.clear();
+                }
+                drag = KeyDrag::default();
+            }
+        }
+        if released {
+            drag = KeyDrag::default();
+        }
+    }
+
+    // Middle-drag pans the time axis (Spine's hand-pan). Registered on `bg` so it
+    // never fights a key drag.
+    if bg.dragged_by(egui::PointerButton::Middle) {
+        let dx = bg.drag_delta().x;
+        view.scroll_sec = (view.scroll_sec - dx / layout.px_per_sec).max(0.0);
+    }
+
+    // Left-drag on empty space starts a box select; a plain click clears.
+    if !drag.active {
+        if bg.drag_started_by(egui::PointerButton::Primary)
+            && let Some(p) = bg.interact_pointer_pos()
+        {
+            boxsel.active = true;
+            boxsel.start = p;
+            if !ui.ctx().input(|i| i.modifiers.ctrl) {
+                selection.keys.clear();
+            }
+        }
+        if bg.clicked() && !hit_any_key {
+            selection.keys.clear();
+        }
+    }
+
+    if boxsel.active {
+        let pointer = ui.ctx().input(|i| i.pointer.interact_pos());
+        let released = ui.ctx().input(|i| i.pointer.any_released());
+        if let Some(p) = pointer {
+            let band = egui::Rect::from_two_pos(boxsel.start, p);
+            // Draw the marquee.
+            painter.rect_filled(band, 0.0, visuals.selection.bg_fill.gamma_multiply(0.15));
+            painter.rect_stroke(
+                band,
+                0.0,
+                egui::Stroke::new(1.0, visuals.selection.bg_fill),
+                egui::StrokeKind::Inside,
+            );
+            if released {
+                // Additively select every key whose centre is inside the band.
+                for (kref, center) in &key_positions {
+                    if band.contains(*center) && !selection.contains(kref) {
+                        selection.keys.push(kref.clone());
+                    }
+                }
+                boxsel = BoxSelect::default();
+            }
+        }
+        if released {
+            boxsel = BoxSelect::default();
+        }
+        ui.ctx().request_repaint();
+    }
+
+    if state.revision == selection_revision {
+        crate::key_selection::set(state, anim, selection.keys);
+    } else {
+        state.session.key_selection = Default::default();
+    }
+    ui.ctx().memory_mut(|m| {
+        m.data.insert_temp(drag_id, drag);
+        m.data.insert_temp(box_id, boxsel);
+    });
+}
+
+fn sheet_bg(visuals: &egui::Visuals) -> egui::Color32 {
+    visuals.extreme_bg_color
+}
+
+/// Spine's playhead is orange.
+pub fn playhead_color() -> egui::Color32 {
+    egui::Color32::from_rgb(240, 150, 40)
+}
+
+fn draw_frame_grid(
+    painter: &egui::Painter,
+    layout: &Layout,
+    rect: egui::Rect,
+    visuals: &egui::Visuals,
+) {
+    let fps = layout.fps as f32;
+    let left = layout.scroll_sec;
+    let right = layout.x_to_time(rect.right());
+    let frame_px = layout.px_per_sec / fps;
+    let first = (left * fps).floor().max(0.0) as i64;
+    let last = (right * fps).ceil() as i64;
+    let line = visuals
+        .widgets
+        .noninteractive
+        .bg_stroke
+        .color
+        .gamma_multiply(0.4);
+    let second_line = visuals
+        .widgets
+        .noninteractive
+        .bg_stroke
+        .color
+        .gamma_multiply(0.8);
+    for frame in first..=last {
+        let x = layout.time_to_x(frame as f32 / fps);
+        if x < rect.left() || x > rect.right() {
+            continue;
+        }
+        let on_second = frame % layout.fps as i64 == 0;
+        if !on_second && frame_px < 8.0 {
+            continue;
+        }
+        painter.line_segment(
+            [egui::pos2(x, rect.top()), egui::pos2(x, rect.bottom())],
+            egui::Stroke::new(1.0, if on_second { second_line } else { line }),
+        );
+    }
+}
+
+fn draw_key_span(painter: &egui::Painter, x0: f32, x1: f32, y: f32, color: egui::Color32) {
+    painter.line_segment(
+        [egui::pos2(x0, y), egui::pos2(x1, y)],
+        egui::Stroke::new(2.0, color),
+    );
+}
+
+/// Draw a compact vertical property-key tick.
+fn draw_key(
+    painter: &egui::Painter,
+    center: egui::Pos2,
+    _interp: Interp,
+    selected: bool,
+    read_only: bool,
+    visuals: &egui::Visuals,
+    channel: egui::Color32,
+) {
+    let fill = if selected {
+        visuals.selection.bg_fill
+    } else if read_only {
+        visuals.weak_text_color()
+    } else {
+        channel
+    };
+    painter.rect_filled(
+        egui::Rect::from_center_size(
+            center,
+            egui::vec2(if selected { 4.0 } else { 3.0 }, ROW_H * 0.84),
+        ),
+        1.0,
+        fill,
+    );
+}
+
+fn key_context_menu(
+    ui: &mut egui::Ui,
+    state: &mut AppState,
+    anim: AnimationId,
+    selection: &Selection,
+    operators: &crate::registry::Registry,
+) {
+    if selection.keys.iter().any(|r| {
+        matches!(
+            r.addr,
+            ankhimate_document::commands::key_cmds::TimelineAddr::Deform { .. }
+        )
+    }) {
+        if selection.keys.len() == 1 {
+            crate::ffd_keys::menu(ui, state, anim);
+        } else {
+            ui.label("FFD actions require exactly one key; mixed/grouped selection is refused.");
+        }
+        return;
+    }
+    clipboard_menu(ui, state, anim, selection, operators);
+    ui.separator();
+    if ui.button("Delete").clicked() {
+        state.dispatch(Box::new(DeleteKeys::new(anim, selection.keys.clone())));
+        ui.close();
+    }
+    ui.menu_button("Interpolation", |ui| {
+        for (label, interp) in ankhimate_document::commands::key_cmds::presets::all() {
+            if ui.button(label).clicked() {
+                state.dispatch(Box::new(SetInterp::new(
+                    anim,
+                    selection.keys.clone(),
+                    interp,
+                )));
+                ui.close();
+            }
+        }
+    });
+}
+
+fn clipboard_menu(
+    ui: &mut egui::Ui,
+    state: &mut AppState,
+    anim: AnimationId,
+    selection: &Selection,
+    operators: &crate::registry::Registry,
+) {
+    if selection.keys.iter().any(|r| {
+        matches!(
+            r.addr,
+            ankhimate_document::commands::key_cmds::TimelineAddr::Deform { .. }
+        )
+    }) {
+        for text in [
+            "Copy selected keys",
+            "Paste keys at playhead",
+            "Paste Keys Mirrored (Offsets)",
+        ] {
+            ui.add_enabled(false, egui::Button::new(text))
+                .on_disabled_hover_text(
+                    "FFD vector clipboard is outside T821; select scalar/slot rows instead",
+                );
+        }
+        ui.label("FFD clipboard is not supported; use the key's FFD edit actions.");
+        return;
+    }
+    // Canonical *visible row order*, independent of Ctrl-click order. Read-only
+    // placeholder addresses are deliberately excluded instead of guessed.
+    let model = TimelineModel::build(state, anim);
+    let mut ordered = Vec::new();
+    for row in model
+        .groups
+        .iter()
+        .flat_map(|g| g.rows.iter())
+        .filter(|r| !r.read_only)
+    {
+        let mut refs: Vec<_> = selection
+            .keys
+            .iter()
+            .filter(|k| k.addr == row.addr)
+            .cloned()
+            .collect();
+        refs.sort_by_key(|r| r.index);
+        ordered.extend(refs);
+    }
+    let args = if ordered.len() == selection.keys.len() {
+        crate::key_clipboard::selection_args(state, anim, &ordered)
+    } else {
+        Err("Selection contains an unsupported or stale row".into())
+    };
+    let animate = state.session.is_animating();
+    if ui
+        .add_enabled(
+            animate && !selection.keys.is_empty(),
+            egui::Button::new("Copy selected keys"),
+        )
+        .clicked()
+    {
+        match &args {
+            Ok(args) => {
+                let _ = operators.try_invoke("anim.copy_selected_keys", state, args);
+            }
+            Err(reason) => state.session.set_status(format!("Copy refused: {reason}")),
+        }
+        ui.close();
+    }
+    if ui.add_enabled(animate && matches!(state.session.clipboard,ankhimate_document::clipboard::Clipboard::Keys(_)),egui::Button::new("Paste keys at playhead"))
+        .on_hover_text("Selected destination key rows map by row order and must match property/axis. No selected rows: use original named tracks. One Undo; exact-time keys are replaced.").clicked() {
+        match &args {Ok(args)=>{let _=operators.try_invoke("anim.paste_keys_at_playhead",state,args);},Err(reason)=>state.session.set_status(format!("Paste refused: {reason}"))}
+        ui.close();
+    }
+    let mirror_enabled = args
+        .as_ref()
+        .is_ok_and(|args| crate::key_clipboard::can_paste_mirrored_offsets(state, args));
+    if ui.add_enabled(mirror_enabled,egui::Button::new("Paste Keys Mirrored (Offsets)"))
+        .on_hover_text("Selected bone key rows map by visible row order. Negates translate X, rotation and shear offsets; preserves Y translation, scale, time and curves. Not an absolute pose mirror for asymmetric setups.")
+        .on_disabled_hover_text("Requires compatible copied bone transform keys and explicitly selected, unlocked bone destination key rows. Slots and other track types are excluded.")
+        .clicked() {
+        if let Ok(args) = &args {let _ = operators.try_invoke("anim.paste_keys_mirrored_offsets",state,args);}
+        ui.close();
+    }
+    ui.weak("Mirrors bone animation offsets only; asymmetric setups need not produce an absolute mirrored pose.");
+    ui.weak("Draw order/constraints remain read-only; FFD has dedicated time/interpolation actions and no clipboard. Events use their own lane.");
+}

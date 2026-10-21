@@ -17,6 +17,7 @@
 
 mod events;
 mod graph;
+mod membership;
 mod model;
 mod ruler;
 mod sheet;
@@ -533,3 +534,21 @@ mod t814_tests;
 
 #[cfg(test)]
 mod t827_tests;
+
+#[cfg(test)]
+pub(crate) mod t829_probe;
+
+#[cfg(test)]
+mod t829_interactions;
+#[cfg(test)]
+#[allow(
+    dead_code,
+    reason = "Pinned T828 logical rendering reference; not product code"
+)]
+mod t829_reference_graph;
+#[cfg(test)]
+#[allow(
+    dead_code,
+    reason = "Pinned T828 logical rendering reference; not product code"
+)]
+mod t829_reference_sheet;

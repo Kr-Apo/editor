@@ -4,7 +4,7 @@ All **local T-813–T-816 GUI results remain PENDING_MANUAL / PENDING MANUAL REV
 This register requests no action now. The maintainer chose to continue development
 before grouped tests. No editor/browser/inference session was run by T-817.
 
-Use the **T-828 cumulative executable** for the grouped campaign; older binaries
+Use the **T-829 cumulative executable** for the grouped campaign; older binaries
 are retained for targeted comparisons, not substitutes. Internal version remains
 0.2.0-alpha.1 and cannot identify a candidate by itself. Check the SHA before use.
 
@@ -168,3 +168,13 @@ Onion frames, unchanged seconds/durations, dirty status, Save As/reopen and
 diagnostics. Replay cumulative T-813–T-827 checks. No desktop QA was performed.
 The local delivery contains the detailed 22-row checklist and new Windows binary;
 retain earlier binaries for comparison.
+
+## T-829 — large-selection highlighting, deferred
+
+All controls **PENDING MANUAL REVIEW**. Compare retained T828 and T829 binaries
+with the same disposable 100/1000/10000-key fixtures. Inspect Graph/Dopesheet
+colors, partial/full selection, Ctrl-click, replace/union marquee, Raw/Normalize,
+view/clip changes, Undo/Redo, unchanged curves and Save As/reopen; replay cumulative
+T813–T828 controls. Record binary SHA, Windows, GPU/driver, DPI/theme, fixture
+hash/count and PASS/FAIL/NOT RUN. Headless shapes and CPU timings do not substitute
+for this campaign. The local delivery contains its detailed 21-row checklist.

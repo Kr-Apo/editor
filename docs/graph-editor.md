@@ -310,3 +310,28 @@ whole selected-graph/sheet display; even 10k selected-key display can remain slo
 Do not equate a faster capture with a certified frame rate or desktop input
 latency. All T-827 and cumulative T-813–T-826 manual checks remain pending;
 T-704/T-912 remain PARTIAL.
+
+## 9. Large-selection highlighting (local T-829)
+
+KeySelection remains the authority; ordered refs, duplicates, validity leases and
+FFD editing restrictions are unchanged. Render-only membership uses full typed
+address plus key index. A temporary lookup is constructed after handles for each
+graph channel, or before the sheet traversal, and refreshed immediately after
+local click/drag-start/context changes. Sheet spans/dots retain their original
+paint-before-click order; Graph outlines retain their paint-after-click order.
+Nothing is delayed to a later frame to hide a stale lookup. Post-loop marquee,
+move/delete and shared-selection validation retain the native paths.
+
+Small selections (up to 64 refs) retain linear membership. Larger ones use a
+local hash set with full equality, so collisions cannot select another typed key.
+No hash set is iterated to paint or reorder keys. Idle handles retain all geometry
+and hitboxes but test membership only for an active drag. Raw/Normalize, linked
+tangents, coordinate transforms and native commands retain their semantics.
+
+The local delivery records paired T828/T829 CPU medians, exact logical epaint
+comparison and operation-count regression tests. The membership path changes
+from O(displayed keys × selected refs) to expected O(selected refs + queries) per
+coherent traversal. Index construction and remaining model, native capture,
+curve/handle generation and egui work still cost time. Move/destination work is
+not optimized here. Windows responsiveness remains **PENDING MANUAL REVIEW**;
+T704/T912 are not globally complete, and there is no universal FPS guarantee.
