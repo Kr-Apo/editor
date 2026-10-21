@@ -1,5 +1,27 @@
 # Feature inventory — exact T-816 product, T-817 documentary audit
 
+## Local T-826 update — 2026-10-21
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for the bounded **Normalize View
+Only** scalar overlay. Raw remains the default native-unit editor. Normalize
+uses each displayed channel's finite authored keys across the whole active clip,
+with f64 intermediates, a constant/single-key level of 0.5 and fixed relative
+Y ticks 0 / 0.5 / 1. Key points, sampled curves and selection share the projection.
+Bezier overshoots remain unclamped relative values and may leave the comparison
+frame. Hover the relative-mode badge for native target/unit/range legends.
+Graph key/time drags, handles and graph-local K insertion are disabled in this
+mode; switch to Raw to edit. Click, Ctrl-click and T-825 replace/Ctrl-union marquee
+remain available. Switching modes invalidates pending captures, even with equal
+bounds. The option follows clips/projects in the same egui session, resets on
+application restart, and is never stored in .ankh or Config.
+See [Normalize contract](graph-editor.md#8-normalized-comparison-view-t-826).
+T-704/T-912 remain PARTIAL: normalized editing and broader desktop qualification
+are not delivered. Existing quadratic large native selection validation remains
+a separate future scoped task; normalization adds no selection validation loop.
+Cumulative T-813–T-826 Windows tests remain **PENDING MANUAL REVIEW**. Older notes
+retain their historical scope. No GUI, GPU, inference or public operation ran.
+
+
 ## Local T-823 update — 2026-10-21
 
 **COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for safe retracing of compatible
@@ -846,14 +868,14 @@ not the current availability matrix. The current [tasks](TASKS.md),
 <a id="cap-03"></a>
 ### CAP-03 — Graph marquee and normalized overlay
 
-**PARTIAL / PENDING_MANUAL / LOCAL_CANDIDATE** · Origin: T-704 / T-912 / T-825.
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** · Origin: T-704 / T-912 / T-825 / T-826.
 
-- Delivered scope: Visible scalar key-point marquee using the existing T-814 shared selection. Plain replace / Ctrl-union; Ctrl-click toggle remains separate.
-- Entry point: Primary drag on empty Graph area; [interaction contract](graph-editor.md#7-rectangular-key-selection-t-825).
-- Implementation: [`graph.rs`](../editor/src/ui/timeline/graph.rs), [`marquee gesture`](../editor/src/ui/timeline/graph/marquee.rs).
-- Tests: [`T-825 headless geometry/egui/safety`](../editor/src/ui/timeline/graph/t825_tests.rs), existing T-814/T-820 suites.
-- Remaining: normalized overlay ABSENT; desktop qualification PENDING. No lasso, grouped key drag, FFD graph, segment or event selection.
-- Latest checkpoint: T-825 local candidate. Public baseline remains separate.
+- Delivered scope: Visible scalar key marquee through T-814 shared selection, plus per-channel normalized comparison (View Only). Plain replace / Ctrl-union; Ctrl-click remains a toggle.
+- Entry point: Graph header Normalize, badge native-range tooltip and empty-area primary drag. [Interaction/normalization contract](graph-editor.md#8-normalized-comparison-view-t-826).
+- Implementation: [graph](../editor/src/ui/timeline/graph.rs), [projection](../editor/src/ui/timeline/graph/normalization.rs), [marquee](../editor/src/ui/timeline/graph/marquee.rs).
+- Tests: [T-826 headless coordinate/safety/reference tests](../editor/src/ui/timeline/graph/t826_tests.rs), existing T-814/T-820/T-825 suites.
+- Remaining: Normalized value/handle editing is deliberately unavailable. No lasso, FFD graph, grouped key drag or event selection. Desktop qualification PENDING; T-704/T-912 remain PARTIAL.
+- Latest checkpoint: T-826 local candidate. Public baseline is unchanged.
 
 <a id="cap-11"></a>
 ### CAP-11 — Existing onion ghost generation

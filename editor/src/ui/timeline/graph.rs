@@ -28,6 +28,7 @@ use ankhimate_document::commands::key_cmds::{
 use eframe::egui;
 
 mod marquee;
+mod normalization;
 
 const KEY_R: f32 = 4.0;
 
@@ -60,6 +61,8 @@ pub fn ui(
     rect: egui::Rect,
     style: super::Style<'_>,
 ) {
+    let normalized = view.normalized;
+    let editing_blocked = normalization::blocked(ui, normalized);
     let mut selection = crate::key_selection::read(state, anim);
     let link_mode = crate::tangent_linking::mode(state);
     // Clipped to the sheet: the curve sampler walks every pixel of the plot and
@@ -75,7 +78,7 @@ pub fn ui(
         ui.id().with("graph_background"),
         egui::Sense::click_and_drag(),
     );
-    if ui.ctx().input(|i| i.key_pressed(egui::Key::K)) {
+    if !normalized && !editing_blocked && ui.ctx().input(|i| i.key_pressed(egui::Key::K)) {
         set_key_for_active_bone(state, anim);
     }
 
@@ -94,70 +97,28 @@ pub fn ui(
     };
     let rows = model.visible_rows(&folded);
 
-    // Auto-fit the value range across all shown channels.
-    let mut lo = f64::INFINITY;
-    let mut hi = f64::NEG_INFINITY;
-    for row in &rows {
-        if !row.is_soloed(&view.soloed) {
-            continue;
-        }
-        if let VisibleRow::Property { data, .. } = row
-            && !data.read_only
-        {
-            for ch in &data.channels {
-                for &v in &ch.values {
-                    if v.is_finite() {
-                        lo = lo.min(v as f64);
-                    }
-                    if v.is_finite() {
-                        hi = hi.max(v as f64);
-                    }
-                }
-            }
-        }
-    }
-    if !lo.is_finite() || !hi.is_finite() {
-        // No numeric channels; nothing to plot.
-        placeholder(&painter, rect, &visuals);
-        return;
-    }
-
-    // Fit to the *curve*, not only to the keys (T-912).
-    //
-    // A bezier whose handles are steep enough overshoots the values it
-    // interpolates between, and framing on key values alone drew that overshoot
-    // outside the panel — the curve simply left the top of the view with nothing
-    // to say it had. "A selected curve is never invisible" is the acceptance bar
-    // for this task, and it cannot be met by looking at keys.
-    //
-    // Sampled at the same 2px step the curves are drawn at, so what is measured
-    // is exactly what is about to be stroked.
-    let mut invalid_samples = false;
-    let key_lo = lo;
-    let key_hi = hi;
-    if let Some(animation) = state.doc.animations.get(anim) {
+    // Relative references come from all finite authored keys, not the viewport.
+    // Compute once per channel; Raw retains its original sampled fit below.
+    let ranges = if normalized {
+        normalization::ranges(&rows, view)
+    } else {
+        Vec::new()
+    };
+    let (lo, hi, overshoot, invalid_samples) = if normalized {
+        (-0.1, 1.1, 0.0, false)
+    } else {
+        // Auto-fit the value range across all shown channels.
+        let mut lo = f64::INFINITY;
+        let mut hi = f64::NEG_INFINITY;
         for row in &rows {
             if !row.is_soloed(&view.soloed) {
                 continue;
             }
-            let VisibleRow::Property { data, .. } = row else {
-                continue;
-            };
-            if data.read_only {
-                continue;
-            }
-            let Some(timeline) = animation
-                .timelines
-                .iter()
-                .find(|t| data.addr.matches_timeline(t))
-            else {
-                continue;
-            };
+            if let VisibleRow::Property { data, .. } = row
+                && !data.read_only
             {
-                let mut x = rect.left();
-                while x <= rect.right() {
-                    if let Some(v) = sample_channel(timeline, layout.x_to_time(x).max(0.0)) {
-                        invalid_samples |= !v.is_finite();
+                for ch in &data.channels {
+                    for &v in &ch.values {
                         if v.is_finite() {
                             lo = lo.min(v as f64);
                         }
@@ -165,43 +126,101 @@ pub fn ui(
                             hi = hi.max(v as f64);
                         }
                     }
-                    x += 2.0;
                 }
             }
         }
-    }
-    // How far past its keys the curve travels, as a fraction of the keyed range.
-    // Reported below rather than clamped: an overshoot is a legitimate thing to
-    // author — it is how a bounce is made — and silently flattening one would be
-    // worse than the invisibility this replaces.
-    let keyed_span = (key_hi - key_lo).abs().max(1e-6);
-    let overshoot = ((key_lo - lo).max(0.0) + (hi - key_hi).max(0.0)) / keyed_span;
+        if !lo.is_finite() || !hi.is_finite() {
+            // No numeric channels; nothing to plot.
+            placeholder(&painter, rect, &visuals);
+            return;
+        }
 
-    // Pad the range so curves are not glued to the edges.
-    if (hi - lo).abs() < 1e-3 {
-        lo -= 1.0;
-        hi += 1.0;
-    }
-    let pad = (hi - lo) * 0.1;
-    lo -= pad;
-    hi += pad;
+        // Fit to the *curve*, not only to the keys (T-912).
+        //
+        // A bezier whose handles are steep enough overshoots the values it
+        // interpolates between, and framing on key values alone drew that overshoot
+        // outside the panel — the curve simply left the top of the view with nothing
+        // to say it had. "A selected curve is never invisible" is the acceptance bar
+        // for this task, and it cannot be met by looking at keys.
+        //
+        // Sampled at the same 2px step the curves are drawn at, so what is measured
+        // is exactly what is about to be stroked.
+        let mut invalid_samples = false;
+        let key_lo = lo;
+        let key_hi = hi;
+        if let Some(animation) = state.doc.animations.get(anim) {
+            for row in &rows {
+                if !row.is_soloed(&view.soloed) {
+                    continue;
+                }
+                let VisibleRow::Property { data, .. } = row else {
+                    continue;
+                };
+                if data.read_only {
+                    continue;
+                }
+                let Some(timeline) = animation
+                    .timelines
+                    .iter()
+                    .find(|t| data.addr.matches_timeline(t))
+                else {
+                    continue;
+                };
+                {
+                    let mut x = rect.left();
+                    while x <= rect.right() {
+                        if let Some(v) = sample_channel(timeline, layout.x_to_time(x).max(0.0)) {
+                            invalid_samples |= !v.is_finite();
+                            if v.is_finite() {
+                                lo = lo.min(v as f64);
+                            }
+                            if v.is_finite() {
+                                hi = hi.max(v as f64);
+                            }
+                        }
+                        x += 2.0;
+                    }
+                }
+            }
+        }
+        // How far past its keys the curve travels, as a fraction of the keyed range.
+        // Reported below rather than clamped: an overshoot is a legitimate thing to
+        // author — it is how a bounce is made — and silently flattening one would be
+        // worse than the invisibility this replaces.
+        let keyed_span = (key_hi - key_lo).abs().max(1e-6);
+        let overshoot = ((key_lo - lo).max(0.0) + (hi - key_hi).max(0.0)) / keyed_span;
 
-    // Keep the frame fixed for a pointer gesture; auto-fit resumes on release.
-    let bounds_id = ui.id().with(("graph_bounds", anim));
-    let previous = ui.ctx().data(|d| d.get_temp::<(f64, f64)>(bounds_id));
-    if ui.input(|i| i.pointer.primary_down())
-        && let Some(bounds) = previous
-    {
-        (lo, hi) = bounds;
-    }
-    ui.ctx().data_mut(|d| d.insert_temp(bounds_id, (lo, hi)));
+        // Pad the range so curves are not glued to the edges.
+        if (hi - lo).abs() < 1e-3 {
+            lo -= 1.0;
+            hi += 1.0;
+        }
+        let pad = (hi - lo) * 0.1;
+        lo -= pad;
+        hi += pad;
+
+        // Keep the frame fixed for a pointer gesture; auto-fit resumes on release.
+        let bounds_id = ui.id().with(("graph_bounds", anim));
+        let previous = ui.ctx().data(|d| d.get_temp::<(f64, f64)>(bounds_id));
+        if ui.input(|i| i.pointer.primary_down())
+            && let Some(bounds) = previous
+        {
+            (lo, hi) = bounds;
+        }
+        ui.ctx().data_mut(|d| d.insert_temp(bounds_id, (lo, hi)));
+        (lo, hi, overshoot, invalid_samples)
+    };
     let val_to_y = |v: f64| {
         let t = (v - lo) / (hi - lo);
         rect.bottom() - (t * rect.height() as f64).clamp(-1e6, 1e6) as f32
     };
 
     draw_frame_grid(&painter, layout, rect, &visuals);
-    draw_value_axis(&painter, rect, lo, hi, &visuals);
+    if normalized {
+        normalization::axis(&painter, rect, &val_to_y, &visuals);
+    } else {
+        draw_value_axis(&painter, rect, lo, hi, &visuals);
+    }
 
     // Say when a curve travels well past the values it interpolates (T-912).
     //
@@ -234,26 +253,30 @@ pub fn ui(
     // complaint; a mode the user cannot see is a mode they cannot reason about
     // when a key refuses to sit where they put it.
     let free = ui.input(|i| i.modifiers.alt);
-    painter.text(
-        egui::pos2(rect.left() + 6.0, rect.top() + 4.0),
-        egui::Align2::LEFT_TOP,
-        if free { "free" } else { "snap: frames" },
-        egui::FontId::proportional(10.0),
-        if free {
-            egui::Color32::from_rgb(120, 190, 255)
-        } else {
-            visuals.weak_text_color()
-        },
-    );
+    if !normalized {
+        painter.text(
+            egui::pos2(rect.left() + 6.0, rect.top() + 4.0),
+            egui::Align2::LEFT_TOP,
+            if free { "free" } else { "snap: frames" },
+            egui::FontId::proportional(10.0),
+            if free {
+                egui::Color32::from_rgb(120, 190, 255)
+            } else {
+                visuals.weak_text_color()
+            },
+        );
+    }
 
     let animation = state.doc.animations.get(anim).cloned();
     let Some(animation) = animation else { return };
 
+    let mut legends = Vec::new();
+    let relative_overshoot = std::cell::Cell::new(false);
     let mut points = Vec::new();
     let mut pending: Option<Edit> = None;
     let mut interp_edit: Option<InterpEdit> = None;
 
-    for row in &rows {
+    for (row_index, row) in rows.iter().enumerate() {
         // Soloing is a display filter, so it applies to the curves and not to
         // the row list — the row stays visible so you can un-solo it.
         if !row.is_soloed(&view.soloed) {
@@ -266,31 +289,60 @@ pub fn ui(
             continue;
         }
         let selectable = marquee::available(state, &animation, &data.addr);
-        for ch in &data.channels {
+        for (channel_index, ch) in data.channels.iter().enumerate() {
+            let range = if normalized {
+                let Some(range) = ranges[row_index][channel_index] else {
+                    continue;
+                };
+                legends.push(format!(
+                    "{}: {}",
+                    normalization::label(state, &data.addr, data.label),
+                    range.legend()
+                ));
+                Some(range)
+            } else {
+                None
+            };
+            let channel_to_y = |v: f64| {
+                let projected = range.map_or(v, |r| r.relative(v));
+                if normalized && !(-0.1..=1.1).contains(&projected) {
+                    relative_overshoot.set(true);
+                }
+                val_to_y(projected)
+            };
             let color = channel_color(style.theme, data.label, ch.axis);
             // Sample the curve across the visible range for a smooth plot.
             draw_channel_curve(
-                &painter, &animation, &data.addr, layout, rect, &val_to_y, color,
+                &painter,
+                &animation,
+                &data.addr,
+                layout,
+                rect,
+                &channel_to_y,
+                color,
             );
 
             // Bezier handles, one pair per segment. Drawn before the key dots
             // so a handle sitting on top of a key does not hide it.
-            if let Some(edit) = bezier_handles(
-                ui,
-                &painter,
-                &data.addr,
-                ch.axis,
-                &data.keys,
-                &ch.values,
-                layout,
-                rect,
-                &val_to_y,
-                lo,
-                hi,
-                color,
-                &mut selection,
-                link_mode,
-            ) {
+            if !normalized
+                && !editing_blocked
+                && let Some(edit) = bezier_handles(
+                    ui,
+                    &painter,
+                    &data.addr,
+                    ch.axis,
+                    &data.keys,
+                    &ch.values,
+                    layout,
+                    rect,
+                    &channel_to_y,
+                    lo,
+                    hi,
+                    color,
+                    &mut selection,
+                    link_mode,
+                )
+            {
                 interp_edit = Some(edit);
             }
 
@@ -303,7 +355,7 @@ pub fn ui(
                     continue;
                 }
                 let x = layout.time_to_x(k.time);
-                let y = val_to_y(value as f64);
+                let y = channel_to_y(value as f64);
                 if x < rect.left() - KEY_R || x > rect.right() + KEY_R {
                     continue;
                 }
@@ -364,6 +416,8 @@ pub fn ui(
                 // Sorting can move the selected key to a new index. Stop the old
                 // widget's captured drag rather than let it edit its successor.
                 if resp.dragged()
+                    && !normalized
+                    && !editing_blocked
                     && selection.contains(&kref)
                     && let Some(p) = resp.interact_pointer_pos()
                 {
@@ -395,6 +449,49 @@ pub fn ui(
         }
     }
 
+    if normalized {
+        let title = "Normalize: relative · View Only · Raw to edit";
+        let label_rect = painter.text(
+            egui::pos2(rect.left() + 6., rect.top() + 4.),
+            egui::Align2::LEFT_TOP,
+            title,
+            egui::FontId::proportional(10.),
+            visuals.weak_text_color(),
+        );
+        let tooltip = if legends.is_empty() {
+            "No finite reference keys".to_string()
+        } else {
+            format!(
+                "{}\nFinite keys across the entire track; constants at 0.5.\nNative sampler unchanged; non-finite samples remain gaps. Handles hidden; switch to Raw for graph editing.",
+                legends.join("\n")
+            )
+        };
+        ui.interact(
+            label_rect,
+            ui.id().with("normalized_ranges"),
+            egui::Sense::hover(),
+        )
+        .on_hover_text(tooltip);
+        if legends.is_empty() {
+            painter.text(
+                rect.center(),
+                egui::Align2::CENTER_CENTER,
+                "No finite keys to normalize",
+                egui::FontId::proportional(12.),
+                visuals.weak_text_color(),
+            );
+        }
+        if relative_overshoot.get() {
+            painter.text(
+                egui::pos2(rect.right() - 6., rect.top() + 20.),
+                egui::Align2::RIGHT_TOP,
+                "Relative overshoot outside view (not clamped)",
+                egui::FontId::proportional(10.),
+                visuals.warn_fg_color,
+            );
+        }
+    }
+
     marquee::ui(
         ui,
         state,
@@ -406,6 +503,7 @@ pub fn ui(
             rect: rect.intersect(ui.clip_rect()),
             horizontal: [layout.sheet_x0, layout.px_per_sec, layout.scroll_sec],
             bounds: [lo, hi],
+            normalized,
         },
         &bg,
         &painter,
@@ -1035,3 +1133,6 @@ mod t820_tests;
 
 #[cfg(test)]
 mod t825_tests;
+
+#[cfg(test)]
+mod t826_tests;

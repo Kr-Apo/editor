@@ -1,5 +1,27 @@
 # Ankhimate — operational tasks and evidence
 
+## Local T-826 update — 2026-10-21
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for the bounded **Normalize View
+Only** scalar overlay. Raw remains the default native-unit editor. Normalize
+uses each displayed channel's finite authored keys across the whole active clip,
+with f64 intermediates, a constant/single-key level of 0.5 and fixed relative
+Y ticks 0 / 0.5 / 1. Key points, sampled curves and selection share the projection.
+Bezier overshoots remain unclamped relative values and may leave the comparison
+frame. Hover the relative-mode badge for native target/unit/range legends.
+Graph key/time drags, handles and graph-local K insertion are disabled in this
+mode; switch to Raw to edit. Click, Ctrl-click and T-825 replace/Ctrl-union marquee
+remain available. Switching modes invalidates pending captures, even with equal
+bounds. The option follows clips/projects in the same egui session, resets on
+application restart, and is never stored in .ankh or Config.
+See [Normalize contract](graph-editor.md#8-normalized-comparison-view-t-826).
+T-704/T-912 remain PARTIAL: normalized editing and broader desktop qualification
+are not delivered. Existing quadratic large native selection validation remains
+a separate future scoped task; normalization adds no selection validation loop.
+Cumulative T-813–T-826 Windows tests remain **PENDING MANUAL REVIEW**. Older notes
+retain their historical scope. No GUI, GPU, inference or public operation ran.
+
+
 ## Local T-825 update — 2026-10-21
 
 **COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for Graph Editor marquee of

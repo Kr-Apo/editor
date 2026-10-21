@@ -12,6 +12,7 @@ pub(super) struct Mapping {
     pub rect: egui::Rect,
     pub horizontal: [f32; 3],
     pub bounds: [f64; 2],
+    pub normalized: bool,
 }
 struct Lease {
     identity: u64,

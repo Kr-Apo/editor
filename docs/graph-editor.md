@@ -237,3 +237,57 @@ paths: a 10,000-key debug native set took roughly 0.57 s locally. This is not a
 new optimization or real-time guarantee; desktop responsiveness is unqualified.
 All Windows/light-dark/artistic checks remain **PENDING MANUAL REVIEW** together
 with T-813–T-824. No desktop GUI, GPU benchmark or inference was run.
+
+## 8. Normalized comparison view (T-826)
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for Normalize View Only (Option B).
+T-704/T-912 remain PARTIAL. Earlier numbered sections describe their original Raw
+checkpoint behavior; this section adds the optional projection without replacing
+Raw. The Graph header has a **Normalize** toggle; off is Raw and the default.
+
+For each displayed editable scalar channel, scan finite key values paired with
+finite key times over the complete active track, independent of horizontal zoom
+and pan. Finite negative/out-of-duration times participate. Compute min/max and
+`(value - min) / (max - min)` in f64 after converting stored f32 values, before any
+subtraction. Exact constant/single-key tracks appear flat at 0.5; no epsilon range
+or artificial amplitude. Empty/all-invalid tracks do not acquire a fabricated
+range. Existing sampling gaps remain gaps. Nonfinite samples are not repaired.
+
+The shared comparison frame is relative -0.1 to 1.1 with ticks 0, 0.5 and 1.
+It is fixed rather than Raw's sampled auto-fit: panning does not change a channel's
+reference. Bezier overshoots can leave 0..1 and the frame; the existing geometric
+safety bound and plot clipping apply, with an outside-frame notice. No clamp to
+0..1 and no sampler changes. Rotation retains native stored angle conventions,
+including Raw keys differing from shortest-arc sampled paths. Translation,
+rotation/shear degrees, scale factors and slot alpha keep their native meaning.
+
+Property/axis colors are unchanged. Hover **Normalize: relative · View Only · Raw
+to edit** for target, property, units, native min/max, key count and constant
+annotation. Relative 0.5 is not an authored 0.5 degree/unit. Key centres, sampled
+segments, click hitboxes and T-825 marquee candidates use the same transformation.
+Coincident points retain typed identities; rectangle selection can select them
+all. Click/Ctrl-click and replace/Ctrl-union marquee retain shared Dopesheet
+selection semantics and visible-point exclusions. Switching mode cancels stale
+marquee/author captures even when the two numeric bounds happen to match; holding
+the pointer and switching back cannot resume the old edit.
+
+Normalize hides handles and blocks graph key value/time drags and graph-local K
+insertion. **Switch to Raw for graph editing.** This is a view-only Graph mode,
+not a global project lock: native Properties/Dopesheet operations keep their own
+policies. Raw Broken/Aligned/Mirrored semantics and inverse transforms remain.
+No normalized FFD vectors, events, constraints or nonnumeric tracks are invented.
+
+The toggle uses existing temporary `tl_view` memory: it follows clips and projects
+in the same egui context, but resets with a fresh context/restarted app. No Config,
+.ankh, author key, dirty revision, Undo entry or Redo loss is produced by toggling.
+Save/Reload and native/rendered exports keep authored values. Source-level native
+sampler/handle/edit functions are unchanged; logical Raw shapes are compared with
+an independent exact T-825 checkout, including flat and overshooting fixtures.
+These checks are headless logical evidence, not GPU pixels or manual validation.
+
+Bounds are collected once per eligible channel per frame; subsequent transforms
+reuse them. This adds no KeyClip capture or selection mutation per frame. Existing
+native large-selection validation is quadratic and remains a future scoped task;
+10k debug selections took about 0.6 s locally. Phase-separated CPU observations
+in the delivery are not a Windows/GPU performance guarantee. All 24 new manual
+scenarios and the cumulative T-813–T-825 desktop campaign remain pending.

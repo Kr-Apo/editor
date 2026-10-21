@@ -4,7 +4,7 @@ All **local T-813–T-816 GUI results remain PENDING_MANUAL / PENDING MANUAL REV
 This register requests no action now. The maintainer chose to continue development
 before grouped tests. No editor/browser/inference session was run by T-817.
 
-Use the **T-825 cumulative executable** for the grouped campaign; older binaries
+Use the **T-826 cumulative executable** for the grouped campaign; older binaries
 are retained for targeted comparisons, not substitutes. Internal version remains
 0.2.0-alpha.1 and cannot identify a candidate by itself. Check the SHA before use.
 
@@ -135,3 +135,15 @@ Headless egui events and synthetic CPU observations do not certify desktop
 feel, contrast or large-project performance. Historical video/process concurrency
 sensitivity remains; final automated gates use four test threads, without
 assertion/timeout or ignore changes.
+
+## T-826 — normalized comparison, deferred
+
+**PENDING MANUAL REVIEW** for all 24 scenarios in the local delivery
+`outputs/T826-Normalized-Curve-Overlay/MANUAL-CHECKLIST.md`.
+Use `Ankhimate-T826-dev.exe`, checking its SHA in the local CHECKPOINT.json and
+WINDOWS-BUILD.json. Older binaries/checklists remain intact. Test Raw vs Normalize,
+relative/native legends, constants, extremes, overshoot, pan/zoom, shared marquee,
+blocked edits, Raw return, actual Raw Undo/Redo and Save As/reopen, then cumulative
+T-813–T-825 checks. Headless egui logical colors/hitboxes and CPU observations do
+not qualify Windows focus, accessibility, themes, visual legibility or loaded-clip
+responsiveness. No request to run this campaign now.

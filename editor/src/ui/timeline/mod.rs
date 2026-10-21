@@ -78,6 +78,8 @@ pub struct ViewState {
     pub scroll_sec: f32,
     pub divider_w: f32,
     pub mode: SheetMode,
+    /// Relative graph comparison only; transient across clips/projects, never authored.
+    pub normalized: bool,
     /// Vertical scroll offset (px) shared by tree and sheet.
     pub scroll_y: f32,
     /// Rows shown on their own, keyed by [`VisibleRow::solo_id`].
@@ -95,6 +97,7 @@ impl Default for ViewState {
             scroll_sec: 0.0,
             divider_w: 220.0,
             mode: SheetMode::Dopesheet,
+            normalized: false,
             scroll_y: 0.0,
             soloed: Default::default(),
         }
@@ -299,6 +302,11 @@ fn header(ui: &mut egui::Ui, state: &mut AppState, view: &mut ViewState) {
                 .strong()
                 .size(11.5),
         );
+
+        if view.mode == SheetMode::Graph {
+            ui.toggle_value(&mut view.normalized,"Normalize")
+                .on_hover_text("Relative per-channel finite key ranges. View only: select keys; switch to Raw (Normalize off) to drag values or handles. Not saved in projects.");
+        }
 
         // Soloing is a mode with no other exit: the dots are per row, and a rig
         // with sixty of them makes "which one did I click" a real question.
