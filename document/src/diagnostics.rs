@@ -477,6 +477,7 @@ pub fn inspect(doc: &Document) -> Vec<Issue> {
                                     .map(|s| s.name.as_str())
                                     .unwrap_or("<missing slot>")
                             ),
+                            Some(TimelineAddr::PathPosition { .. }) => "Path Position".into(),
                             Some(TimelineAddr::Deform { .. }) | None => "Track".into(),
                         };
                         push(

@@ -991,6 +991,7 @@ fn animation(anim: &schema::Animation, project: &Project) -> Value {
                 "constraint": constraint, "channel": "bend_direction",
                 "keys": scalar_keys(keys, 0.0),
             })),
+            schema::Timeline::PathPosition { .. } => {}, // Planning refuses this author-only track.
             schema::Timeline::IkSoftness { constraint, keys } => ik.push(json!({
                 "constraint": constraint, "channel": "softness",
                 "keys": scalar_keys(keys, 0.0),

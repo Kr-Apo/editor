@@ -48,6 +48,9 @@ impl BoneProperty {
 /// drive, not their index — an index shifts when another timeline is inserted.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum TimelineAddr {
+    PathPosition {
+        constraint: ankhimate_core::ids::ConstraintId,
+    },
     /// Existing Deform track; None is explicitly unresolved, never a placeholder.
     Deform {
         slot: SlotId,
@@ -86,6 +89,9 @@ impl TimelineAddr {
     pub fn stable_id(&self) -> u64 {
         use ankhimate_core::slotmap::Key;
         match self {
+            TimelineAddr::PathPosition { constraint } => {
+                constraint.data().as_ffi() ^ 0x5041544800000000
+            }
             TimelineAddr::Bone {
                 bone,
                 property,
@@ -136,6 +142,10 @@ impl TimelineAddr {
     /// Does `timeline` drive the target this address names?
     fn matches(&self, timeline: &Timeline) -> bool {
         match (self, timeline) {
+            (
+                TimelineAddr::PathPosition { constraint: a },
+                Timeline::PathPosition { constraint: b, .. },
+            ) => a == b,
             (
                 TimelineAddr::Bone {
                     bone,
@@ -198,6 +208,10 @@ impl TimelineAddr {
     /// An empty timeline of the right variant for this address.
     fn empty_timeline(&self) -> Timeline {
         match self {
+            TimelineAddr::PathPosition { constraint } => Timeline::PathPosition {
+                constraint: *constraint,
+                keys: Vec::new(),
+            },
             TimelineAddr::Bone {
                 bone,
                 property,
@@ -376,7 +390,8 @@ impl EditCommand for AddKey {
         let time = self.time;
         let interp = self.interp;
         match (&mut anim.timelines[idx], self.value) {
-            (Timeline::BoneTranslate { keys, .. }, KeyValue::Scalar(v))
+            (Timeline::PathPosition { keys, .. }, KeyValue::Scalar(v))
+            | (Timeline::BoneTranslate { keys, .. }, KeyValue::Scalar(v))
             | (Timeline::BoneScale { keys, .. }, KeyValue::Scalar(v))
             | (Timeline::BoneShear { keys, .. }, KeyValue::Scalar(v))
             | (Timeline::BoneRotate { keys, .. }, KeyValue::Scalar(v)) => {
@@ -610,7 +625,9 @@ fn with_key(timeline: &mut Timeline, index: usize, f: &mut impl FnMut(&mut KeyTi
         Timeline::DrawOrder { keys } => with_key_arm!(keys, index, f),
         Timeline::IkMix { keys, .. } => with_key_arm!(keys, index, f),
         Timeline::IkBendDirection { keys, .. } => with_key_arm!(keys, index, f),
-        Timeline::IkSoftness { keys, .. } => with_key_arm!(keys, index, f),
+        Timeline::PathPosition { keys, .. } | Timeline::IkSoftness { keys, .. } => {
+            with_key_arm!(keys, index, f)
+        }
         Timeline::TransformConstraintMix { keys, .. } => with_key_arm!(keys, index, f),
         Timeline::Deform { keys, .. } => with_key_arm!(keys, index, f),
     }
@@ -634,7 +651,7 @@ fn sort_timeline(timeline: &mut Timeline) {
         Timeline::DrawOrder { keys } => sort_arm!(keys),
         Timeline::IkMix { keys, .. } => sort_arm!(keys),
         Timeline::IkBendDirection { keys, .. } => sort_arm!(keys),
-        Timeline::IkSoftness { keys, .. } => sort_arm!(keys),
+        Timeline::PathPosition { keys, .. } | Timeline::IkSoftness { keys, .. } => sort_arm!(keys),
         Timeline::TransformConstraintMix { keys, .. } => sort_arm!(keys),
         Timeline::Deform { keys, .. } => sort_arm!(keys),
     }
@@ -771,7 +788,9 @@ impl EditCommand for DeleteKeys {
                 Timeline::DrawOrder { keys } => remove_arm!(keys, indices),
                 Timeline::IkMix { keys, .. } => remove_arm!(keys, indices),
                 Timeline::IkBendDirection { keys, .. } => remove_arm!(keys, indices),
-                Timeline::IkSoftness { keys, .. } => remove_arm!(keys, indices),
+                Timeline::PathPosition { keys, .. } | Timeline::IkSoftness { keys, .. } => {
+                    remove_arm!(keys, indices)
+                }
                 Timeline::TransformConstraintMix { keys, .. } => remove_arm!(keys, indices),
                 Timeline::Deform { keys, .. } => remove_arm!(keys, indices),
             }
@@ -1177,7 +1196,7 @@ fn map_key_times(anim: &mut Animation, f: impl Fn(f32) -> f32) {
             Timeline::DrawOrder { keys } => remap!(keys),
             Timeline::IkMix { keys, .. } => remap!(keys),
             Timeline::IkBendDirection { keys, .. } => remap!(keys),
-            Timeline::IkSoftness { keys, .. } => remap!(keys),
+            Timeline::PathPosition { keys, .. } | Timeline::IkSoftness { keys, .. } => remap!(keys),
             Timeline::TransformConstraintMix { keys, .. } => remap!(keys),
             Timeline::Deform { keys, .. } => remap!(keys),
         }

@@ -100,6 +100,17 @@ pub fn move_keys(
         }
         return crate::ffd_keys::move_delta(state, anim, delta, None).ok();
     }
+    if refs.iter().any(|r| {
+        matches!(
+            r.addr,
+            ankhimate_document::commands::key_cmds::TimelineAddr::PathPosition { .. }
+        )
+    }) {
+        state
+            .session
+            .set_status("Path Position drag/group move is deferred; use its key context controls");
+        return None;
+    }
     KeyClip::capture(&state.doc, anim, refs).ok()?;
     let a = state.doc.animations.get(anim)?;
     let mut targets = Vec::new();
@@ -175,6 +186,7 @@ fn key_count(t: &ankhimate_core::animation::Timeline) -> usize {
         Timeline::BoneRotate { keys, .. }
         | Timeline::BoneTranslate { keys, .. }
         | Timeline::BoneScale { keys, .. }
+        | Timeline::PathPosition { keys, .. }
         | Timeline::BoneShear { keys, .. } => keys.len(),
         Timeline::SlotColor { keys, .. } => keys.len(),
         Timeline::SlotVisible { keys, .. } => keys.len(),

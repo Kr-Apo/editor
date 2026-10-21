@@ -811,6 +811,10 @@ fn timeline_to_schema(
                 })
                 .collect(),
         },
+        anim::Timeline::PathPosition { constraint, keys } => schema::Timeline::PathPosition {
+            constraint: constraint_name(*constraint),
+            keys: scalar_keys(keys),
+        },
         anim::Timeline::IkMix { constraint, keys } => schema::Timeline::IkMix {
             constraint: constraint_name(*constraint),
             keys: scalar_keys(keys),
@@ -1454,6 +1458,16 @@ fn timeline_from_schema(
                 })
                 .collect(),
         },
+        schema::Timeline::PathPosition { constraint, keys } => {
+            let Some(&id) = constraint_ids.get(constraint) else {
+                report.dangling("timeline constraint", constraint);
+                return None;
+            };
+            anim::Timeline::PathPosition {
+                constraint: id,
+                keys: scalar_keys(keys),
+            }
+        }
         schema::Timeline::IkMix { constraint, keys } => {
             let id = match constraint_ids.get(constraint) {
                 Some(&id) => id,

@@ -82,6 +82,10 @@ fn prepare(s: &AppState, factor: &str, frames: &str) -> Result<(Stamp, PreparedR
         return Err("Set a valid project FPS (1–240) before preparing".into());
     }
     for t in &clip.timelines {
+        if let Timeline::PathPosition { constraint, .. } = t {
+            crate::path_keys::editable(s, *constraint)?;
+            ankhimate_document::path_keys::Capture::read(&s.doc, id, *constraint)?;
+        }
         let mut bones = Vec::new();
         if let Some(b) = t.bone() {
             bones.push(b);
@@ -98,7 +102,8 @@ fn prepare(s: &AppState, factor: &str, frames: &str) -> Result<(Stamp, PreparedR
             Timeline::DrawOrder { .. } => {
                 bones.extend(s.doc.skeleton.slots.values().map(|s| s.bone))
             }
-            Timeline::IkMix { constraint, .. }
+            Timeline::PathPosition { constraint, .. }
+            | Timeline::IkMix { constraint, .. }
             | Timeline::IkBendDirection { constraint, .. }
             | Timeline::IkSoftness { constraint, .. }
             | Timeline::TransformConstraintMix { constraint, .. } => {

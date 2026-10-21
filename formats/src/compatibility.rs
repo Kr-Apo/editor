@@ -4,6 +4,7 @@ use crate::{Error, schema};
 use serde_json::Value;
 
 pub(crate) fn validate(raw: &Value, project: &schema::Project) -> Result<(), Error> {
+    validate_path_positions(project)?;
     for (i, slot) in project.slots.iter().enumerate() {
         if !matches!(
             slot.blend_mode.as_str(),
@@ -195,4 +196,116 @@ fn mix_channel(key: &str) -> bool {
         key,
         "rotate" | "translate_x" | "translate_y" | "scale_x" | "scale_y" | "shear_x" | "shear_y"
     )
+}
+
+pub(crate) fn validate_path_positions(project: &schema::Project) -> Result<(), Error> {
+    if !project.animations.iter().any(|a| {
+        a.timelines
+            .iter()
+            .any(|t| matches!(t, schema::Timeline::PathPosition { .. }))
+    }) {
+        return Ok(());
+    }
+    let loaded = crate::convert::from_schema(project);
+    for (ai, a) in project.animations.iter().enumerate() {
+        let mut names = std::collections::HashSet::new();
+        for (ti, t) in a.timelines.iter().enumerate() {
+            let schema::Timeline::PathPosition { constraint, keys } = t else {
+                continue;
+            };
+            let error = || Error::UnsupportedMember {
+                path: format!("/animations/{ai}/timelines/{ti}/path_position"),
+            };
+            let matches: Vec<_> = project
+                .constraints
+                .iter()
+                .filter(|c| c.name == *constraint)
+                .collect();
+            if !a.duration.is_finite()
+                || a.duration < 0.
+                || !names.insert(constraint)
+                || matches.len() != 1
+                || matches[0].kind != "path"
+            {
+                return Err(error());
+            }
+            let ids: Vec<_> = loaded
+                .skeleton
+                .constraints
+                .iter()
+                .filter(|(_, c)| c.name() == constraint)
+                .map(|(id, _)| id)
+                .collect();
+            if ids.len() != 1
+                || ankhimate_core::path::position_target(&loaded.skeleton, ids[0]).is_err()
+            {
+                return Err(error());
+            }
+            let skins: Vec<_> = project
+                .skins
+                .iter()
+                .filter(|s| s.name == project.default_skin)
+                .collect();
+            if skins.len() != 1 {
+                return Err(error());
+            }
+            let slot = project
+                .slots
+                .iter()
+                .find(|s| Some(&s.name) == matches[0].slot.as_ref())
+                .ok_or_else(error)?;
+            // Conversion historically reports and drops missing parents. For this
+            // new animated property that would change the path's coordinate space.
+            for start in matches[0].bones.iter().chain(std::iter::once(&slot.bone)) {
+                let mut seen = std::collections::HashSet::new();
+                let mut cursor = start.as_str();
+                while !cursor.is_empty() {
+                    let ancestors: Vec<_> =
+                        project.bones.iter().filter(|b| b.name == cursor).collect();
+                    if !seen.insert(cursor) || ancestors.len() != 1 {
+                        return Err(error());
+                    }
+                    cursor = &ancestors[0].parent;
+                }
+            }
+            if project.bones.iter().filter(|b| b.name == slot.bone).count() != 1
+                || skins[0]
+                    .entries
+                    .iter()
+                    .filter(|e| e.slot == slot.name && Some(&e.name) == slot.attachment.as_ref())
+                    .count()
+                    != 1
+            {
+                return Err(error());
+            }
+            // Loading must not drop or retarget an ambiguous named reference.
+            let p = matches[0];
+            if p.bones
+                .iter()
+                .any(|name| project.bones.iter().filter(|b| &b.name == name).count() != 1)
+                || p.slot.as_ref().is_none_or(|name| {
+                    project.slots.iter().filter(|s| &s.name == name).count() != 1
+                })
+            {
+                return Err(error());
+            }
+            if keys.iter().any(|k| {
+                !k.time.is_finite()
+                    || k.time < 0.
+                    || !k.value.is_finite()
+                    || match k.interp {
+                        schema::Interp::Bezier { handles } => {
+                            handles.iter().any(|v| !v.is_finite())
+                                || !(0.0..=1.).contains(&handles[0])
+                                || !(0.0..=1.).contains(&handles[2])
+                        }
+                        _ => false,
+                    }
+            }) || keys.windows(2).any(|k| k[0].time >= k[1].time)
+            {
+                return Err(error());
+            }
+        }
+    }
+    Ok(())
 }

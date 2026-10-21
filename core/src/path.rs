@@ -158,6 +158,62 @@ impl SampledPath {
     }
 }
 
+/// Validate the exact native target for authoring an animated start position.
+/// Does not change solver behavior for older/static rigs.
+pub fn position_target(
+    skel: &crate::skeleton::Skeleton,
+    id: crate::ids::ConstraintId,
+) -> Result<&crate::constraints::PathConstraint, String> {
+    let Some(crate::constraints::Constraint::Path(p)) = skel.constraints.get(id) else {
+        return Err("Missing or non-Path constraint".into());
+    };
+    if skel.constraint_order.iter().filter(|c| **c == id).count() != 1 {
+        return Err("Path constraint is absent from solve order".into());
+    }
+    if p.bones.is_empty() || p.bones.iter().any(|b| !skel.bones.contains_key(*b)) {
+        return Err("Path driven bone missing".into());
+    }
+    if ![p.position, p.spacing, p.mix_rotate, p.mix_translate]
+        .iter()
+        .all(|v| v.is_finite())
+    {
+        return Err("Non-finite Path parameter".into());
+    }
+    let slot = skel.slots.get(p.slot).ok_or("Path slot missing")?;
+    if !skel.bones.contains_key(slot.bone) {
+        return Err("Path slot bone missing".into());
+    }
+    for start in p.bones.iter().chain(std::iter::once(&slot.bone)) {
+        let mut seen = std::collections::HashSet::new();
+        let mut cursor = Some(*start);
+        while let Some(id) = cursor {
+            if !seen.insert(id) {
+                return Err("Cyclic Path bone ancestry".into());
+            }
+            cursor = skel.bones.get(id).ok_or("Path ancestor missing")?.parent;
+        }
+    }
+    let name = slot
+        .attachment
+        .as_deref()
+        .ok_or("Path Setup attachment missing")?;
+    let Some(crate::attachment::Attachment::Path(path)) = skel
+        .skins
+        .get(skel.default_skin)
+        .and_then(|s| s.get(p.slot, name))
+    else {
+        return Err("Default-skin Setup attachment is not a Path".into());
+    };
+    if path.vertices.len() < 2 || path.vertices.iter().any(|v| !v.is_finite()) {
+        return Err("Invalid Path vertices".into());
+    }
+    let measured = SampledPath::new(path.vertices.clone(), path.closed).length();
+    if !measured.is_finite() || measured <= 1e-6 {
+        return Err("Path length is zero or non-finite".into());
+    }
+    Ok(p)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

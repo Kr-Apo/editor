@@ -144,6 +144,7 @@ impl TimelineModel {
                     )),
                 ),
                 GroupKey::Slot(_) => (crate::ui::icons::SLOT, None),
+                GroupKey::Path(_) => (crate::ui::icons::PATH, None),
                 GroupKey::Global => (crate::ui::icons::DRAW_ORDER, None),
             };
             // Stamped here rather than at construction: a row does not know its
@@ -156,7 +157,17 @@ impl TimelineModel {
                 _ => None,
             };
             groups.push(Group {
-                label: key.label(&bone_name, &slot_name),
+                label: if let GroupKey::Path(id) = key {
+                    state
+                        .doc
+                        .skeleton
+                        .constraints
+                        .get(id)
+                        .map_or("Missing Path", |c| c.name())
+                        .into()
+                } else {
+                    key.label(&bone_name, &slot_name)
+                },
                 icon,
                 tint,
                 rows,
@@ -255,6 +266,7 @@ impl TimelineModel {
 enum GroupKey {
     Bone(BoneId),
     Slot(SlotId),
+    Path(ankhimate_core::ids::ConstraintId),
     /// Timelines with no per-target identity (draw order) share one group.
     Global,
 }
@@ -268,6 +280,7 @@ impl GroupKey {
         match self {
             GroupKey::Bone(b) => bone_name(*b),
             GroupKey::Slot(s) => slot_name(*s),
+            GroupKey::Path(_) => "Path".into(),
             GroupKey::Global => "scene".to_string(),
         }
     }
@@ -277,6 +290,7 @@ impl GroupKey {
         match self {
             GroupKey::Bone(b) => b.data().as_ffi(),
             GroupKey::Slot(s) => s.data().as_ffi() ^ 0x5555_5555_5555_5555,
+            GroupKey::Path(id) => id.data().as_ffi() ^ 0x5041544800000000,
             GroupKey::Global => 0xffff_ffff_ffff_ffff,
         }
     }
@@ -452,6 +466,23 @@ fn describe(timeline: &Timeline) -> (GroupKey, PropertyRow) {
             GroupKey::Global,
             read_only_row("draw order", keys.iter().map(|k| (k.time, k.interp))),
         ),
+        Timeline::PathPosition { constraint, keys } => {
+            let (infos, _) = scalar(keys, 2);
+            (
+                GroupKey::Path(*constraint),
+                PropertyRow {
+                    label: "Path Position",
+                    icon: crate::ui::icons::PATH,
+                    addr: TimelineAddr::PathPosition {
+                        constraint: *constraint,
+                    },
+                    keys: infos,
+                    channels: Vec::new(),
+                    read_only: false,
+                    row_id: 0,
+                },
+            )
+        }
         Timeline::IkMix { keys, .. } => (
             GroupKey::Global,
             read_only_row("ik mix", keys.iter().map(|k| (k.time, k.interp))),

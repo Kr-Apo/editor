@@ -299,6 +299,11 @@ pub enum Timeline {
         constraint: ConstraintId,
         keys: Vec<Key<f32>>,
     },
+    /// Absolute fractional start position of one exact Path constraint (T-831).
+    PathPosition {
+        constraint: ConstraintId,
+        keys: Vec<Key<f32>>,
+    },
     /// Absolute per-channel mixes for a transform constraint (T-501).
     ///
     /// One timeline rather than one per channel because the channels are almost
@@ -378,7 +383,7 @@ impl Timeline {
             Timeline::DrawOrder { keys } => last!(keys),
             Timeline::IkMix { keys, .. } => last!(keys),
             Timeline::IkBendDirection { keys, .. } => last!(keys),
-            Timeline::IkSoftness { keys, .. } => last!(keys),
+            Timeline::PathPosition { keys, .. } | Timeline::IkSoftness { keys, .. } => last!(keys),
             Timeline::TransformConstraintMix { keys, .. } => last!(keys),
             Timeline::Deform { keys, .. } => last!(keys),
         }
@@ -396,7 +401,9 @@ impl Timeline {
             Timeline::DrawOrder { keys } => keys.is_empty(),
             Timeline::IkMix { keys, .. } => keys.is_empty(),
             Timeline::IkBendDirection { keys, .. } => keys.is_empty(),
-            Timeline::IkSoftness { keys, .. } => keys.is_empty(),
+            Timeline::PathPosition { keys, .. } | Timeline::IkSoftness { keys, .. } => {
+                keys.is_empty()
+            }
             Timeline::TransformConstraintMix { keys, .. } => keys.is_empty(),
             Timeline::Deform { keys, .. } => keys.is_empty(),
         }

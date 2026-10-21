@@ -209,6 +209,13 @@ pub fn plan_with(
     preset: &Preset,
     images: Images,
 ) -> Result<Plan, ExportError> {
+    if project.animations.iter().any(|a| {
+        a.timelines
+            .iter()
+            .any(|t| matches!(t, ankhimate_formats::schema::Timeline::PathPosition { .. }))
+    }) {
+        return Err(TemplateError::Render{template:"Path Position compatibility".into(),reason:"Animated PathPosition is author/CPU-only; native v2 and templates have no supported channel. Use a rendered export.".into()}.into());
+    }
     // JSON's Value conversion maps non-finite f32s to null. Reject them before
     // building the context, including headless/preview callers without preflight.
     // Other templates retain their existing contracts and diagnostic policy.

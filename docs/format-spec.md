@@ -60,7 +60,7 @@ must not be confused with preservation through the loaded document model.
 
 ## Reading the normative author field tables
 
-The tables below inventory all 33 serializable schema declarations, including 204 fields.
+The tables below inventory all 33 serializable schema declarations, including 206 fields.
 They are verified against `formats/src/schema.rs` and `format-schema.json` by normal Rust
 tests. Rust primitive types specify representation: String is JSON string, bool boolean,
 f32 number, u32 nonnegative integer, i32 signed integer; vectors are arrays, maps objects,
@@ -400,6 +400,9 @@ Container attributes: `#[serde(tag = "kind", rename_all = "snake_case")]`.
 | Timeline.Deform | `attachment` | `String` | required (Option accepts missing/null) |
 | Timeline.Deform | `keys` | `Vec<DeformKey>` | required (Option accepts missing/null) |
 
+| Timeline.PathPosition | `constraint` | `String` | required (Option accepts missing/null) |
+| Timeline.PathPosition | `keys` | `Vec<ScalarKey>` | required (Option accepts missing/null) |
+
 ### `Interp` (enum)
 
 Container attributes: `#[serde(tag = "curve", rename_all = "lowercase")]`.
@@ -711,3 +714,17 @@ safe-write staging, Windows path restrictions, rollback and recovery contracts s
 The T-605 authentic fixtures and CURRENT_VERSION/envelope/spec gates remain unchanged.
 No v0 or prototype migration has been invented. See [project recovery](project-recovery.md)
 and [save safety](project-save-safety.md) for the user workflow and crash limitations.
+
+## T-831 tagged PathPosition addition
+
+Author/envelope v1 is retained for the additive closed enum tag `path_position`,
+with unique constraint name and existing scalar keys. Old projects are unchanged;
+older closed-enum readers reject new files, never silently discard this track.
+Three-profile frozen-reader and new-reader round trips qualify this bounded
+addition. Runtime v2 is unchanged and data exports refuse the track. See the
+[complete contract](path-position-animation.md) for references, units and limitations.
+
+The T-831 Context source digest was reviewed for its exhaustive PathPosition arm.
+No native-v2 field is added: `run::plan_with` and plugin planning reject the track
+before building outputs. Existing native preset bytes and projection tables remain
+unchanged; regression tests cover refusal and the static-project witness.

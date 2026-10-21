@@ -561,6 +561,11 @@ pub enum Timeline {
     DrawOrder {
         keys: Vec<DrawOrderKey>,
     },
+    /// Absolute fraction of a Path constraint extent. Old readers reject this kind.
+    PathPosition {
+        constraint: String,
+        keys: Vec<ScalarKey>,
+    },
     IkMix {
         constraint: String,
         keys: Vec<ScalarKey>,

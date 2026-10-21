@@ -1339,9 +1339,10 @@ fn path_constraint_inspector(
                 }
             });
         });
+        crate::path_keys::position_ui(ui, state, *id);
         for (label, value, range, hint) in [
             (
-                "Position",
+                "Setup Position",
                 &mut next.position,
                 0.0..=1.0,
                 "Where the chain starts along the path — animate it to slide the chain",

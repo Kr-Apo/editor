@@ -385,7 +385,7 @@ fn key_index_at(timeline: &Timeline, time: f32) -> Option<usize> {
         Timeline::DrawOrder { keys } => find!(keys),
         Timeline::IkMix { keys, .. } => find!(keys),
         Timeline::IkBendDirection { keys, .. } => find!(keys),
-        Timeline::IkSoftness { keys, .. } => find!(keys),
+        Timeline::PathPosition { keys, .. } | Timeline::IkSoftness { keys, .. } => find!(keys),
         Timeline::TransformConstraintMix { keys, .. } => find!(keys),
         Timeline::Deform { keys, .. } => find!(keys),
     }

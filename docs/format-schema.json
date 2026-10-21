@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "container_version": 1,
-  "schema_code_sha256": "301d1a3a6cda6c85e284177359c81600437fcff97082da01d6416e4510f2085e",
+  "schema_code_sha256": "ec1622f8a542c67eb01876f8f669c8f77e5fb26ef103fd68ce3ec56553ebf9a1",
   "types": {
     "Project": {
       "kind": "struct",
@@ -1191,6 +1191,19 @@
               "attributes": []
             }
           }
+        },
+        "PathPosition": {
+          "fields": {
+            "constraint": {
+              "type": "String",
+              "attributes": []
+            },
+            "keys": {
+              "type": "Vec<ScalarKey>",
+              "attributes": []
+            }
+          },
+          "attributes": []
         }
       }
     },
@@ -1562,7 +1575,7 @@
     "curve"
   ],
   "native_contract_sources": {
-    "export/src/context.rs": "78f091e018603a10f3c4d7e89c11094a9d07683f37fa927eee3ea7c6089926a1",
+    "export/src/context.rs": "9b617ff5e75e4cef1c233fa1052b4af378ca1d0df44903c65671399794cec50b",
     "export/src/presets/ankhimate_runtime.json": "04574cf3f611891762f334c8fa154cdcb57daa402951e205a30df0313f3a4c72"
   }
 }

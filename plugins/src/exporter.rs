@@ -52,6 +52,13 @@ impl JsExporter {
     /// something to copy per export — so a caller that moved its only copy out
     /// and got an `Err` would lose the user's whole project to a plugin's typo.
     pub fn plan(&self, doc: Document) -> Result<(Plan, Document), (crate::PluginError, Document)> {
+        if doc.animations.values().any(|a| {
+            a.timelines
+                .iter()
+                .any(|t| matches!(t, ankhimate_core::animation::Timeline::PathPosition { .. }))
+        }) {
+            return Err((crate::PluginError::Script("Animated PathPosition is not represented by the current plugin export contract; use rendered output".into()),doc));
+        }
         let host = crate::Host::new().with_resources((*self.resources).clone());
         let script = format!(
             "{}\n__ankhimate_run_export({});",

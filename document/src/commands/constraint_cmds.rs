@@ -141,9 +141,17 @@ impl EditCommand for SetConstraintOrder {
     }
 }
 
+type PathRemovalSnapshot = (
+    ankhimate_core::slotmap::SlotMap<ConstraintId, Constraint>,
+    Vec<(
+        ankhimate_core::ids::AnimationId,
+        Vec<ankhimate_core::animation::Timeline>,
+    )>,
+);
 pub struct RemoveConstraint {
     id: ConstraintId,
     removed: Option<Constraint>,
+    path_before: Option<PathRemovalSnapshot>,
     /// Where it sat in `constraint_order`; order changes the result (each
     /// constraint sees the previous ones' output), so restoring it at the end
     /// would not be an undo.
@@ -155,6 +163,7 @@ impl RemoveConstraint {
         Self {
             id,
             removed: None,
+            path_before: None,
             order_index: None,
         }
     }
@@ -162,6 +171,26 @@ impl RemoveConstraint {
 
 impl EditCommand for RemoveConstraint {
     fn apply(&mut self, doc: &mut Document) {
+        use ankhimate_core::animation::Timeline;
+        let affected: Vec<_> = doc
+            .animations
+            .iter()
+            .filter(|(_, a)| {
+                a.timelines.iter().any(
+                    |t| matches!(t,Timeline::PathPosition{constraint,..} if *constraint==self.id),
+                )
+            })
+            .map(|(id, a)| (id, a.timelines.clone()))
+            .collect();
+        if !affected.is_empty() {
+            self.path_before = Some((doc.skeleton.constraints.clone(), affected));
+        }
+        for (_, a) in doc.animations.iter_mut() {
+            a.timelines.retain(
+                |t| !matches!(t,Timeline::PathPosition{constraint,..} if *constraint==self.id),
+            );
+        }
+
         self.order_index = doc
             .skeleton
             .constraint_order
@@ -175,6 +204,20 @@ impl EditCommand for RemoveConstraint {
         let Some(constraint) = self.removed.take() else {
             return;
         };
+        if let Some((constraints, timelines)) = self.path_before.take() {
+            doc.skeleton.constraints = constraints;
+            if let Some(at) = self.order_index {
+                doc.skeleton
+                    .constraint_order
+                    .insert(at.min(doc.skeleton.constraint_order.len()), self.id);
+            }
+            for (id, before) in timelines {
+                if let Some(a) = doc.animations.get_mut(id) {
+                    a.timelines = before;
+                }
+            }
+            return;
+        }
         // A fresh id: the slotmap key is gone. Timelines keyed to the old id
         // cannot be revived, which is why removing a constrained-and-keyed
         // constraint is a real edit rather than a toggle.

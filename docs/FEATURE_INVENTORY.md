@@ -457,14 +457,14 @@ not the current availability matrix. The current [tasks](TASKS.md),
 
 **PARTIAL / AUTOMATED / PUBLIC_ALPHA** · Origin: T-502.
 
-- Delivered scope: Native path geometry/constraint and exact local point editing
+- Delivered scope: Native path geometry/constraint and exact local point editing; T-831 local PathPosition keys, native evaluation and author persistence
 - Entry point: Path attachment / constraint.
 - Implementation: [`core/src/path.rs`](../core/src/path.rs), [`document/src/commands/clip_cmds.rs`](../document/src/commands/clip_cmds.rs), [`core/src/pose.rs`](../core/src/pose.rs).
 - Test/reference suites: [`core/src/path.rs`](../core/src/path.rs), [`editor/src/ui/inspector/t815_tests.rs`](../editor/src/ui/inspector/t815_tests.rs)
 - Example test symbols (suite references, not a coverage claim): `a_closed_path_wraps_instead_of_clamping`; `t815_path_bounding_box_and_clip_use_existing_commands_atomically`.
-- Contradictory check / remaining historical criteria: Static polyline paths/constraints exist; Bezier path handles and PathPosition/PathSpacing authoring timelines remain explicitly deferred; runtime junction/fallback parity excluded.
-- Latest relevant checkpoint: T-812 integration; audited exact T-816 source.
-- Recommended action: Work only on the explicit remainder; preserve existing paths. Priority: Retain scoped implementation.
+- Contradictory check / remaining historical criteria: T-831 adds local PathPosition inspector/Dopesheet keys. PathSpacing, geometric Bezier handles, Graph/group/clipboard Path editing and runtime junction/fallback parity remain deferred. [Contract](path-position-animation.md).
+- Latest relevant checkpoint: T-831 LOCAL_CANDIDATE / PENDING_MANUAL; static subset retains its public baseline.
+- Recommended action: Qualify T-831 manually, then work only on the explicit remainder; preserve existing paths. Priority: Retain scoped implementation.
 
 <a id="t-503"></a>
 ### T-503 — Physics constraint

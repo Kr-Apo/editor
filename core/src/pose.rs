@@ -59,6 +59,8 @@ pub struct Pose {
     /// Animated IK bend direction and softness overrides (T-504).
     pub ik_bend_direction: SecondaryMap<ConstraintId, f32>,
     pub ik_softness: SecondaryMap<ConstraintId, f32>,
+    /// Absolute fractional Path positions; absent means Setup. Reset each evaluation.
+    pub path_position: SecondaryMap<ConstraintId, f32>,
 }
 
 impl Pose {
@@ -153,6 +155,7 @@ impl Pose {
         self.transform_mix.clear();
         self.ik_bend_direction.clear();
         self.ik_softness.clear();
+        self.path_position.clear();
     }
 }
 
@@ -453,6 +456,25 @@ fn apply_animations(skel: &Skeleton, anims: &[(&Animation, f32, f32)], out: &mut
                         apply_draw_order_offsets(&mut out.draw_order, &offsets);
                     }
                 }
+                Timeline::PathPosition { constraint, keys } => {
+                    if anim.timelines.iter().filter(|t| matches!(t, Timeline::PathPosition{constraint:c,..} if c==constraint)).count()!=1 {continue;}
+                    if let Some(Constraint::Path(p)) = skel.constraints.get(*constraint)
+                        && let Some(value) = animation::sample(keys, time, &mut hint)
+                        && value.is_finite()
+                    {
+                        let current = out
+                            .path_position
+                            .get(*constraint)
+                            .copied()
+                            .unwrap_or(p.position);
+                        let mixed = (f64::from(current)
+                            + (f64::from(value) - f64::from(current)) * f64::from(alpha))
+                            as f32;
+                        if mixed.is_finite() {
+                            out.path_position.insert(*constraint, mixed);
+                        }
+                    }
+                }
                 Timeline::IkMix { constraint, keys } => {
                     if let Some(mix) = animation::sample(keys, time, &mut hint) {
                         let current = out
@@ -670,7 +692,10 @@ fn apply_constraints(
                 };
                 apply_physics(skel, out, id, p, physics, dt);
             }
-            Constraint::Path(p) => apply_path_constraint(skel, out, p),
+            Constraint::Path(p) => {
+                let position = out.path_position.get(id).copied();
+                apply_path_constraint(skel, out, p, position);
+            }
         }
     }
 }
@@ -864,7 +889,10 @@ fn apply_path_constraint(
     skel: &Skeleton,
     out: &mut Pose,
     constraint: &crate::constraints::PathConstraint,
+    position: Option<f32>,
 ) {
+    let animated = position.is_some();
+    let position = position.unwrap_or(constraint.position);
     // The path is an attachment on a slot, resolved through the default skin —
     // a path that changed with the outfit would move the rig when a hat is
     // swapped, which is not what skins are for.
@@ -894,19 +922,18 @@ fn apply_path_constraint(
     // distance (bones evenly spread however the curve bends) or by vertex index
     // (bones crowd wherever the path has detail).
     let placements = if path.constant_speed {
-        sampled.spread(
-            constraint.bones.len(),
-            constraint.position,
-            constraint.spacing,
-        )
+        sampled.spread(constraint.bones.len(), position, constraint.spacing)
     } else {
-        sampled.spread_by_index(
-            constraint.bones.len(),
-            constraint.position,
-            constraint.spacing,
-        )
+        sampled.spread_by_index(constraint.bones.len(), position, constraint.spacing)
     };
 
+    if animated
+        && placements
+            .iter()
+            .any(|(p, a)| !p.is_finite() || !a.is_finite())
+    {
+        return;
+    }
     for (&bone, (target, angle)) in constraint.bones.iter().zip(placements) {
         if skel.bones.get(bone).is_none() {
             continue;

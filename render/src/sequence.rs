@@ -28,6 +28,14 @@ impl SequenceRequest {
             return Err(Error::Invalid("FPS must be between 1 and 240".into()));
         }
         let clip = animation(doc, Some(&self.animation))?.unwrap();
+        if let Some((id, _)) = doc.animations.iter().find(|(_, a)| std::ptr::eq(*a, clip)) {
+            for t in &clip.timelines {
+                if let ankhimate_core::animation::Timeline::PathPosition { constraint, .. } = t {
+                    ankhimate_document::path_keys::Capture::read(doc, id, *constraint)
+                        .map_err(Error::Invalid)?;
+                }
+            }
+        }
         if !clip.duration.is_finite() || clip.duration <= 0.0 {
             return Err(Error::Invalid(
                 "clip duration must be finite and greater than zero".into(),

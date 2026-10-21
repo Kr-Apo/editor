@@ -18,6 +18,7 @@ pub mod key_selection;
 pub mod keymap;
 pub mod operators;
 mod paste_tests;
+pub mod path_keys;
 pub mod plugins;
 pub mod png_export;
 mod pose_clipboard;

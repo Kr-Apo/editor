@@ -613,5 +613,20 @@
       "offsets": [],
       "curve": "linear"
     }
+  },
+  {
+    "type": "Timeline",
+    "variant": "PathPosition",
+    "value": {
+      "kind": "path_position",
+      "constraint": "path",
+      "keys": [
+        {
+          "time": 0,
+          "value": 0.25,
+          "curve": "linear"
+        }
+      ]
+    }
   }
 ]

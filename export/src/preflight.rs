@@ -508,6 +508,24 @@ pub fn inspect(
             }
         }
     }
+    if target != Target::Rendered
+        && target != Target::Document
+        && project.animations.iter().any(|a| {
+            a.timelines
+                .iter()
+                .any(|t| matches!(t, schema::Timeline::PathPosition { .. }))
+        })
+    {
+        out.push(Error,"path-position-runtime-unsupported","Path Position","Animated PathPosition has no native v2/template/runtime contract. Export rendered images/video instead.");
+    }
+    if let Err(e) = ankhimate_formats::validate_path_positions(project) {
+        out.push(
+            Error,
+            "invalid-path-position",
+            "Path Position",
+            e.to_string(),
+        );
+    }
     for constraint in &project.constraints {
         if constraint.kind != "path" && !bones.contains(constraint.target.as_str()) {
             out.push(

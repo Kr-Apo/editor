@@ -18,7 +18,7 @@
 mod events;
 mod graph;
 mod membership;
-mod model;
+pub(crate) mod model;
 mod ruler;
 mod sheet;
 mod transport;

@@ -10,6 +10,7 @@ use ankhimate_core::{
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TrackKind {
+    PathPosition,
     Bone(BoneProperty, Option<Axis>),
     Color,
     Attachment,
@@ -45,6 +46,7 @@ pub struct KeyClip {
 /// Read-only rows have no editable TimelineAddr. Never use their UI placeholder.
 pub fn address(t: &Timeline) -> Result<TimelineAddr, String> {
     Ok(match t {
+        Timeline::PathPosition{constraint,..} => TimelineAddr::PathPosition{constraint:*constraint},
         Timeline::BoneTranslate {bone,axis,..} => TimelineAddr::Bone {bone:*bone,property:BoneProperty::Translate,axis:Some(*axis)},
         Timeline::BoneRotate {bone,..} => TimelineAddr::Bone {bone:*bone,property:BoneProperty::Rotate,axis:None},
         Timeline::BoneScale {bone,axis,..} => TimelineAddr::Bone {bone:*bone,property:BoneProperty::Scale,axis:Some(*axis)},
@@ -66,7 +68,19 @@ impl NamedTrack {
         addr: &TimelineAddr,
         resolve: impl FnOnce(&Self) -> Result<(), String>,
     ) -> Result<Self, String> {
+        // Path identity is native; immutable capture is reused by shared selection.
+        // Clipboard paste remains explicitly outside this bounded authoring feature.
+        if let TimelineAddr::PathPosition { constraint } = addr {
+            let p = ankhimate_core::path::position_target(&doc.skeleton, *constraint)?;
+            let named = Self {
+                name: p.name.clone(),
+                kind: TrackKind::PathPosition,
+            };
+            named.resolve(doc)?;
+            return Ok(named);
+        }
         let (name, kind) = match addr {
+            TimelineAddr::PathPosition { .. } => unreachable!("handled above"),
             TimelineAddr::Deform { .. } => {
                 return Err("FFD vectors are excluded from the general key clipboard".into());
             }
@@ -122,6 +136,20 @@ impl NamedTrack {
     }
 
     pub fn resolve(&self, doc: &Document) -> Result<TimelineAddr, String> {
+        if self.kind == TrackKind::PathPosition {
+            let ids: Vec<_> = doc
+                .skeleton
+                .constraints
+                .iter()
+                .filter(|(_, c)| c.name() == self.name)
+                .map(|(id, _)| id)
+                .collect();
+            if ids.len() != 1 {
+                return Err("Path constraint name is missing or ambiguous".into());
+            }
+            ankhimate_core::path::position_target(&doc.skeleton, ids[0])?;
+            return Ok(TimelineAddr::PathPosition { constraint: ids[0] });
+        }
         if let TrackKind::Bone(property, axis) = self.kind {
             if (property == BoneProperty::Rotate) != axis.is_none() {
                 return Err("Ambiguous bone property/axis".into());
@@ -178,6 +206,7 @@ fn captured_key(t: &Timeline, index: usize) -> Result<Key<KeyData>, String> {
         Timeline::BoneTranslate { keys, .. }
         | Timeline::BoneRotate { keys, .. }
         | Timeline::BoneScale { keys, .. }
+        | Timeline::PathPosition { keys, .. }
         | Timeline::BoneShear { keys, .. } => own(keys, index, KeyData::Scalar),
         Timeline::SlotColor { keys, .. } => own(keys, index, KeyData::Color),
         Timeline::SlotAttachment { keys, .. } => own(keys, index, KeyData::Attachment),
@@ -263,6 +292,18 @@ impl KeyClip {
         if !time.is_finite() || time < 0.0 {
             return Err(
                 "Paste time must be finite and non-negative; no clamping is performed".into(),
+            );
+        }
+        if self
+            .keys
+            .iter()
+            .any(|k| k.track.kind == TrackKind::PathPosition)
+            || destinations
+                .iter()
+                .any(|a| matches!(a, TimelineAddr::PathPosition { .. }))
+        {
+            return Err(
+                "PathPosition clipboard paste is not supported; use the Path key inspector".into(),
             );
         }
         let animation = doc
@@ -357,7 +398,7 @@ fn validate(kind: &TrackKind, key: &Key<KeyData>) -> Result<(), String> {
         return Err("Invalid source key time".into());
     }
     let valid = match (kind, &key.value) {
-        (TrackKind::Bone(_, _), KeyData::Scalar(v)) => v.is_finite(),
+        (TrackKind::Bone(_, _) | TrackKind::PathPosition, KeyData::Scalar(v)) => v.is_finite(),
         (TrackKind::Color, KeyData::Color(v)) => v.iter().all(|v| v.is_finite()),
         (TrackKind::Attachment, KeyData::Attachment(_))
         | (TrackKind::Visible, KeyData::Visible(_)) => true,
@@ -385,6 +426,7 @@ fn validate_existing_times(t: &Timeline) -> Result<(), String> {
         Timeline::BoneTranslate { keys, .. }
         | Timeline::BoneRotate { keys, .. }
         | Timeline::BoneScale { keys, .. }
+        | Timeline::PathPosition { keys, .. }
         | Timeline::BoneShear { keys, .. } => keys.iter().map(|k| k.time).collect(),
         Timeline::SlotColor { keys, .. } => keys.iter().map(|k| k.time).collect(),
         Timeline::SlotAttachment { keys, .. } => keys.iter().map(|k| k.time).collect(),

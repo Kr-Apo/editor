@@ -55,3 +55,10 @@ The normative author/runtime field tables and version/migration boundaries are i
 [format specification](../format-spec.md#native-runtime-json-format-version-2). The author
 adapter provided by some external runtimes is a separate reader, not the native JSON
 contract; it does not make prototype ZIP projects compatible.
+
+## T-831 PathPosition export boundary
+
+Animated PathPosition is author-only. Native v2 and all template/plugin data
+exports reject it before publication; PixiJS/Phaser are unchanged. CPU sequences
+and spritesheets use the existing native evaluator under their existing exclusions.
+See the [contract](../path-position-animation.md). Static path warnings remain.

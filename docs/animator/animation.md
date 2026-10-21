@@ -511,3 +511,10 @@ delay or lead is no longer wanted.
 
 Set **Loop animation** in the Animations panel for saved behavior. The transport
 loop is only the current editor preview.
+
+## Local animated Path Position
+
+See the [Path Position authoring contract](../path-position-animation.md) for
+Setup versus animated fractional position, inspector/Auto-key/K, single-key
+Dopesheet editing, native history and the explicit runtime export refusal.
+Manual Windows qualification is pending.

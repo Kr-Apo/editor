@@ -80,8 +80,21 @@ fn selection(state: &AppState, args: &Args) -> Result<(AnimationId, Vec<KeyRef>)
 }
 
 pub fn copy(state: &mut AppState, args: &Args) -> OpResult {
-    let result =
-        selection(state, args).and_then(|(anim, refs)| KeyClip::capture(&state.doc, anim, &refs));
+    let result = selection(state, args)
+        .and_then(|(anim, refs)| {
+            if refs.iter().any(|r| {
+                matches!(
+                    r.addr,
+                    ankhimate_document::commands::key_cmds::TimelineAddr::PathPosition { .. }
+                )
+            }) {
+                return Err(
+                    "Path Position clipboard is deferred; use its key context controls".into(),
+                );
+            }
+            Ok((anim, refs))
+        })
+        .and_then(|(anim, refs)| KeyClip::capture(&state.doc, anim, &refs));
     match result {
         Ok(clip) => {
             state

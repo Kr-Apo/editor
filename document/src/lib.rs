@@ -41,6 +41,7 @@ pub mod import_ops;
 pub mod meshgen;
 pub mod ops;
 pub mod part_ops;
+pub mod path_keys;
 pub mod psd_mesh;
 pub mod psd_reimport;
 pub mod read;

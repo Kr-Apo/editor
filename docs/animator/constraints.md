@@ -618,3 +618,10 @@ happens to pass through its rest position.
 Press Reset after large structural changes or major parameter changes. Physics
 retains prior session velocity until reset; the saved document does not contain
 that history.
+
+## Local animated Path Position
+
+See the [Path Position authoring contract](../path-position-animation.md) for
+Setup versus animated fractional position, inspector/Auto-key/K, single-key
+Dopesheet editing, native history and the explicit runtime export refusal.
+Manual Windows qualification is pending.

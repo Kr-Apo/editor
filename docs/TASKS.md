@@ -1,5 +1,18 @@
 # Ankhimate — operational tasks and evidence
 
+## Local T-831 update — 2026-10-21
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for native PathPosition keys.
+The existing scalar evaluator and constraint order drive a fractional Path position
+without mutating Setup. Inspector Auto-key/preview/K and exact single-key Dopesheet
+time/value/interpolation/delete use native history. T-830 retimes the new track.
+Author v1 gains a closed tagged variant: old readers reject new files explicitly;
+old files remain lossless. Runtime/data/template/plugin exports refuse the new
+animation; CPU rendered output uses the native evaluator. Graph, group/drag/copy
+Path keys, PathSpacing and geometric Bézier remain deferred. T-502 stays PARTIAL.
+See [Path Position contract](path-position-animation.md). All Windows checks remain
+**PENDING MANUAL REVIEW**; no GUI/inference/runtime modification or publication.
+
 ## Local T-830 update — 2026-10-21
 
 **COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for numeric whole-clip retiming.
@@ -268,7 +281,7 @@ The matrix is an operational summary; the archive retains all original criteria.
 | [T-206](FEATURE_INVENTORY.md#t-206) — Hierarchy panel UX | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Original hierarchy/reparent/lock scope exists; separate bone-name context-menu usability issue B03… |
 | [T-307](FEATURE_INVENTORY.md#t-307) — Attachment inspector — per-attachment properties | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Mesh/sequence image replacement is a separate unimplemented extension; not an absent region inspector. |
 | [T-501](FEATURE_INVENTORY.md#t-501) — Transform constraint | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Not part of common Pixi/Phaser alpha contract |
-| [T-502](FEATURE_INVENTORY.md#t-502) — Path attachment + path constraint | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Static polyline paths/constraints exist; Bezier path handles and PathPosition/PathSpacing authoring… |
+| [T-502](FEATURE_INVENTORY.md#t-502) — Path attachment + path constraint | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Static paths plus local T-831 PathPosition keys; PathSpacing, geometric Bezier and runtime parity remain |
 | [T-503](FEATURE_INVENTORY.md#t-503) — Physics constraint | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Rust fixed-step contract is complete in CAP-08; original export/playback parity not fulfilled: native… |
 | [T-504](FEATURE_INVENTORY.md#t-504) — IK completeness | COMPLETE | PENDING_MANUAL | PUBLIC_ALPHA | No unique-solution guarantee or new IK key dots; runtime IK excluded |
 | [T-505](FEATURE_INVENTORY.md#t-505) — Slot & bone presentation depth | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Not every presentation variant or animated dark tint; viewport acceptance incomplete |
@@ -423,7 +436,7 @@ exclude unqualified runtimes, platforms, artist quality and extended task promis
 | T-209 / T-404 | Owned scalar/slot clipboard, poses and bone-offset mirror | Vector clipboard, multi-key/advanced track editing and wider qualification; T-821 adds bounded single-key FFD editing locally |
 | T-302 | Nested import/preview and exact-path region refresh | Explicit path-change resolution / simple new-layer policy, not guessed image matching; preserve rig and animations |
 | T-402 | Alpha tracing/refinement | Weight/topology/FFD implications and original performance budget; do not retrace the subsystem |
-| T-502 / T-503 | Static path constraints and fixed-step Rust physics | Path animation tracks; export/runtime physics compatibility; deliberately excluded from alpha, separate future contracts |
+| T-502 / T-503 | Static path constraints and fixed-step Rust physics | T-831 adds local PathPosition only; PathSpacing, geometric Bezier, runtime paths/physics remain excluded |
 | T-505 / T-507 | Presentation/skins/default fallback | Advanced blend fidelity and composition/image-assignment boundaries; never infer adapter parity |
 | T-601 | CPU images/pages and deterministic multi-clip exports | General backgrounds/physics stepping/performance/viewport acceptance; reuse current renderer |
 | T-605 / T-701 / T-707 | Profiles/specification, safe refusal, keymap/autosave/recovery | Authentic legacy migration, hostile resource limits, original settings/panic/update/feedback criteria; maintain writer guarantees |

@@ -40,6 +40,11 @@ pub enum Error {
     MissingImage { name: String },
 }
 
+/// Validate the additive PathPosition author contract; unrelated legacy data is unchanged.
+pub fn validate_path_positions(project: &schema::Project) -> Result<(), Error> {
+    compatibility::validate_path_positions(project)
+}
+
 pub struct ImageBlob {
     pub rel_path: String,
     pub bytes: Vec<u8>,
@@ -52,12 +57,15 @@ pub struct ImageBlob {
 /// are not in here: the JSON is the index, the container carries the pixels.
 pub fn to_json(project: &ProjectRef<'_>) -> Result<String, Error> {
     let schema = convert::to_schema(project);
+    compatibility::validate_path_positions(&schema)?;
     Ok(serde_json::to_string_pretty(&schema)?)
 }
 
 /// Serialize standard, minified JSON using the stable short-key v1 profile.
 pub fn to_min_json(project: &ProjectRef<'_>) -> Result<String, Error> {
-    let value = serde_json::to_value(convert::to_schema(project))?;
+    let schema = convert::to_schema(project);
+    compatibility::validate_path_positions(&schema)?;
+    let value = serde_json::to_value(schema)?;
     Ok(serde_json::to_string(&compact::contract(value))?)
 }
 
@@ -98,6 +106,7 @@ pub fn save(
         });
     }
     let schema = convert::to_schema(project);
+    compatibility::validate_path_positions(&schema)?;
     // JSON encodes non-finite floats as null without an error. Check the exact
     // typed projection before any asset or primary write, including binary.
     let _: schema::Project = serde_json::from_value(serde_json::to_value(&schema)?)?;

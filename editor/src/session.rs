@@ -285,6 +285,7 @@ pub struct Session {
     /// defaults to on; turning it off holds edits as a *pending pose* until the
     /// user presses `K`.
     pub auto_key: bool,
+    pub path_preview: Option<crate::path_keys::Preview>,
     /// Bones whose preview transform is an unkeyed edit waiting for `K`
     /// (Animate mode with auto-key off). Empty otherwise.
     pub pending_pose: Vec<BoneId>,
@@ -515,6 +516,7 @@ impl Session {
             looping: true,
             onion_skin: OnionSkinSettings::default(),
             auto_key: true,
+            path_preview: None,
             pending_pose: Vec::new(),
             pending_slot_colors: SecondaryMap::new(),
             locked_bones: SecondaryMap::new(),
@@ -580,7 +582,9 @@ impl Session {
 
     /// Are there posed-but-unkeyed edits waiting for `K`?
     pub fn has_pending_pose(&self) -> bool {
-        !self.pending_pose.is_empty() || !self.pending_slot_colors.is_empty()
+        !self.pending_pose.is_empty()
+            || !self.pending_slot_colors.is_empty()
+            || self.path_preview.is_some()
     }
 
     pub fn set_status(&mut self, msg: impl Into<String>) {
@@ -792,6 +796,7 @@ impl Session {
     }
 
     pub fn clear_previews(&mut self) {
+        self.path_preview = None;
         self.cancel_deform_drag();
         self.preview_locals.clear();
         self.preview_bone = None;

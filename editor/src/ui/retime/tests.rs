@@ -518,3 +518,25 @@ fn t830_slot_and_ffd_locks_refuse_whole_operation() {
         assert!(prepare(&s, "2", "0").is_ok());
     }
 }
+
+#[test]
+fn t831_retime_path_respects_disabled_and_slot_bone_locks() {
+    let (mut s, _, c) = crate::path_keys::tests::state();
+    assert!(prepare(&s, "2", "0").is_ok());
+    let slot =
+        if let ankhimate_core::constraints::Constraint::Path(p) = &s.doc.skeleton.constraints[c] {
+            p.slot
+        } else {
+            panic!()
+        };
+    s.session
+        .locked_bones
+        .insert(s.doc.skeleton.slots[slot].bone, true);
+    assert!(prepare(&s, "2", "0").is_err());
+    s.session.locked_bones.clear();
+    if let ankhimate_core::constraints::Constraint::Path(p) = &mut s.doc.skeleton.constraints[c] {
+        p.mix_rotate = 0.;
+        p.mix_translate = 0.;
+    }
+    assert!(prepare(&s, "2", "0").is_err());
+}

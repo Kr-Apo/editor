@@ -314,7 +314,7 @@ pub fn ui(
                     if resp.clicked() {
                         crate::key_selection::set(state, anim, selection.keys.clone());
                     }
-                    if resp.drag_started() {
+                    if resp.drag_started() && !selection.keys.iter().chain(std::iter::once(&kref)).any(|r|matches!(r.addr,ankhimate_document::commands::key_cmds::TimelineAddr::PathPosition{..})) {
                         if !selection.contains(&kref) {
                             selection.set_single(kref.clone());
                         }
@@ -614,6 +614,21 @@ fn key_context_menu(
         }
         return;
     }
+    if selection.keys.iter().any(|r| {
+        matches!(
+            r.addr,
+            ankhimate_document::commands::key_cmds::TimelineAddr::PathPosition { .. }
+        )
+    }) {
+        if selection.keys.len() == 1 {
+            crate::path_keys::key_menu(ui, state, anim, &selection.keys[0]);
+        } else {
+            ui.label(
+                "Path Position editing requires one exact key; mixed/grouped edits are refused.",
+            );
+        }
+        return;
+    }
     clipboard_menu(ui, state, anim, selection, operators);
     ui.separator();
     if ui.button("Delete").clicked() {
@@ -721,3 +736,6 @@ fn clipboard_menu(
 
 #[cfg(test)]
 mod t821_tests;
+
+#[cfg(test)]
+mod t831_tests;

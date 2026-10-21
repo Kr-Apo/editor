@@ -1,5 +1,18 @@
 # Pending manual qualification register
 
+## Local T-831 update — 2026-10-21
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for native PathPosition keys.
+The existing scalar evaluator and constraint order drive a fractional Path position
+without mutating Setup. Inspector Auto-key/preview/K and exact single-key Dopesheet
+time/value/interpolation/delete use native history. T-830 retimes the new track.
+Author v1 gains a closed tagged variant: old readers reject new files explicitly;
+old files remain lossless. Runtime/data/template/plugin exports refuse the new
+animation; CPU rendered output uses the native evaluator. Graph, group/drag/copy
+Path keys, PathSpacing and geometric Bézier remain deferred. T-502 stays PARTIAL.
+See [Path Position contract](path-position-animation.md). All Windows checks remain
+**PENDING MANUAL REVIEW**; no GUI/inference/runtime modification or publication.
+
 ## Local T-830 update — 2026-10-21
 
 **COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for numeric whole-clip retiming.

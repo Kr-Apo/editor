@@ -41,7 +41,7 @@ fn times(t: &Timeline) -> Vec<f32> {
         Timeline::DrawOrder { keys } => times!(keys),
         Timeline::IkMix { keys, .. } => times!(keys),
         Timeline::IkBendDirection { keys, .. } => times!(keys),
-        Timeline::IkSoftness { keys, .. } => times!(keys),
+        Timeline::PathPosition { keys, .. } | Timeline::IkSoftness { keys, .. } => times!(keys),
         Timeline::TransformConstraintMix { keys, .. } => times!(keys),
         Timeline::Deform { keys, .. } => times!(keys),
     }

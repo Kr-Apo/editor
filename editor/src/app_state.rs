@@ -39,7 +39,7 @@ pub(crate) fn key_times(timeline: &ankhimate_core::animation::Timeline) -> Vec<f
         T::DrawOrder { keys } => times!(keys),
         T::IkMix { keys, .. } => times!(keys),
         T::IkBendDirection { keys, .. } => times!(keys),
-        T::IkSoftness { keys, .. } => times!(keys),
+        T::PathPosition { keys, .. } | T::IkSoftness { keys, .. } => times!(keys),
         T::TransformConstraintMix { keys, .. } => times!(keys),
         T::Deform { keys, .. } => times!(keys),
     }
@@ -374,6 +374,7 @@ impl AppState {
         if !self.session.is_animating() || !self.session.has_pending_pose() {
             return;
         }
+        let path_pending = crate::path_keys::take_pending(self);
         let pending: Vec<(BoneId, Transform)> = self
             .session
             .pending_pose
@@ -412,6 +413,9 @@ impl AppState {
             ) {
                 self.dispatch_all(cmds);
             }
+        }
+        if let Some((id, value)) = path_pending {
+            crate::path_keys::commit_pending(self, id, value);
         }
         self.refresh_pose();
     }
@@ -800,6 +804,7 @@ impl AppState {
             self.doc.skeleton.rebuild_update_order();
         }
 
+        let path_preview = crate::path_keys::preview_animation(self);
         // Borrow the document immutably and the pose mutably at the same time by
         // splitting the fields explicitly.
         let Self {
@@ -812,7 +817,7 @@ impl AppState {
 
         // `(animation, time, alpha)` for the current playhead — Animate mode
         // only; Setup mode always evaluates the bare setup pose.
-        let animations: Vec<(&ankhimate_core::animation::Animation, f32, f32)> =
+        let mut animations: Vec<(&ankhimate_core::animation::Animation, f32, f32)> =
             match session.work_mode {
                 WorkMode::Animate => match session
                     .active_animation
@@ -823,6 +828,9 @@ impl AppState {
                 },
                 WorkMode::Setup => Vec::new(),
             };
+        if let Some(preview) = &path_preview {
+            animations.push((preview, session.playhead, 1.0));
+        }
         // Physics advances only while something is actually moving: during
         // playback, or when the rigger has asked to simulate while tuning
         // values in Setup (T-503). A still frame evaluates to the rest pose, so

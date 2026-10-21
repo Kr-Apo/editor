@@ -2914,3 +2914,7 @@ mod highlight_tests;
 #[cfg(test)]
 #[path = "app_retime_tests.rs"]
 mod retime_tests;
+
+#[cfg(test)]
+#[path = "app_path_tests.rs"]
+mod path_tests;
