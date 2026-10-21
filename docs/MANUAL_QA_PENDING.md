@@ -1,212 +1,37 @@
-# Pending manual qualification register
+# Ankhimate — Cumulative manual validation pending
 
-## Local T-831 update — 2026-10-21
+Audit date: **2026-10-21**. Product frozen at T-831
+`4e4d50b0aa5b7ac160b204540afa878f66fa4d61`, parent T-830
+`12252e476b95f9d2ac250d5d0746c589c10269b3`. **T-832 changes documentation only.**
 
-**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for native PathPosition keys.
-The existing scalar evaluator and constraint order drive a fractional Path position
-without mutating Setup. Inspector Auto-key/preview/K and exact single-key Dopesheet
-time/value/interpolation/delete use native history. T-830 retimes the new track.
-Author v1 gains a closed tagged variant: old readers reject new files explicitly;
-old files remain lossless. Runtime/data/template/plugin exports refuse the new
-animation; CPU rendered output uses the native evaluator. Graph, group/drag/copy
-Path keys, PathSpacing and geometric Bézier remain deferred. T-502 stays PARTIAL.
-See [Path Position contract](path-position-animation.md). All Windows checks remain
-**PENDING MANUAL REVIEW**; no GUI/inference/runtime modification or publication.
+Public Alpha `v0.2.0-alpha.1` remains the exact T-811/T-812 artifact: editor
+`9233b8e888c811e7c71300101f865a9e74b3f489`, runtime
+`c4c38df269cfcb30f941221454b7202f40d3fa5b`. T-813–T-831 refinements are local
+candidates, even though their internal version string remains 0.2.0-alpha.1.
+No GUI/inference/public operation in T-832. No local Windows control is marked PASS.
+Accepted **T-831** evidence is 2,058 Rust passes / 0 failures / 4 existing ignores;
+**T-832 does not rerun that suite** and adds no tests or executable. Relative to
+T-816/T-817's 1,596 passes, the historical registration increase is 462, not 462
+new tests executed by this documentation mission.
 
-## Local T-830 update — 2026-10-21
+There are **352 pending control instances**, including 351 numbered original steps from 18 checklists and inherited B03. None is PASS. No current action requested.
 
-**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for numeric whole-clip retiming.
-Pose → Retime… adds Time Scale and signed frame offset, explicit pure Prepare,
-context/FPS invalidation and one native Undo command. All 13 native timelines
-are included; events, markers and bone evaluation offsets remain unchanged.
-Nonzero offset preserves clip duration even with scaling. Collisions/overflow
-refuse; valid clamp/outside-duration and excluded metadata require acknowledgement.
-No-op/Cancel/refusal preserve history and Redo. T-211 remains PARTIAL for broader
-historical/manual acceptance; T-905 remains PARTIAL. Fixed shortcuts, T-827 capture,
-T-829 highlighting, renderer, sampler, formats and runtimes are unchanged.
-See [numeric retiming](numeric-retiming.md). Cumulative T-813–T-830 desktop checks
-remain **PENDING MANUAL REVIEW**. Earlier notes retain their historical scope.
+| Family | Pending instances |
+|---|---|
+| Project / Save / Recovery | 40 |
+| PSD and assets | 22 |
+| Rigging | 23 |
+| Meshes / weights / FFD | 38 |
+| Animations | 58 |
+| Graph Editor and Dopesheet | 58 |
+| Path constraints | 23 |
+| CPU export | 11 |
+| Diagnostics and safety | 42 |
+| Perceived performance | 35 |
+| Compatibility and publication | 2 |
 
-Use `outputs/T830-Numeric-Retime/Ankhimate-T830-dev.exe` and its exact SHA-256.
-Version alone is insufficient. Complete the 27-row delivery checklist on disposable
-projects; previous T-813–T-829 checks remain pending and preserved. No test is
-requested during development.
+The [full self-contained map](cumulative-manual-qa-map.md) retains source IDs, exact original scenarios, fixtures, required cumulative binary, prerequisites, expected outcomes, status and possible grouping. Repeated Save/Undo/open steps may share setup later, but no source coverage is removed. T-816 master QA routes to the individual checks and is not counted again; T-817 introduced no product checklist.
 
-All **local T-813–T-816 GUI results remain PENDING_MANUAL / PENDING MANUAL REVIEW**.
-This register requests no action now. The maintainer chose to continue development
-before grouped tests. No editor/browser/inference session was run by T-817.
+Use only the exact T-831 cumulative EXE,35,416,576 bytes, SHA-256 `0ba98d6dac970f305f4691f938d8978db37fd034b4a647805e4efb266cdaa3af`. The internal0.2.0-alpha.1 number is not identity. Retain earlier binaries for comparisons on separate copies. Use complete copied Jade/Crapaud/technical fixtures with assets; preserve originals, backups and recovery sidecars. Some closed/index/invalid-layout scenarios need an explicitly prepared compatible technical copy before execution.
 
-Use the **T-829 cumulative executable** for the grouped campaign; older binaries
-are retained for targeted comparisons, not substitutes. Internal version remains
-0.2.0-alpha.1 and cannot identify a candidate by itself. Check the SHA before use.
-
-| Phase | Expected original artifact / SHA-256 | Existing checklist (delivery-relative location) | Unrun scenarios / risks | Human result |
-|---|---|---|---|---|
-| T-813 | Ankhimate-T813-dev.exe — bb3058589ffb3448d2df755b95c7d43b8c651c7701d845457648ab4396e93a73 | outputs/T813-Project-Reliability/MANUAL-CHECKLIST.md | Save/Save As/relink, unknown inputs, failed writes, idle autosave/recovery; use copies | PENDING_MANUAL |
-| T-814 | Ankhimate-T814-dev.exe — 4d1b897c5bc646d068ce3267b3bb5830dd2c58c3452f1cf3abe78fb4624f5320 | outputs/T814-Animation-UX/MANUAL-CHECKLIST.md | Key selection, numeric tangents, Apply/Cancel, graph framing/focus and Undo | PENDING_MANUAL |
-| T-815 | Ankhimate-T815-dev.exe — bdff15865d02fc945e1daf2e973e2364f867a190da5f99b45de37e0b05e5f9c2 | outputs/T815-Viewport-Precision/MANUAL-CHECKLIST.md | Exact positions/UV/polygons, Set/Add, context invalidation/weighted meshes | PENDING_MANUAL |
-| T-816 | Ankhimate-T816-dev.exe — fc8268863ce24118818caafcdc2d91f00b3f91a7ef5203ade03de0ba323f5348 | outputs/T816-Rigging-Discoverability/MANUAL-CHECKLIST.md and MASTER-MANUAL-QA.md | IK target/span/bend/mix, paint targeting/locks, real pointer/dock/themes, beginner exercise, save/reopen | PENDING_MANUAL |
-
-These `outputs/` paths refer to the maintainer's local delivery alongside `work/`,
-not files distributed by this source-only documentary commit. Do not create broken
-repository-relative links to unpublished evidence. Exact checkpoint/validation
-metadata are in each local CHECKPOINT.json/VALIDATION.json and the T-817 report.
-The master checklist references the prior ones; this register does not duplicate them.
-
-## Historical human evidence — retain its narrow scope
-
-- T-805.1 recorded an actual Qwen/NInfer conversation/approval and Windows layout
-  checks on its own development binary. Six-provider mocks do not qualify cloud models.
-- Later maintainer reports recorded targeted Jade vision/bone creation/region
-  assembly/mesh smoothing, Undo/Redo and Save/Reload, plus H.264 1080p/60 FPS/2 s/
-  120-frame MP4, cancel/no-overwrite. Exact Qwen build was not supplied; modified
-  Jade was not saved and is deliberately not distributed. This is MIXED historical
-  evidence, not a reproducible final project or blanket current-model certification.
-- T-811/T-812 publication authorization accepted the exact integrated artifacts.
-  T-812 records public checks and hashes. Older candidate-pending statements are
-  temporally stale for those published artifacts, but do not qualify newer binaries.
-- RC2's separate-PC six-control maintainer report is retained with RC2 evidence;
-  the recorded Windows wording is insufficient for a precise build-number claim.
-  It does not certify the newer T-813–T-816 executables or all hardware.
-- Other GUI/GPU captures remain historical scenario evidence; T-817 did not rerun them.
-
-## Recording the later campaign
-
-Record actual binary SHA, Windows build, GPU/driver, DPI/theme, disposable sample,
-steps, PASS/FAIL/NOT RUN and reproducible expected/actual result. A missing run
-stays pending. Keep original projects/assets/recoveries intact. Reproduce B03's
-bone-name versus icon context target deliberately; do not infer a fix from a workaround.
-No result should authorize an automatic release or close the development roadmap.
-
-## T-818 — cumulative main candidate, PENDING_MANUAL
-
-Artifact: `outputs/T818-Global-Diagnostics/Ankhimate-T818-dev.exe`.
-Read its exact SHA-256 in the delivery CHECKPOINT.json / WINDOWS-BUILD.json;
-version 0.2.0-alpha.1 alone is insufficient. Earlier executables and all T-813
-through T-816 checklists remain intact. No action is requested during development.
-Follow the 14-step [diagnostics checklist](document-diagnostics.md#deferred-manual-checklist)
-and the prior cumulative campaign. No desktop GUI, browser or inference session
-was executed for T-818; in-memory egui tests are automated evidence only.
-
-## T-819 — cumulative main candidate, PENDING_MANUAL
-
-Artifact: `outputs/T819-Cross-Project-Transfer/Ankhimate-T819-dev.exe`.
-Use its exact delivery CHECKPOINT.json / WINDOWS-BUILD.json SHA; internal version
-0.2.0-alpha.1 alone is insufficient. Follow the 18-step transfer checklist plus
-all retained T-813–T-818 checklists. Native egui tests are not desktop qualification.
-No test is requested now and no previous manual gate is marked PASS. Previous
-binaries, including T-818 SHA dcbc852f0d39670acb82ca0fbc844dd264d683a1d17478d23cf8178bc9a3dec0,
-remain available for comparison. Source/destination fixtures are disposable copies.
-
-## T-820 — cumulative main candidate, PENDING_MANUAL
-
-Artifact: `outputs/T820-Bezier-Linking/Ankhimate-T820-dev.exe`.
-Use its exact delivery CHECKPOINT.json / WINDOWS-BUILD.json SHA, not the unchanged
-0.2.0-alpha.1 version string. Previous T-813–T-819 binaries/reports/checklists remain.
-The 20-step linking checklist covers central-key selection, modes, real pointer
-gestures, unequal duration/amplitude, flat/overshoot/refusal cases, numeric
-driver/Apply/Cancel, three Undo/Redo, Setup/Animate and Save/Reload with the mode
-reset to Broken. Combine it with all prior cumulative qualification steps.
-No checklist is marked PASS, and no action is requested during development.
-In-memory egui tests are not desktop, DPI/theme, artistic or playback evidence.
-
-## T-821 — cumulative main candidate, PENDING_MANUAL
-
-Artifact: `outputs/T821-FFD-Key-Editing/Ankhimate-T821-dev.exe`.
-Check exact CHECKPOINT.json / WINDOWS-BUILD.json SHA; internal version remains
-0.2.0-alpha.1. Follow the 24-step FFD-key checklist plus T-813–T-820 cumulative
-checks. Rigid/Weighted synthetic fixtures are disposable technical samples,
-not visually qualified artwork. Actual mouse comfort, skin/clip changes,
-playback, dialogs, DPI/theme and geometry display remain for human review.
-All prior binaries/evidence remain untouched. No manual result is pre-marked PASS
-and no action is requested now. In-memory egui events are automated evidence only.
-
-## T-822 — cumulative main candidate, PENDING_MANUAL
-
-Artifact: `outputs/T822-PSD-Path-Resolution/Ankhimate-T822-dev.exe`.
-Check the exact CHECKPOINT.json / WINDOWS-BUILD.json SHA. Internal version remains
-0.2.0-alpha.1. Follow its 26-step mapping checklist on disposable PSD/project
-copies, plus all cumulative T-813–T-821 checks. Prepare/Cancel/Apply, source edits,
-locks/mode, three Undo/Redo, resize and Save As/reopen/second exact-path refresh
-require human review. No manual result is pre-marked PASS; no action is requested
-now. Headless egui events and CPU texture-upload bytes are automated evidence,
-not Windows, GPU, DPI/theme or artistic qualification. All old binaries remain.
-
-## T-823 — cumulative main candidate, PENDING MANUAL REVIEW
-
-Artifact: `outputs/T823-Safe-Mesh-Retracing/Ankhimate-T823-dev.exe`. Verify its exact
-WINDOWS-BUILD.json SHA; the unchanged version string is not sufficient. Follow the
-15-step delivery checklist on copies: simple/rigid/weighted tracing, preview,
-FFD/linked/lock refusals, Cancel, three Undo/Redo, painting, Save As/reopen and
-diagnostics, plus cumulative T-813–T-822 controls. No check is marked PASS.
-All earlier binaries/fixtures remain. In-memory egui events and numeric Setup
-checks are not desktop, GPU, DPI/theme, visual quality or artistic evidence.
-
-## T-824 — onion skinning refinement
-
-**PENDING MANUAL REVIEW**, together with T-813–T-823. Use the local delivery
-`outputs/T824-Onion-Skin-Refinement/Ankhimate-T824-dev.exe` and verify its SHA in
-CHECKPOINT.json. Its twenty-step MANUAL-CHECKLIST.md covers toggle, past/future,
-light/dark palette, opacity/falloff, 1–5 steps, boundaries, frames/keys, irregular
-keys, selected-only/IK/weighted art, scrubbing, clip changes, Setup/Animate,
-normal rendering, Save/Reload and perceived performance. Headless egui events
-and CPU measurements are not a desktop or artistic certificate. Historical
-video process tests retain their concurrency sensitivity; no assertion or
-ignore was changed. No human action is requested by this development task.
-
-## T-825 — Graph marquee selection
-
-**PENDING MANUAL REVIEW**, cumulatively with T-813–T-824. The local delivery is
-`outputs/T825-Graph-Marquee/Ankhimate-T825-dev.exe`; verify size/SHA in its
-CHECKPOINT.json before the grouped campaign. Its MANUAL-CHECKLIST.md contains
-22 deferred controls: scalar points, four directions, replace/Ctrl-union and
-Ctrl-click toggle, empty rectangles, navigation, handles, linking disabled
-states, shared Dopesheet selection, context changes, Undo/Redo and Save As on
-copies. No current GUI action is requested. Existing binaries remain retained.
-Headless egui events and synthetic CPU observations do not certify desktop
-feel, contrast or large-project performance. Historical video/process concurrency
-sensitivity remains; final automated gates use four test threads, without
-assertion/timeout or ignore changes.
-
-## T-826 — normalized comparison, deferred
-
-**PENDING MANUAL REVIEW** for all 24 scenarios in the local delivery
-`outputs/T826-Normalized-Curve-Overlay/MANUAL-CHECKLIST.md`.
-Use `Ankhimate-T826-dev.exe`, checking its SHA in the local CHECKPOINT.json and
-WINDOWS-BUILD.json. Older binaries/checklists remain intact. Test Raw vs Normalize,
-relative/native legends, constants, extremes, overshoot, pan/zoom, shared marquee,
-blocked edits, Raw return, actual Raw Undo/Redo and Save As/reopen, then cumulative
-T-813–T-825 checks. Headless egui logical colors/hitboxes and CPU observations do
-not qualify Windows focus, accessibility, themes, visual legibility or loaded-clip
-responsiveness. No request to run this campaign now.
-
-## T-827 — large selection validation, deferred
-
-All 20 scenarios in local `outputs/T827-Key-Selection-Performance/MANUAL-CHECKLIST.md`
-remain **PENDING MANUAL REVIEW**, together with the cumulative T-813–T-826 campaign.
-Use `Ankhimate-T827-dev.exe` and check its SHA in local CHECKPOINT.json /
-WINDOWS-BUILD.json. Retain all older binaries. Test single/small/large selection,
-Ctrl-union/toggle, Graph Raw/Normalize, shared sheet/tangents, clip/stale context,
-Redo and Save/reopen on copies. Compare the same fixture against T-826; remaining
-highlight/edit costs can still cause stalls. Headless state tests and CPU timings
-are not Windows focus/visual/responsiveness acceptance. No test is requested now.
-
-## T-828 — project FPS history, deferred
-
-All controls **PENDING MANUAL REVIEW**. Use an isolated project copy: note FPS,
-edit by drag and typing, apply with release/Enter/blur; Undo/Redo; then edit a key
-and undo both independently. Verify two gestures, Escape, frame step, snap,
-Onion frames, unchanged seconds/durations, dirty status, Save As/reopen and
-diagnostics. Replay cumulative T-813–T-827 checks. No desktop QA was performed.
-The local delivery contains the detailed 22-row checklist and new Windows binary;
-retain earlier binaries for comparison.
-
-## T-829 — large-selection highlighting, deferred
-
-All controls **PENDING MANUAL REVIEW**. Compare retained T828 and T829 binaries
-with the same disposable 100/1000/10000-key fixtures. Inspect Graph/Dopesheet
-colors, partial/full selection, Ctrl-click, replace/union marquee, Raw/Normalize,
-view/clip changes, Undo/Redo, unchanged curves and Save As/reopen; replay cumulative
-T813–T828 controls. Record binary SHA, Windows, GPU/driver, DPI/theme, fixture
-hash/count and PASS/FAIL/NOT RUN. Headless shapes and CPU timings do not substitute
-for this campaign. The local delivery contains its detailed 21-row checklist.
+No model inference or provider qualification is performed or requested now. T-806/807/808/809 historical narrow reports do not establish general visual/model acceptance. B03 stays pending physical target/focus reproduction. A future campaign must record OS/GPU/driver/DPI/theme, artifact/fixture hashes and expected/actual PASS/FAIL/NOT RUN. See [priorities](roadmap-priorities.md) and [exchange compatibility](format-release-compatibility.md).

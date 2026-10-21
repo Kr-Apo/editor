@@ -1,6 +1,9 @@
 # T-806 / T-809 — opt-in viewport observation and native bone rigging
 
-Development source only; not in Alpha RC2. T-805.1 chat, animation tools,
+The bounded native T-806/T-809 tools are present in the later T-811/T-812 public
+alpha source/artifact; they are not in the older frozen Alpha RC2. T-832 marks
+the retained native implementation COMPLETE while real visual/model qualification
+remains pending. No new model or artistic certification is implied. T-805.1 chat, animation tools,
 providers, validation and confirmation remain in place. No runtime-format change.
 
 ## Manual test (maintainer, not automated qualification)

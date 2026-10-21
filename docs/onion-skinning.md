@@ -1,7 +1,9 @@
 # Onion skinning — local T-824
 
 **COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for the bounded refinement.
-Historical T-703 visual acceptance is still PARTIAL. No new published release.
+T-832 reconciliation: historical T-703 implementation is COMPLETE in its retained
+scope; visual acceptance remains PENDING_MANUAL. These local controls are not
+a new published release. See [current inventory](FEATURE_INVENTORY.md#t-703).
 
 ## Controls and colors
 

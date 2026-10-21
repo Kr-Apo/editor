@@ -5,6 +5,15 @@ description: The graph editor's selection, handle, snapping, and navigation beha
 
 # Graph editor interaction rules (T-912)
 
+**Current status at T-831, reconciled by T-832:** T-704's retained scalar feature
+list is implemented, including linked tangents, marquee and Normalize View Only.
+T-912 remains PARTIAL for its literal opt-in snapping requirement: Raw currently
+defaults to frame snap with Alt-free. Both retain PENDING_MANUAL usability checks.
+Sections below retain the implementation chronology; an earlier "deferred" or
+"PARTIAL" statement is scoped to that checkpoint, not a current absence. No
+normalized author editing, universal Graph coverage or new publication is claimed.
+See [inventory](FEATURE_INVENTORY.md#t-704) and [manual map](cumulative-manual-qa-map.md).
+
 Four rules and one deferral, each written down because it answers a complaint
 filed repeatedly against the established editors' curve editors — unexpected
 snapping, curves that cannot be seen, tangents that overshoot without saying so,

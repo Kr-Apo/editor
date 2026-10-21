@@ -1,291 +1,109 @@
-# Known limitations — local T-811 candidate
+# Ankhimate — Current known limitations after T-831
 
-## Local T-831 update — 2026-10-21
+Audit date: **2026-10-21**. Product frozen at T-831
+`4e4d50b0aa5b7ac160b204540afa878f66fa4d61`, parent T-830
+`12252e476b95f9d2ac250d5d0746c589c10269b3`. **T-832 changes documentation only.**
 
-**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for native PathPosition keys.
-The existing scalar evaluator and constraint order drive a fractional Path position
-without mutating Setup. Inspector Auto-key/preview/K and exact single-key Dopesheet
-time/value/interpolation/delete use native history. T-830 retimes the new track.
-Author v1 gains a closed tagged variant: old readers reject new files explicitly;
-old files remain lossless. Runtime/data/template/plugin exports refuse the new
-animation; CPU rendered output uses the native evaluator. Graph, group/drag/copy
-Path keys, PathSpacing and geometric Bézier remain deferred. T-502 stays PARTIAL.
-See [Path Position contract](path-position-animation.md). All Windows checks remain
-**PENDING MANUAL REVIEW**; no GUI/inference/runtime modification or publication.
+Public Alpha `v0.2.0-alpha.1` remains the exact T-811/T-812 artifact: editor
+`9233b8e888c811e7c71300101f865a9e74b3f489`, runtime
+`c4c38df269cfcb30f941221454b7202f40d3fa5b`. T-813–T-831 refinements are local
+candidates, even though their internal version string remains 0.2.0-alpha.1.
+No GUI/inference/public operation in T-832. No local Windows control is marked PASS.
+Accepted **T-831** evidence is 2,058 Rust passes / 0 failures / 4 existing ignores;
+**T-832 does not rerun that suite** and adds no tests or executable. Relative to
+T-816/T-817's 1,596 passes, the historical registration increase is 462, not 462
+new tests executed by this documentation mission.
 
-## Local T-830 update — 2026-10-21
+## Current product gaps / evidence boundaries
 
-**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for numeric whole-clip retiming.
-Pose → Retime… adds Time Scale and signed frame offset, explicit pure Prepare,
-context/FPS invalidation and one native Undo command. All 13 native timelines
-are included; events, markers and bone evaluation offsets remain unchanged.
-Nonzero offset preserves clip duration even with scaling. Collisions/overflow
-refuse; valid clamp/outside-duration and excluded metadata require acknowledgement.
-No-op/Cancel/refusal preserve history and Redo. T-211 remains PARTIAL for broader
-historical/manual acceptance; T-905 remains PARTIAL. Fixed shortcuts, T-827 capture,
-T-829 highlighting, renderer, sampler, formats and runtimes are unchanged.
-See [numeric retiming](numeric-retiming.md). Cumulative T-813–T-830 desktop checks
-remain **PENDING MANUAL REVIEW**. Earlier notes retain their historical scope.
+| Historical task | Current implementation | Remaining product or qualification condition |
+|---|---|---|
+| T-002 | Linux/Windows test/fmt/Clippy and core WASM workflow definitions | Actions disabled; no fresh remote green run; actual Clippy job lacks historical -D warnings |
+| T-208 | Clip create/rename/duplicate/delete/duration/loop manager retained | Clip reordering remains absent from the manager; do not recreate its existing operations. |
+| T-209 | Existing owned key blocks/pose/mirror plus faster capture; separate reviewed region transfer | General FFD/vector, constraint, draw-order and event block clipboard remain excluded; no separate empty-row destination tool. T-821 key editing is not FFD clipboard. |
+| T-211 | Bake/reset/clear and fixed retime retained; checked numeric whole-clip retime | Numeric operation always covers the active clip: selection-only offset from the original task is not implemented. K keys pending poses; no dedicated Shift+K key-all-changed binding identified. |
+| T-302 | Initial PSD import plus exact-path refresh and one explicit path-change mapping | Bulk/multiple missing path mapping, complex/shared/mesh/FFD/sequence refresh, automatic added/deleted-layer reconciliation and Photoshop effects/masks remain outside qualified workflow. |
+| T-401 | Mesh vertices/triangles, constrained retriangulation, UV and exact local numeric drafts | No universal snapping or arbitrary linked-source/topology edit safety |
+| T-402 | Original tracer retained; safe nearest-vertex weight-row remap and bind preservation | FFD-dependent, linked/shared/overridden or pinned retrace is refused; no topology/FFD migration. General <100 ms release/artist preservation budget remains unqualified beyond one ring fixture. |
+| T-404 | Stable FFD drag plus typed owned-mesh Dopesheet selection/time/delete/interpolation | Stale topology is reported by live diagnostics and editing refuses it; the author loader still directly constructs Deform rather than invalidating its track at load. No general topology/FFD remap or ambiguous/shared ownership edit. Vector clipboard belongs to T-209 and alone is not the reason for this status. |
+| T-502 | Static polylines/native constraint plus native PathPosition keys/evaluation/author files | Animated PathSpacing and geometric Bezier handles remain absent; data/runtime exports refuse PathPosition. Graph/group/clipboard Path keys are deferred. |
+| T-503 | Rust caller-owned fixed-step physics state, reset and deterministic advance | Rust fixed-step contract is complete in CAP-08; original export/playback parity not fulfilled: native TS physics activation incompatible and rendered exports explicitly refuse it. |
+| T-505 | Bone/slot colors, visibility, locks and native static dark tint | Not every presentation variant or animated dark tint; viewport acceptance incomplete |
+| T-507 | Named skins, default fallback and editor composition controls | Game adapters use one compatible skin; arbitrary multi-skin/mesh-image workflows unqualified |
+| T-601 | CPU deterministic PNG/JPEG/WebP sequences, spritesheets, framing/trim/padding/batch | Default skin/Normal/no physics; original background/performance/viewport criteria not all closed |
+| T-603e | Native/generic/Phaser-atlas presets and custom templates | No qualified Godot preset; foreign-format plugins remain optional |
+| T-604 | External TypeScript core and two packaged adapters with qualified common profile | In-workspace Rust player plan superseded; no universal runtime parity |
+| T-605 | Existing v1 spec/gates/refusal plus documented additive PathPosition closed enum | Authentic v0 migration still unqualified; no universal hostile-resource budget. T-831 keeps author/envelope 1 but older readers reject the new variant; future release must communicate feature-level compatibility. |
+| T-701 | JSON preferences, registered keymap and monotonic isolated idle autosave | Original exhaustive settings list/restart acceptance incomplete; unsaved-doc autosave policy retained |
+| T-702 | Global shared integrity rules, debounced badge/list and exact safe offender selection | Automatic select-and-frame is absent: camera intentionally unchanged. Large image scans remain synchronous without a general 500-bone/asset completion budget. Export preflight remains independently authoritative. |
+| T-705 | English UI literals; no localization catalog/macro/picker identified | i18n implementation absent and deliberately deferred; no locale certificate |
+| T-706 | Bounded native capture/indexing and selected-view membership optimizations, measured headlessly | No general xtask bench/trend or integrated-GPU 500-bone/300-row 60 fps certificate. Large commands/model/payload work remains; debug medians are not budgets. |
+| T-707 | Safe save, sidecar recovery, candidate checks and recovery offers | No panic-time live-document dump, recovery browser or complete update/feedback package |
+| T-708 | Gizmos, region pivot editing, camera and precise geometry/UV entry | No universal snapping/expression-on-drag/pivot editing for every attachment; framing acceptance incomplete |
+| T-709 | Control sizing, scaling, partial keyboard/AccessKit, close guard and docking | No whole workflow keyboard/contrast/colorblind audit or exhaustive icon-tooltip certificate |
+| T-801 | Approved Jade alpha sample, source examples and first-rig guide | Not all 3 CC0 sample/PSD/GIF criteria; new user's exercise pending |
+| T-802 | Published unsigned portable Windows ZIP, manifests and matching packages | No signed installer, Linux/macOS artifacts or broad hardware certification |
+| T-803 | WASM core compiles; native desktop editor remains product | No browser authoring frontend/distribution; WASM core is not a web editor |
+| T-901 | Bone numbering/substring replacement, preview and native batch rename | Not slot/attachment/constraint rename, regex or all path-safety variants |
+| T-902 | Exact mesh/UV/path/polygon Set/Add and numeric normalized Bezier handles | Not every draggable point, expression parser or snap-to-neighbour |
+| T-903 | Session-only descendant isolation and exit affordance | Optional hierarchy/dopesheet filters/configurable opacity not fully qualified |
+| T-904 | Hierarchy folders exist, but no saved overlapping selection-set model/schema/panel found | Stale SelectionSet comments are not an implementation; new optional schema needed if later authorized |
+| T-905 | Persisted per-bone static sampling offsets and header UI | Not arbitrary per-track/per-selection offsets for slots/constraints/deforms |
+| T-907 | Length edit carries tip children; Alt preserves positions; one native Undo | Remembered carry preference/full canvas-length interaction not identified |
+| T-909 | Reviewed native cross-project region/asset/bone-key copy through separate import workflow | Explicit Move, general meshes/FFD/path/clipping/physics/alternate-skin or advanced animation transfer remain unavailable/refused. Local transforms are preserved, not arbitrary world pose; this is not retargeting. |
+| T-910 | Noncanvas panels detach over one AppState; detached set persisted | Second viewport absent; per-window positions/multimonitor acceptance not broadly established |
+| T-911 | 10k-step soak, energy decay and 30/60/144 physics tests; velocity API | No complete debug overlay or broad unrelated-edit interaction qualification |
+| T-912 | Auto-fit/readouts/overshoot/gap notices, numerics, shared selection and newer scalar Graph refinements | The literal historical opt-in snapping criterion is still not met: Raw frame snapping is the default, Alt temporarily frees it, and the badge is visible. This policy gap is distinct from pending Windows readability/usability. Linked/normalize/marquee are no longer absent. |
 
-## Local T-829 update — 2026-10-21
+## Implemented scopes with pending manual acceptance
 
-**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for large-selection highlighting.
-Graph point rings and Dopesheet spans/dots use a temporary full typed-address/index
-membership view; up to 64 refs retain linear lookup. This is an algorithm choice,
-not a selection limit. The authoritative ordered KeySelection and T827 native
-capture remain unchanged. The index is rebuilt after accepted local selection
-mutations in the same traversal; never persisted or used to authorize editing.
-Idle Broken handles no longer scan selection when no handle drag is occurring;
-all handle geometry/interactions and linked tangent rules remain.
-Exact T828 ordered logical shapes, colors, positions and registered key hitboxes
-are compared with the local candidate, including interaction frames and 10000
-keys. Paired headless CPU measurements record the scoped speedup separately from
-remaining native read, model, handle and egui work. This is not Windows/GPU or
-universal responsiveness certification. Move/destination resolution is unchanged.
-T704/T912 remain PARTIAL; T813–T829 manual qualification is **PENDING MANUAL REVIEW**.
-No runtime, sampler, format, FPS history, public reference or publication change.
-Earlier notes below retain their historical scope.
+| Scope | Implemented | Pending / explicit limit |
+|---|---|---|
+| T-703 | Native artwork ghosts with themed past/future tint, opacity/falloff, 1–5 frame/key steps and selected-owner filter | No product gap in retained T-703 scope. Manual visual contrast/scrubbing acceptance pending; no stateful physics ghosts or preference persistence promised. |
+| T-704 | Existing scalar Graph plus numeric tangents, single-junction linking, marquee and Normalize View Only | No remaining product bullet in retained scalar scope. Windows ergonomics pending. Normalized editing, multi-junction linking, FFD/Path Graph and middle-button pan are separate extensions, not retroactively added requirements. |
+| T-806 | Bounded viewport preview/one-send consent, coordinate declarations and typed bone proposal tools | No product gap in retained native tool/consent scope; real vision/placement/model qualification remains pending and is not generalized from old narrow feedback. |
+| T-908 | Visible N-bone IK and brush guidance plus documented unchanged Tentacle exercise | No product gap in retained discovery surfaces/sample scope. New-user no-source Windows exercise remains pending; not a universal discoverability certificate. |
 
-
-## Local T-828 update — 2026-10-21
-
-**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for project FPS history.
-The transport now commits `SetProjectFps` through native history once per finished
-gesture. Drag release, Enter or field blur apply; Escape, lost window focus,
-lost pointer during drag, stale document/revision or hidden-control gap cancel.
-Typing is a transient draft. Separate gestures remain separate Undo entries.
-The existing editing range is 1–240 whole FPS; invalid text refuses rather than
-silently clamping. Displaying legacy out-of-range values does not alter the file.
-Undo restores the exact prior u32. No key, curve or clip is retimed.
-Existing dirty snapshots, safe save, recovery and coalesced T-818 diagnostics
-are preserved; metadata fallback remains. B02 is resolved only for transport FPS.
-T-202 retains its historical COMPLETE status; B03 awaits desktop reproduction.
-T-827 indexes and graph Raw/Normalize behavior remain unchanged. All cumulative
-T-813–T-828 desktop controls are **PENDING MANUAL REVIEW**. No GUI, inference,
-runtime change or public operation. See [FPS transport](animator/animation.md#fps-is-a-grid-not-a-retime-command).
-Earlier notes below retain their historical scope.
-
-
-## Local T-827 update — 2026-10-21
-
-**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for native large-key selection
-validation. KeyClip remains the authority: larger requests use operation-local
-full-identity deduplication, timeline/name indexes and lazy per-track resolution.
-Every distinct key still passes native value/time/interpolation checks, in the
-original request order. First occurrences, exact errors, session duplicates,
-scalar invalid-set clearing and FFD refusal policies remain unchanged. Small
-requests retain the original path; this is an algorithm choice, not a key limit.
-No persistent cache, document edit, dirty revision, Undo entry or Redo loss.
-
-Paired debug CPU observations and exact T-826 comparisons demonstrate the scoped
-gain; local delivery `outputs/T827-Key-Selection-Performance/` records methods and
-raw results. This does **not** certify interactive responsiveness: graph/sheet
-linear membership highlighting, native move/resolve scans and other consumer
-costs remain. T-825 gestures and T-826 Raw/Normalize View Only are unchanged.
-T-704/T-912 remain PARTIAL. Cumulative T-813–T-827 desktop checks remain
-**PENDING MANUAL REVIEW**; no GUI/GPU/inference or public operation. Earlier notes
-retain their historical scope, including the now-addressed native capture cost.
+## Export and file exchange
 
 
-## Local T-826 update — 2026-10-21
+This is a documentary finding at T-831, not a migration or new format change.
+Author schema 1, binary envelope 1, native runtime 2 and app/package 0.2.0-alpha.1 are
+independent identifiers. A shared author version alone does not imply identical
+supported enum variants across binaries.
 
-**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for the bounded **Normalize View
-Only** scalar overlay. Raw remains the default native-unit editor. Normalize
-uses each displayed channel's finite authored keys across the whole active clip,
-with f64 intermediates, a constant/single-key level of 0.5 and fixed relative
-Y ticks 0 / 0.5 / 1. Key points, sampled curves and selection share the projection.
-Bezier overshoots remain unclamped relative values and may leave the comparison
-frame. Hover the relative-mode badge for native target/unit/range legends.
-Graph key/time drags, handles and graph-local K insertion are disabled in this
-mode; switch to Raw to edit. Click, Ctrl-click and T-825 replace/Ctrl-union marquee
-remain available. Switching modes invalidates pending captures, even with equal
-bounds. The option follows clips/projects in the same egui session, resets on
-application restart, and is never stored in .ankh or Config.
-See [Normalize contract](graph-editor.md#8-normalized-comparison-view-t-826).
-T-704/T-912 remain PARTIAL: normalized editing and broader desktop qualification
-are not delivered. Existing quadratic large native selection validation remains
-a separate future scoped task; normalization adds no selection validation loop.
-Cumulative T-813–T-826 Windows tests remain **PENDING MANUAL REVIEW**. Older notes
-retain their historical scope. No GUI, GPU, inference or public operation ran.
+| Input/output | T-831 behavior | Historical reader/consumer | Evidence / risk |
+|---|---|---|---|
+| Old valid project without PathPosition | Existing fields, assets and animations retained; no manufactured track | Existing old profile | Historical migrations/reliability plus T-831 old-project witness |
+| New save without PathPosition | Existing profile/field semantics retained | Compatible only within the old supported feature subset; not every arbitrary new project | No T-831 track added implicitly |
+| New project with PathPosition | Named exact target/scalar keys/curves persist in all 3 profiles | Frozen T-830 rejects unknown `path_position` before returning an editable document | Forward opening is refused, not lossy downgrade |
+| Readable/compact JSON/binary | Both conversion directions and strict references qualified | Existing compact field tags unchanged; new kind carried literally | Schema inventory/Serde case and actual-file old-reader probes |
+| Native runtime v2, legacy, generic/custom/template export | Blocking preflight and independent plan guard | No new runtime field or runtime support | Explicit failure before atlas/writes |
+| Script/plugin exporter | Refuses before executing script, returns original document | Current plugin context cannot encode the track | Native snapshot regression |
+| CPU sequence and spritesheet | Existing Sequence/evaluator, common camera and exact reconstructed RGBA | Raster result does not require runtime Path support | Native pose/static reference at 0/.25/.5/.75; sheet pixels equal |
+| Video/GIF | Same Sequence input and existing supervised encoders | Not newly visually qualified for PathPosition | Historical process/encoder gates only; do not claim a new video test |
+| Whole-clip numeric retime | T-831 extends T-830 walkers to 14th timeline | Preserves old time/duration/collision semantics | New Path retime/lock/history regressions |
 
+Descending compatibility (new reader, old valid files) and forward compatibility
+(old reader, new feature) are different. Actual delivered T-831 files were rejected
+unchanged by frozen T-830 in all 3 profiles. The older public reader also has the
+closed enum without this tag; its inability follows from that source contract,
+not a new public-binary GUI run. Never suggest removing the tag manually, baking
+to a static path silently or saving an unsupported project through an older app.
 
-- This is an unsigned Windows x64 alpha candidate. New archive launch on the
-  maintainer's machine is pending. macOS/Linux distribution, mobile, WebGPU and
-  broad GPU support are not qualified. No guaranteed frame rate or memory budget.
-- Runtime parity covers the documented native v2 common subset. Constraints/IK,
-  physics, linked meshes, rotated atlases and Add/Multiply/Screen are outside it.
-  Phaser legacy paths may accept some extras; that is not a fidelity certificate.
-  PixiJS requires WebGL2; Phaser used its real WebGL1 context in T-811.
-- T-811: 125 framebuffer comparisons passed predeclared tolerances, 104 exact.
-  The transformed clipping case has one contour pixel with alpha delta 64
-  (0.0198% of foreground, below the 2% edge bound). No uniform pixel exceeded
-  tolerance. This measured rasterization difference is preserved, not hidden.
-  Five global fractional-alpha cases were exact; arbitrary alpha compositions
-  and float precision on every Phaser container/camera are not certified.
-- Interrupted crossfades can jump. Events at time zero are ignored at startup
-  and on each loop, matching the accepted Rust policy. Skin switches require
-  compatible attachments/binds/topology. Core v1 reading does not certify v1
-  adapter pixel parity; the common profile is explicit native v2.
-- Image/video exports retain default-skin, Normal-only and no-physics restrictions.
-  MP4 is opaque, lossy H.264/yuv420p without audio; FFmpeg is separate. Existing
-  output videos are refused, even after a native Save dialog confirmation.
-  Publication needs hard links (local NTFS recommended). Crash durability and
-  fully atomic multi-file exports are not promised; retained staging is reported.
-- AI has no artistic correctness guarantee. Provider wire-format support does
-  not prove every model supports tools or vision. Long sessions can exhaust
-  context: use targeted reads and a shorter conversation. Small local profiles
-  reduce budgets but do not certify an 8 GB GPU. No model is supplied/downloaded.
-- Qwen/NInfer Jade rigging/assembly/weight tests are maintainer-reported manual
-  evidence. Their modified project was not saved and is deliberately not shipped.
-  The official sample is unchanged RC2 Jade Sentinel; it has no `qwen_left_arm_test`.
-- Alternate-image skin authoring is region-focused; FFD timeline editing and
-  complex PSD reconciliation retain their documented limits. Full localization,
-  a web editor, a second viewport, autonomous autorigging, complete Spine parity,
-  advanced tangent modes and advanced runtime constraints remain open.
+Before a future alpha, decide and document the minimum feature-capable reader,
+exchange warnings and candidate/release identifiers. A feature/version/migration
+policy review is a release gate; **T-832 does not authorize or implement a bump,
+migration, runtime change or repackaging**. Keep a separate complete copy for old
+readers and retain originals. Author1 forward refusal is deliberate and prevents
+silent loss, but can surprise collaborators using the public alpha.
 
-No GUI, desktop automation, real inference or GPU benchmark was run for T-811.
-Headless WebGL used an installed browser, actual contexts and local assets only;
-final interactive and clean-machine checks remain separate.
+Existing Save/staging/recovery guarantees and limitations are unchanged: ordinary
+failure protection/rollback is tested, multi-file crash atomicity and power-loss
+durability are not promised. No new corruption incident is demonstrated by this audit.
 
+## Performance and diagnostics
 
-## T-813 local project-reliability candidate
+T-827 removes repeated native key capture/resolution scans and T-829 removes idle selected-view membership scans in the measured bounded cases. A10k selection is no longer truthfully described as systematically quadratic end-to-end. Payload cloning, model/layout, active gestures and command application still cost time; no universal60 fps budget is certified. Historical default-concurrency video/process timeout sensitivity remains recorded; accepted final suites use4 threads without weaker assertions. T-818 diagnostics/navigation exists; automatic camera framing and general synchronous scan completion budgets do not.
 
-T-812's published binaries/archives remain immutable. T-813 is a separate local build
-awaiting maintainer GUI qualification. Unknown author members/values and unsupported
-versions/flags are refused; opaque presets remain preserved. Missing image bytes block
-Save/Save As/autosave until relink or explicit asset removal. Non-reopenable typed
-serialization is refused before any writes. Structural repair and hostile-file resource
-budgets are not comprehensively validated. No authentic v0/prototype converter, panic-time
-dump, permanent Undo history, recovery browser, automatic recovery purge or power-loss
-certification was added. Read [project recovery](project-recovery.md). The accepted T-811
-manual review was subsequently declared complete by the maintainer for public T-812;
-that declaration does not qualify this new T-813 build.
-
-## T-814 local animation-UX candidate
-
-Numeric Bezier controls and shared session key selection are implemented and
-covered by automated tests; **PENDING MANUAL REVIEW**, together with T-813.
-Selection clears conservatively on external document edits/Undo/Redo. Colliding
-key moves are refused, and a graph drag stops when sorting changes its key index.
-Restart the gesture to continue. Combined time/value graph drags retain separate
-commands. Multi-key numeric Apply copies all four displayed handles to every
-selected Bezier key. No aligned/mirrored tangent mode, normalized overlay, graph
-marquee or general history redesign is included. Extreme finite values may still
-overflow the core sampler; the graph reports gaps without modifying the data.
-See [graph editor](graph-editor.md). No keymap, project format, evaluator or runtime
-change; published releases and the separate T-813 executable remain unchanged.
-
-## T-815 local viewport-precision candidate
-
-Mesh positions/UVs and path/clipping/bounding-box points use exact numeric drafts
-and native undoable commands. **PENDING MANUAL REVIEW** with T-813/T-814. Editing
-is Setup-only; numeric FFD, linked geometry and linked parents are excluded.
-Only the currently displayed attachment in one slot is a geometry target.
-UV numbers refer to source texture [0,1] top-left and reject out-of-range results.
-Expressions, neighbour snap, universal rig-fit/Frame Selection, new pivot modes
-and complete keyboard/DPI/accessibility acceptance remain deferred. Existing
-camera/gizmos/hover and drag merging remain in place. No GPU/visual/performance
-qualification is claimed for dense rigs. See [numeric geometry](geometry-editing.md).
-
-
-## T-816 local rigging discovery checkpoint
-
-GUI qualification for T-813/T-814/T-815/T-816 is **PENDING MANUAL REVIEW**.
-The local candidate clarifies existing IK and weight controls and retains the
-selected mesh during weight-influence picking; solver/brush/bind math is unchanged.
-Evaluated span describes current joint geometry, not a maximum or natural-reach
-prediction. Bend sign does not guarantee a unique solution; editing locks do not
-freeze constraint evaluation. The existing Tentacle example is bones-only and
-contains runtime-excluded IK: exporting constraints does not bake their poses.
-Weight locks are session-only. There is no Normalize brush mode. No new graphic,
-GPU, inference or artistic qualification is claimed. See
-[First rig](first-rig-in-10-minutes.md) and [capabilities](rigging-capabilities.md).
-
-## T-820 local Bezier-linking candidate
-
-Single scalar junction only; Broken/Aligned/Mirrored are session editing modes,
-not saved per-key constraints. Both neighbors must already be Bezier. The metric
-is seconds/native scalar value units, not zoom-dependent screen lengths. Flat
-vertical targets, impossible X/overflow, endpoints and shortest-arc rotation
-joins with raw adjacent delta >=180 degrees refuse. Multi-key numeric Broken
-editing remains; multi-junction linking, normalized overlay and graph marquee
-remain outside this candidate. No new sampler, format or runtime field.
-Cumulative T-813–T-820 manual qualification is pending; no GUI/GPU/inference run.
-See [contract](bezier-tangent-linking.md) and [graph rules](graph-editor.md).
-
-## T-821 local FFD-key candidate
-
-One existing owned Deform key may be selected, retimed, deleted or assigned a
-native Linear/Stepped/Bezier interpolation. Weighted offsets count influences;
-empty resets are retained with the native sampler's asymmetric between-key
-behavior. Unique owner and track required; linked/shared sources, ambiguous skin
-overrides, invalid topology/binds/offsets and time collisions refuse. No implicit
-rebind/repair, multi-key FFD, vector clipboard, graph average, offset table editor
-or scalar tangent linking. Locks use existing slot/influence bone locks; no new
-per-mesh/slot lock model. Complete-mesh/track captures have data-proportional cost,
-not a claimed interactive performance budget. See [FFD key editing](ffd-key-editing.md).
-Manual T-813–T-821 qualification stays pending; old runtimes/releases unchanged.
-
-## Local T-822 PSD mapping boundary
-
-[Explicit path resolution](psd-path-resolution.md) handles one unique simple region,
-with exactly one unresolved missing image path in the source inventory. Multiple
-missing image paths are conservatively refused because legacy provenance lacks
-PSD file/layer UUIDs. A renamed group with multiple missing images is not resolved
-in bulk. The user explicitly selects both sides; pixel similarity is not identity.
-Changed tags/legacy semantics, skin overrides, shared art, meshes/links, target FFD,
-sequences, flattened/hidden/undecodable art and conflicting provenance refuse.
-The entire existing exact-path update batch is reviewed and included atomically.
-No Photoshop effects/masks, universal persistent source identity or GUI certification
-is claimed. An identical-content file replacement is accepted as the same snapshot;
-there is no filesystem reservation against edits occurring after the final read.
-T-302 remains PARTIAL; all T-813–T-822 manual checklists remain pending.
-
-## Local T-823 retracing boundary
-
-[Safe retracing](safe-mesh-retracing.md) supports owned rigid meshes and compatible
-weighted meshes with an affine UV-to-Setup frame and canonical native binds.
-The bounded weighted operation accepts at most four influences per row (the
-painting default, not a file-format limit) and 16 million nearest-pair comparisons.
-Exceeding these limits refuses; rows are never pruned to fit. Nearest-neighbour
-may change the artistic weight field; unsampled source-vertex count is disclosed,
-and a whole source BoneId disappearing refuses. Inline/Deform FFD, linked/shared
-geometry, skin overrides, sequences, pinned edges and invalid/ambiguous data refuse.
-No automatic FFD/topology migration or general retopology. Rigid non-affine tracing
-retains its historical projection behavior; it is not newly qualified as distortion
-free. Release performance measurements cover one synthetic 512x512 ring fixture,
-not a universal image/mesh or GUI budget. T-402 remains PARTIAL. Manual review stays
-pending, and no public build, model, renderer, runtime or format is changed.
-
-## T-824 local onion-skin candidate
-
-[Onion skinning](onion-skinning.md) remains PENDING MANUAL REVIEW. Ghosts are
-artwork sprites, not a bone-overlay/motion-trail system. Past/future reuse theme
-shear/rotate roles, so custom themes must retain contrast; changing those roles
-also affects timeline channels. Settings are transient Session state and reset
-on new application state, not project preferences. Key stepping uses global
-Timeline times (FFD included), not selected-track times, events or markers.
-No loop wrapping; unavailable ghosts are omitted. Selected-only means slot-owner
-selection, not every influenced vertex. All rig dependencies still evaluate.
-Physics ghosts are stateless reference poses, not accumulated playback physics.
-No existing safe ghost cache exists: appearance-only changes recompute valid
-poses (at most ten per visible render), without scheduling continuous repaints.
-Measured CPU timings are configuration-specific; no universal performance claim.
-T-823's six historical video/process timeout failures at default concurrency
-remain an open environment/concurrency risk. Final gates use four test threads;
-no timeout assertion or ignored-test policy was weakened.
-
-## T-825 local Graph marquee
-
-[Rectangular Graph selection](graph-editor.md#7-rectangular-key-selection-t-825)
-selects visible scalar key centres only. No normalized overlay, lasso, segment,
-FFD/event selection or collective key/handle drag. Ctrl-drag unions; removal is
-existing Ctrl-click toggle, not a new subtractive rectangle. Alt/nonprimary and
-navigation gestures remain reserved. Leaving the plot, focus/pointer loss,
-Escape, view/selection/context changes and hidden-frame gaps cancel; no auto-scroll.
-Selection applies only on release and uses native revision/document leases.
-Pre-existing KeyClip/selection validation remains quadratic for large blocks;
-10,000-key debug native set measured about 0.57 s, without a real-time guarantee.
-Graph-specific middle pan remains absent; existing wheel/pinch/shared scrollbar
-navigation and Dopesheet middle pan are unchanged. T-704/T-912 stay PARTIAL and
-all T-813–T-825 desktop qualification remains PENDING MANUAL REVIEW.
+No current claim of absent onion theme/opacity, Graph marquee, normalized view, linked tangents, FPS Undo, numeric retime or PathPosition is valid. Their scoped limitations are documented in [current tasks](TASKS.md). [Older notes](checkpoint-journal-before-T832.md) retain their original dates and claims only as provenance. [Manual qualification](cumulative-manual-qa-map.md) remains pending and [priorities](roadmap-priorities.md) starts no development.

@@ -1,365 +1,56 @@
-# Next roadmap — proposals after T-817 review
+# Ankhimate — Next roadmap, reconciled after T-831
 
-## Local T-831 update — 2026-10-21
+Audit date: **2026-10-21**. Product frozen at T-831
+`4e4d50b0aa5b7ac160b204540afa878f66fa4d61`, parent T-830
+`12252e476b95f9d2ac250d5d0746c589c10269b3`. **T-832 changes documentation only.**
 
-**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for native PathPosition keys.
-The existing scalar evaluator and constraint order drive a fractional Path position
-without mutating Setup. Inspector Auto-key/preview/K and exact single-key Dopesheet
-time/value/interpolation/delete use native history. T-830 retimes the new track.
-Author v1 gains a closed tagged variant: old readers reject new files explicitly;
-old files remain lossless. Runtime/data/template/plugin exports refuse the new
-animation; CPU rendered output uses the native evaluator. Graph, group/drag/copy
-Path keys, PathSpacing and geometric Bézier remain deferred. T-502 stays PARTIAL.
-See [Path Position contract](path-position-animation.md). All Windows checks remain
-**PENDING MANUAL REVIEW**; no GUI/inference/runtime modification or publication.
-
-## Local T-830 update — 2026-10-21
-
-**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for numeric whole-clip retiming.
-Pose → Retime… adds Time Scale and signed frame offset, explicit pure Prepare,
-context/FPS invalidation and one native Undo command. All 13 native timelines
-are included; events, markers and bone evaluation offsets remain unchanged.
-Nonzero offset preserves clip duration even with scaling. Collisions/overflow
-refuse; valid clamp/outside-duration and excluded metadata require acknowledgement.
-No-op/Cancel/refusal preserve history and Redo. T-211 remains PARTIAL for broader
-historical/manual acceptance; T-905 remains PARTIAL. Fixed shortcuts, T-827 capture,
-T-829 highlighting, renderer, sampler, formats and runtimes are unchanged.
-See [numeric retiming](numeric-retiming.md). Cumulative T-813–T-830 desktop checks
-remain **PENDING MANUAL REVIEW**. Earlier notes retain their historical scope.
-
-## Local T-829 update — 2026-10-21
-
-**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for large-selection highlighting.
-Graph point rings and Dopesheet spans/dots use a temporary full typed-address/index
-membership view; up to 64 refs retain linear lookup. This is an algorithm choice,
-not a selection limit. The authoritative ordered KeySelection and T827 native
-capture remain unchanged. The index is rebuilt after accepted local selection
-mutations in the same traversal; never persisted or used to authorize editing.
-Idle Broken handles no longer scan selection when no handle drag is occurring;
-all handle geometry/interactions and linked tangent rules remain.
-Exact T828 ordered logical shapes, colors, positions and registered key hitboxes
-are compared with the local candidate, including interaction frames and 10000
-keys. Paired headless CPU measurements record the scoped speedup separately from
-remaining native read, model, handle and egui work. This is not Windows/GPU or
-universal responsiveness certification. Move/destination resolution is unchanged.
-T704/T912 remain PARTIAL; T813–T829 manual qualification is **PENDING MANUAL REVIEW**.
-No runtime, sampler, format, FPS history, public reference or publication change.
-Earlier notes below retain their historical scope.
+Public Alpha `v0.2.0-alpha.1` remains the exact T-811/T-812 artifact: editor
+`9233b8e888c811e7c71300101f865a9e74b3f489`, runtime
+`c4c38df269cfcb30f941221454b7202f40d3fa5b`. T-813–T-831 refinements are local
+candidates, even though their internal version string remains 0.2.0-alpha.1.
+No GUI/inference/public operation in T-832. No local Windows control is marked PASS.
+Accepted **T-831** evidence is 2,058 Rust passes / 0 failures / 4 existing ignores;
+**T-832 does not rerun that suite** and adds no tests or executable. Relative to
+T-816/T-817's 1,596 passes, the historical registration increase is 462, not 462
+new tests executed by this documentation mission.
 
 
-## Local T-828 update — 2026-10-21
+All missions below are **proposals, not authorizations or work started**. No new
+P0 corruption/crash is demonstrated. P0 below identifies release gates with data
+or compatibility impact, not a claim that every advanced feature is critical.
 
-**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for project FPS history.
-The transport now commits `SetProjectFps` through native history once per finished
-gesture. Drag release, Enter or field blur apply; Escape, lost window focus,
-lost pointer during drag, stale document/revision or hidden-control gap cancel.
-Typing is a transient draft. Separate gestures remain separate Undo entries.
-The existing editing range is 1–240 whole FPS; invalid text refuses rather than
-silently clamping. Displaying legacy out-of-range values does not alter the file.
-Undo restores the exact prior u32. No key, curve or clip is retimed.
-Existing dirty snapshots, safe save, recovery and coalesced T-818 diagnostics
-are preserved; metadata fallback remains. B02 is resolved only for transport FPS.
-T-202 retains its historical COMPLETE status; B03 awaits desktop reproduction.
-T-827 indexes and graph Raw/Normalize behavior remain unchanged. All cumulative
-T-813–T-828 desktop controls are **PENDING MANUAL REVIEW**. No GUI, inference,
-runtime change or public operation. See [FPS transport](animator/animation.md#fps-is-a-grid-not-a-retime-command).
-Earlier notes below retain their historical scope.
+## Five ordered next missions
 
-
-## Local T-827 update — 2026-10-21
-
-**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for native large-key selection
-validation. KeyClip remains the authority: larger requests use operation-local
-full-identity deduplication, timeline/name indexes and lazy per-track resolution.
-Every distinct key still passes native value/time/interpolation checks, in the
-original request order. First occurrences, exact errors, session duplicates,
-scalar invalid-set clearing and FFD refusal policies remain unchanged. Small
-requests retain the original path; this is an algorithm choice, not a key limit.
-No persistent cache, document edit, dirty revision, Undo entry or Redo loss.
-
-Paired debug CPU observations and exact T-826 comparisons demonstrate the scoped
-gain; local delivery `outputs/T827-Key-Selection-Performance/` records methods and
-raw results. This does **not** certify interactive responsiveness: graph/sheet
-linear membership highlighting, native move/resolve scans and other consumer
-costs remain. T-825 gestures and T-826 Raw/Normalize View Only are unchanged.
-T-704/T-912 remain PARTIAL. Cumulative T-813–T-827 desktop checks remain
-**PENDING MANUAL REVIEW**; no GUI/GPU/inference or public operation. Earlier notes
-retain their historical scope, including the now-addressed native capture cost.
-
-
-## Local T-826 update — 2026-10-21
-
-**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for the bounded **Normalize View
-Only** scalar overlay. Raw remains the default native-unit editor. Normalize
-uses each displayed channel's finite authored keys across the whole active clip,
-with f64 intermediates, a constant/single-key level of 0.5 and fixed relative
-Y ticks 0 / 0.5 / 1. Key points, sampled curves and selection share the projection.
-Bezier overshoots remain unclamped relative values and may leave the comparison
-frame. Hover the relative-mode badge for native target/unit/range legends.
-Graph key/time drags, handles and graph-local K insertion are disabled in this
-mode; switch to Raw to edit. Click, Ctrl-click and T-825 replace/Ctrl-union marquee
-remain available. Switching modes invalidates pending captures, even with equal
-bounds. The option follows clips/projects in the same egui session, resets on
-application restart, and is never stored in .ankh or Config.
-See [Normalize contract](graph-editor.md#8-normalized-comparison-view-t-826).
-T-704/T-912 remain PARTIAL: normalized editing and broader desktop qualification
-are not delivered. Existing quadratic large native selection validation remains
-a separate future scoped task; normalization adds no selection validation loop.
-Cumulative T-813–T-826 Windows tests remain **PENDING MANUAL REVIEW**. Older notes
-retain their historical scope. No GUI, GPU, inference or public operation ran.
-
-
-## Local T-825 update — 2026-10-21
-
-**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for Graph Editor marquee of
-existing visible scalar key points. Empty-space primary drag replaces; Ctrl+drag
-unions, matching Dopesheet marquee. Ctrl-click still toggles. Native key/handle
-widgets retain priority; Escape, lost focus/pointer, outside release and stale
-identity/revision/animation/selection/view cancel. Selection commits on release
-through T-814 KeySelection; no author command or new persistent field.
-See [Graph selection](graph-editor.md#7-rectangular-key-selection-t-825).
-T-704/T-912 remain PARTIAL for normalized overlay and broader interaction
-qualification. Cumulative T-813–T-825 desktop checks remain PENDING MANUAL REVIEW.
-Older checkpoint notes below retain their historical scopes. No runtime, sampler,
-format, renderer, export, public reference or publication change.
-
-
-## Local T-824 update — 2026-10-21
-
-**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for bounded onion-skin refinement.
-The existing ghost passes now use theme shear/rotate colors, Session opacity and
-step-distance falloff. Frame/key sampling omits out-of-clip and duplicate/current
-times; Setup and invisible/off paths perform no ghost evaluations. Key references
-remain global Timeline keys, including Deform, excluding events/markers. Full rig
-evaluation precedes the selected slot-owner visual filter. No pose cache was
-added; up to ten stateless evaluations per rendered view, measured separately.
-Read [Onion skinning](onion-skinning.md). Historical T-703 remains PARTIAL pending
-real scrubbing/theme/performance acceptance. Cumulative T-813–T-824 desktop QA is
-**PENDING MANUAL REVIEW**; no GUI/GPU/inference or public operation was performed.
-Core, rendered exports, native formats, runtime and prior references are unchanged.
-
-
-## Local T-823 update — 2026-10-21
-
-**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for safe retracing of compatible
-owned meshes. [Safe mesh retracing](safe-mesh-retracing.md) reuses the existing
-tracer and copies nearest source weight rows in slot-bone-local Setup space;
-exact ties use the lowest source index. No silent pruning, normalization or FFD
-remapping. All source BoneIds must remain represented. Inline/track FFD, linked
-or ambiguous ownership, pinned edges, invalid/noncanonical binds and unsupported
-weighted UV frames refuse. T-402 stays PARTIAL; nearest-neighbour is not artistic
-fidelity. Cumulative T-813–T-823 manual qualification remains deferred. Prior
-checkpoint sections retain their historical scope. No runtime, renderer, format,
-writer, version or public-release change; no next phase is authorized.
-
-## Local T-822 update — 2026-10-20
-
-**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for one explicit missing-image
-→ added-layer mapping on a unique simple region. No default pairing or fuzzy
-matching. See [PSD path resolution](psd-path-resolution.md). The existing exact-path
-batch is disclosed and remains all-or-nothing. Other missing image provenance,
-shared/overridden/mesh/linked/FFD/sequence/flattened targets and semantic tag changes
-refuse. T-302 stays PARTIAL. T-813–T-822 manual qualification is deferred; this
-local checkpoint does not certify Windows interaction, art or Photoshop effects.
-Earlier checkpoint sections retain their historical scope. No public operation,
-runtime, renderer, format, writer or version change.
-
-## Local T-821 update — 2026-10-20
-
-**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for editing one existing owned
-Deform key in the Dopesheet: select, move time, delete and native interpolation.
-See [FFD key editing](ffd-key-editing.md). Weighted arrays use influence count;
-linked/shared sources, ambiguous skins and invalid topology refuse. No vector
-clipboard, graph averaging or T-820 scalar tangent linking. T-404/T-209 remain
-PARTIAL. Cumulative T-813–T-821 manual qualification is deferred, not certified.
-No runtime, sampler, format, version or public release change. Earlier sections
-below describe their historical checkpoint scope. T-822 is not started.
-
-
-## Local T-820 update — 2026-10-20
-
-**T-820: COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for bounded single-junction
-Bezier linking. Broken/Aligned/Mirrored are session editing modes, not new project
-metadata. See [contract](bezier-tangent-linking.md). T-704/T-912 remain PARTIAL:
-normalized overlay, graph marquee and broader manual qualification remain open.
-T-813–T-820 manual Windows qualification is deferred; no GUI/GPU/inference run.
-This is not a public release, and no subsequent development task is authorized.
-Older checkpoint sections below retain their historical scope.
-
-
-## Local T-819 update — 2026-10-20
-
-**LOCAL_CANDIDATE / PENDING_MANUAL**. Explicit reviewed cross-project region
-subtree transfer is now implemented locally; same-document clipboard behavior
-and File/Open remain unchanged. Read [Cross-project transfer](cross-project-transfer.md).
-T-909 remains PARTIAL for advanced types and retargeting. No GUI, inference,
-runtime change, publication or B02/B03 correction. Earlier checkpoint notes below
-describe their historical scopes; T-818/T-819 are not public releases.
-
-
-## Local T-818 update — 2026-10-20
-
-T-818 is a **LOCAL_CANDIDATE / PENDING_MANUAL** refinement of the T-817
-inventory. The prior T-817 audit below remains historical evidence; it is no
-longer a statement that global diagnostics are absent in this local candidate.
-Read [Document diagnostics](document-diagnostics.md) for the bounded contract.
-No GUI/inference test, publication, runtime change or B01/B02/B03 correction.
-
-
-Audit date: **2026-10-20**. Product source frozen at T-816
-`009e67898317d779d943c23a0210bd48ed9d63bd`. T-817 changes documentation only.
-Public editor: `9233b8e888c811e7c71300101f865a9e74b3f489`; public external runtime:
-`c4c38df269cfcb30f941221454b7202f40d3fa5b`; released tag **v0.2.0-alpha.1**.
-The exact T-811 archives were published by T-812 on 2026-10-19. Historical candidate
-labels in FEATURES/RELEASE_READINESS, old alpha-scope and docs/alpha/ do not override
-that publication record. They also do not qualify the newer local candidates.
-T-813–T-816: **PENDING MANUAL REVIEW**. No GUI, inference, browser or GPU run in T-817.
-
-The original five bounded development proposals below balance project diagnostics, real game-asset
-reuse, animation authoring and PSD workflow. T-818 was subsequently authorized and implemented locally; T-819 and later remain **not authorized** by this audit. Manual T-813–T-816 QA is a parallel qualification queue, not a missing-feature
-development task, and is not an artificial prerequisite imposed on the maintainer.
-
-No demonstrated new P0 incident was found. P0 prevention/triage remains first when
-an actual reproducible issue appears. These proposals are P1 central workflow or
-P2 production usability; P3 platforms/localization/second viewport stay deferred.
-
-## T-818 — Document diagnostics and offender navigation
-
-Historical IDs: **T-702** · Priority **P1** · Effort: Medium, bounded rule set first.
-
-- **T-818 implementation:** Local bounded diagnostics, revision/metadata debounce, badge/list and stale-safe navigation now exist. This replaces the historical absence finding for the local candidate only.
-- **Already done — preserve:** Reuse export preflight schema/rules and native document reads; do not create another export pipeline.
-- **Bounded work:** Read-only structured rules for missing asset/attachment, invalid clip/time, stale deform vertex counts, draw-order and missing IK refs; debounced revision-keyed results; badge/dock and select offender without authoring changes.
-- **Dependencies:** Current T-816 document/session and existing export preflight; no need to wait artificially for GUI campaign.
-- **Regression risk:** Medium: false positives/stale async results and accidental duplication of export safety rules.
-- **Measurable acceptance:** Each rule has headless valid/invalid tests; diagnostics cannot mutate data/history or repair implicitly; old results cannot select a newer document; no unjustified warning on approved samples; existing export staging/consent unchanged; manual dock QA explicitly pending.
-- **Runtime boundary:** Diagnostics can explain adapter exclusions but cannot certify an unknown consumer.
-- **Migration boundary:** No format migration; session-derived results only.
-
-## T-819 — Safe bounded cross-document subtree transfer
-
-Historical IDs: **T-909 / T-209** · Priority **P1** · Effort: Medium/high; split before adding mesh transfer.
-
-- **T-819 local implementation:** Explicit read-only source loading and reviewed region/image/bone-key transfer now address bounded B01. File/Open and existing clipboard behavior are retained.
-- **Already done — preserve:** Keep PasteBones, internal constraint/bone-key capture and existing one-step history.
-- **Bounded work:** Explicit reviewed copy-to-project operation for regions first, named conflict/asset ownership policy, image bytes and native target transaction. Refuse unresolved weighted/linked/FFD or external-reference cases until representable.
-- **Dependencies:** T-818 diagnostics useful; existing PasteBones/asset commands and target identity checks.
-- **Regression risk:** High: asset names, shared references, ids/remaps and partial transfer; narrow first scope required.
-- **Measurable acceptance:** Two isolated documents with real region image and bone keys transfer coherently; conflict report before writes; refusal keeps full document/Redo; three Undo/Redo cycles; Save/Reload and native v2 export retain pixels/keys; no guessed external constraints or silent image loss.
-- **Runtime boundary:** Result only uses already-supported native region/bone tracks; no new adapter capability.
-- **Migration boundary:** No new project fields required for bounded region transfer; broader meshes need separate review.
-
-## T-820 — Linked Bezier handle editing modes
-
-Historical IDs: **T-704 / T-912 / CAP-02**. Local authorized implementation:
-**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for one scalar junction.
-Broken is preserved; Aligned/Mirrored operate across neighboring segment Interps
-using seconds/native-value geometry, a session-only mode, one native command
-and guarded gesture tokens. Numeric Apply/Cancel and multi-key Broken editing
-remain. See [bounded contract](bezier-tangent-linking.md).
-T-704/T-912 remain PARTIAL: normalize overlay, graph marquee and complete manual
-qualification are separate. No format, evaluator, runtime or export changes.
-
-## T-821 — Editable existing FFD keys in the dopesheet
-
-Historical IDs: **T-209 / T-404**. Authorized bounded implementation:
-**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE**.
-One exact existing key on a uniquely owned compatible mesh can be selected,
-retimed, deleted or assigned an existing interpolation through one native command.
-Typed owner/slot/attachment addresses, topology/bind capture, strict time collision
-refusal and existing key leases protect it. Weighted vectors count influences,
-not visible vertices. Empty resets retain the sampler's asymmetric semantics.
-No FFD general clipboard, offset inspector, vector graph average or linked/shared
-mesh editing; no topology repair, evaluator, renderer, runtime or format change.
-T-209/T-404 remain PARTIAL. See [contract](ffd-key-editing.md).
-
-## T-822 — Explicit PSD path-change resolution for simple regions
-
-Historical IDs: **T-302** · Priority **P2** · Effort: Medium.
-
-- **Verified gap:** Exact-path refresh exists; a renamed/reparented layer becomes added+missing without a user-approved mapping.
-- **Already done — preserve:** Reuse existing PSD preview/diff/reimport guarded transaction; do not implement another importer.
-- **Bounded work:** Optional explicit old-path to new-path mapping for unique unshared region images; display before/after and preserve manually authored transforms/animation. Do not infer by leaf name or visual resemblance.
-- **Dependencies:** Existing psd_reimport/reimport_guard and origin/revision validation; T-818 diagnostics helps explain refusal.
-- **Regression risk:** High: provenance ambiguity and image reuse; retain current refusals for mesh/sequence/linked/shared/flattened cases.
-- **Measurable acceptance:** Renamed/reparented unique layer can be explicitly matched; no mapping means existing behavior unchanged; ambiguous paths and late revisions refuse atomically; no PSD source write; three Undo/Redo and Save/Reload preserve rig/keys/art; exact-path and nested-import regressions retained.
-- **Runtime boundary:** Authoring provenance change only; no adapter or native format extension.
-- **Migration boundary:** Reuse psd_layer_paths; no stable Photoshop UUID invented.
-
-## Contradictory review of every proposal
-
-| Question | T-818 | T-819 | T-820 | T-821 | T-822 |
+| Order / proposal | Historical task / existing capability | Exact remainder and user value | Data / format-runtime risk | Dependencies / size | Why now / measurable acceptance and stop |
 |---|---|---|---|---|---|
-| Real missing/incomplete scope? | Global live diagnostics absent | Cross-document asset workflow incomplete | Link modes absent | FFD-key addresses/editing incomplete | Explicit path-change match absent |
-| Prior work already solved it? | Export preflight only | Intra-document paste only | Free/numeric tangents only | FFD drag/evaluation only | Exact-path refresh only |
-| Exists under another name? | Load/IK warnings are narrower | PasteBones is useful substrate | SetInterp stores handles, not linked editing | Deform keys exist, read-only row is not editable UI | Reimport guards exist, no user mapping |
-| Original criterion still suitable? | Narrow rule set, no universal validator | Start regions; broad move/retarget deferred | Define normalized geometry explicitly | Existing topology only | No speculative automatic reconciliation |
-| Already automatically tested? | Subrules/preflight, not whole dock | Subtree/key commands, not full assets | Independent handles yes | Core FFD yes | Exact-path yes |
-| Only manual QA missing? | No | No | No | No | No |
-| Runtime scope? | Informational limits | Existing region subset | Existing curves | Existing FFD | Provenance only |
-| Migration? | No | None for first subset | Prefer session-only policy | None for existing tracks | Existing path table |
-| Can ship locally without public changes? | Yes | Yes | Yes | Yes | Yes |
-| Why this priority? | Prevent silent workflow ambiguity and explain actual defects | Reuse rigged game assets safely | Daily animation control | Finish existing deform authoring | Avoid re-rigging renamed simple artwork |
+| 1 — Feature-level format/release policy (P0 gate) | T-605/T-108/T-502; valid old files load, new Path files persist and old readers reject | State minimum reader and exchange/candidate policy so colleagues do not mistake the unchanged version1 or app string for interoperability | High impact if communicated incorrectly; no current silent downgrade demonstrated | Frozen T-831 3-profile/old-reader evidence; Small documentary decision, code/migration only by later authorization | Matrix old/new with/without Path and all targets; no implicit field removal; stop before any unapproved schema/runtime/version change |
+| 2 — Cumulative Windows qualification (P0 release gate, no assumed code) | T-813–T-831 implementation and 352 pending instances already exist | Execute the retained map on exact T-831, record real focus/artwork/Undo/Save/recovery/export/performance behavior | Real data safety interactions; use disposable copies only; no new alpha implied | Order1 compatibility policy, complete fixtures and chosen Windows hardware; Medium manual campaign | Every source ID PASS/FAIL/NOT RUN with exact artifacts and reproducible failures; stop on data-loss/crash and preserve evidence; no automatic fix/publication |
+| 3 — Selection-scoped numeric retiming (P1 artist workflow) | T-211; whole-clip checked Retime and fixed shortcuts already work | Add an explicit selected-track/key scope without turning T-905 static offsets into key rewriting; avoids moving unrelated animation | Medium: collisions, duration/excluded metadata and stale addresses; no format/runtime extension expected | Existing commands/leases, clarify exact selection semantics first; Small/Medium | Red selection-scope test, untouched other tracks, refused batch retains Redo, one Undo and 3 cycles, Save/reopen; stop on ambiguous complex ownership |
+| 4 — Bounded FFD key-block clipboard (P1) | T-209/T-404; scalar/slot key blocks and one-key FFD editing already work | Own vector payload for one exact compatible mesh/topology; reuse KeyClip/PasteKeys or a justified typed extension, no scalar flattening | High: influence-count layout, owner/skin/linked references and assets; no topology or retargeting | T-821 capture invariants and explicit mapping; Medium | Exact vector/time/curve snapshots, all-or-nothing mismatch/lock/stale refusal, clipboard-free Redo,3 cycles and Save/reopen; stop before topology/FFD format expansion |
+| 5 — Native PathSpacing animation (P1 optional enrichment) | T-502; static spacing and animated position already work | Add spacing keys only after auditing units/identity and version policy; retain same solver rather than replacing Path | Medium/high author-format exchange risk; JS support not assumed | Order1, manually reviewed PathPosition, separate authorization; Medium | Three-key5-bone numerical references across speed/open/closed cases, strict identity/history/3 profiles and explicit unsupported-export policy; stop if migration exceeds authorization |
 
-## Why T-818 first
+## Further P1 and P2 backlog
 
-A live, read-only diagnostic view fills a proven T-702 gap and gives artists
-actionable errors while preserving current save/export safeguards. A standalone
-implementation prompt should pin exact T-817 commit, reuse export/preflight rule
-building blocks, keep derived results session-only, limit the first rule set above,
-require red/green headless stale-result/history tests and deliver a separate local
-candidate. No repair, serializer/runtime change or new export pipeline belongs in it.
+T-302 remains a bounded single explicit PSD mapping; consider multi-missing-path
+review only with stable provenance and full preservation tests. T-909 region copy
+already works: explicit Move or mesh transfer needs its own ownership and source
+mutation contract. T-402 preserves compatible weights, but FFD-dependent retrace
+and general performance/artistic guarantees remain separate. T-905 beyond per-bone
+offsets and T-902 expressions/neighbour snapping are real remaining extensions.
 
-## Not another development queue
+P2: reproduce B03 with a physical target/focus record before changing menus;
+add clip reorder only (T-208), not a new animation manager; audit remaining
+metadata commands without reopening closed FPS B02; measure remaining large
+command/model/payload cost rather than repeating T-827/T-829 optimizations.
+For T-912 decide the historical opt-in snapping intent versus existing default
+frame snap/Alt-free convention before proposing a focused policy change.
 
-Retain the existing key dots/clipboard/pose/mirror, video/GIF, PSD nesting/exact-path
-refresh, onion renderer, tangent numerics, geometry numerics, IK/weight brush and
-recovery code. Performance budgets, localization, browser editor, second viewport,
-advanced runtime constraints/physics/blends and broad platform certification remain
-explicit later decisions, not hidden commitments in one of these five missions.
-See [manual register](MANUAL_QA_PENDING.md) and the [inventory](FEATURE_INVENTORY.md).
+## Deferred / separate contracts
 
-## After T-818
+Advanced runtime constraints/linked meshes/blending and stateful physics parity,
+universal multi-skin composition, web editor, localization, additional platforms,
+signed installers and major format migrations are separate. Preserve current
+exports and exclusions; absence of advanced parity is not automatically P0.
+No GPU/inference/GUI work or product development occurs in this reconciliation.
 
-Review the local diagnostics candidate and preserve the pending manual campaign.
-T-819 was subsequently authorized and is now a local bounded transfer candidate.
-T-818 alone did not close B01, B02, B03 or every T-702
-camera/performance criterion. The 200 ms coalescing interval is a scheduling
-choice, not a guarantee that arbitrary scans complete within that duration.
-
-## After T-819
-
-Review the local transfer candidate; cumulative manual T-813–T-819 qualification
-remains deferred. T-820 linked Bezier handles is the next proposed development
-mission, not started or authorized by this checkpoint. Advanced T-909 transfer
-requires separate scope review; no universal retargeting claim is added.
-
-## After T-820
-
-Stop for maintainer review of the local candidate. Cumulative manual T-813–T-820
-qualification remains deferred. T-821 is a proposal only, not started/authorized.
-
-## After T-821
-
-Stop for local candidate review. Manual T-813–T-821 qualification remains deferred.
-T-822 remains a proposal only; no further implementation is started or authorized.
-
-## After T-826 — review only
-
-Retain CAP-03's scoped marquee and normalized comparison; do not recreate them.
-Review the local candidate before further development. A future separately scoped
-investigation should bound the existing quadratic KeyClip/native-selection cost
-for large selections (about 0.6 s for 10k debug keys locally; no responsiveness
-certificate). Normalized editing would need a tested inverse and a constant-channel
-policy; it is not authorized here. T-704/T-912 remain PARTIAL and the cumulative
-manual campaign remains pending. No next task is begun.
-
-## After T-827 — review only
-
-Native large KeyClip capture is now batched and equivalence-tested. Do not
-recreate it or replace T-814 shared selection. Future separately scoped work may
-address the measured selected-key membership/highlighting cost in Graph/sheet
-and repeated whole-track work in move_keys / destination resolve. No persistent
-cache should be introduced without an invalidation contract. These remaining
-costs prevent a global responsiveness claim despite faster native validation.
-Review this candidate; no further task is started. T-704/T-912 remain PARTIAL.
+The old T-818–T-831 proposals are implemented checkpoints, never next work to recreate. See [current inventory](FEATURE_INVENTORY.md), [manual map](cumulative-manual-qa-map.md), [format policy boundary](format-release-compatibility.md) and [historical notes](checkpoint-journal-before-T832.md).
