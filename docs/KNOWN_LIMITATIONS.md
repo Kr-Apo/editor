@@ -165,3 +165,18 @@ Measured CPU timings are configuration-specific; no universal performance claim.
 T-823's six historical video/process timeout failures at default concurrency
 remain an open environment/concurrency risk. Final gates use four test threads;
 no timeout assertion or ignored-test policy was weakened.
+
+## T-825 local Graph marquee
+
+[Rectangular Graph selection](graph-editor.md#7-rectangular-key-selection-t-825)
+selects visible scalar key centres only. No normalized overlay, lasso, segment,
+FFD/event selection or collective key/handle drag. Ctrl-drag unions; removal is
+existing Ctrl-click toggle, not a new subtractive rectangle. Alt/nonprimary and
+navigation gestures remain reserved. Leaving the plot, focus/pointer loss,
+Escape, view/selection/context changes and hidden-frame gaps cancel; no auto-scroll.
+Selection applies only on release and uses native revision/document leases.
+Pre-existing KeyClip/selection validation remains quadratic for large blocks;
+10,000-key debug native set measured about 0.57 s, without a real-time guarantee.
+Graph-specific middle pan remains absent; existing wheel/pinch/shared scrollbar
+navigation and Dopesheet middle pan are unchanged. T-704/T-912 stay PARTIAL and
+all T-813–T-825 desktop qualification remains PENDING MANUAL REVIEW.

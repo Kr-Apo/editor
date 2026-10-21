@@ -1,5 +1,20 @@
 # Next roadmap — proposals after T-817 review
 
+## Local T-825 update — 2026-10-21
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for Graph Editor marquee of
+existing visible scalar key points. Empty-space primary drag replaces; Ctrl+drag
+unions, matching Dopesheet marquee. Ctrl-click still toggles. Native key/handle
+widgets retain priority; Escape, lost focus/pointer, outside release and stale
+identity/revision/animation/selection/view cancel. Selection commits on release
+through T-814 KeySelection; no author command or new persistent field.
+See [Graph selection](graph-editor.md#7-rectangular-key-selection-t-825).
+T-704/T-912 remain PARTIAL for normalized overlay and broader interaction
+qualification. Cumulative T-813–T-825 desktop checks remain PENDING MANUAL REVIEW.
+Older checkpoint notes below retain their historical scopes. No runtime, sampler,
+format, renderer, export, public reference or publication change.
+
+
 ## Local T-824 update — 2026-10-21
 
 **COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for bounded onion-skin refinement.

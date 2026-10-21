@@ -768,7 +768,7 @@ not the current availability matrix. The current [tasks](TASKS.md),
 - Implementation: [`editor/src/ui/timeline/graph.rs`](../editor/src/ui/timeline/graph.rs), [`editor/src/ui/inspector/tangents.rs`](../editor/src/ui/inspector/tangents.rs).
 - Test/reference suites: [`editor/src/ui/timeline/t814_tests.rs`](../editor/src/ui/timeline/t814_tests.rs)
 - Example test symbols (suite references, not a coverage claim): `t814_dopesheet_selection_reaches_numeric_inspector`.
-- Contradictory check / remaining historical criteria: T-820 adds local bounded linking; normalized overlay, graph marquee and global qualification remain
+- Contradictory check / remaining historical criteria: T-825 adds local scalar marquee and T-820 bounded linking; normalized overlay and global qualification remain
 - Latest relevant checkpoint: T-812 integration; audited exact T-816 source.
 - Availability split: Scoped T-813/T-814/T-815/T-816 improvements are LOCAL_CANDIDATE; the earlier public baseline is separate.
 - Recommended action: Work only on the explicit remainder; preserve existing paths. Priority: P1/P2 targeted remainder; see roadmap.
@@ -826,7 +826,7 @@ not the current availability matrix. The current [tasks](TASKS.md),
 - Implementation: [`editor/src/ui/timeline/graph.rs`](../editor/src/ui/timeline/graph.rs), [`editor/src/ui/inspector/tangents.rs`](../editor/src/ui/inspector/tangents.rs).
 - Test/reference suites: [`editor/src/ui/timeline/t814_tests.rs`](../editor/src/ui/timeline/t814_tests.rs)
 - Example test symbols (suite references, not a coverage claim): `t814_dopesheet_selection_reaches_numeric_inspector`.
-- Contradictory check / remaining historical criteria: T-820 adds local tied handles; normalize/marquee and manual qualification remain; extreme sampling gaps unchanged
+- Contradictory check / remaining historical criteria: T-825 adds local scalar marquee; normalized overlay and manual qualification remain; extreme sampling gaps unchanged
 - Latest relevant checkpoint: T-812 integration; audited exact T-816 source.
 - Availability split: Scoped T-813/T-814/T-815/T-816 improvements are LOCAL_CANDIDATE; the earlier public baseline is separate.
 - Recommended action: Work only on the explicit remainder; preserve existing paths. Priority: Retain scoped implementation.
@@ -846,15 +846,14 @@ not the current availability matrix. The current [tasks](TASKS.md),
 <a id="cap-03"></a>
 ### CAP-03 — Graph marquee and normalized overlay
 
-**ABSENT / NOT_TESTED / NOT_DISTRIBUTED** · Origin: T-704.
+**PARTIAL / PENDING_MANUAL / LOCAL_CANDIDATE** · Origin: T-704 / T-912 / T-825.
 
-- Delivered scope: No graph marquee/normalize control identified
-- Entry point: Existing surface described in code, or no entry point for absent scope.
-- Implementation: [`editor/src/ui/timeline/graph.rs`](../editor/src/ui/timeline/graph.rs).
-- Test/reference suites: No dedicated executed test identified for this absent/unknown scope; static search only.
-- Contradictory check / remaining historical criteria: Dopesheet marquee and Ctrl-key selection already exist
-- Latest relevant checkpoint: Exact T-816 source / accepted historical evidence.
-- Recommended action: Retain the existing subset; no implementation in this audit. Priority: See linked historical task remainder.
+- Delivered scope: Visible scalar key-point marquee using the existing T-814 shared selection. Plain replace / Ctrl-union; Ctrl-click toggle remains separate.
+- Entry point: Primary drag on empty Graph area; [interaction contract](graph-editor.md#7-rectangular-key-selection-t-825).
+- Implementation: [`graph.rs`](../editor/src/ui/timeline/graph.rs), [`marquee gesture`](../editor/src/ui/timeline/graph/marquee.rs).
+- Tests: [`T-825 headless geometry/egui/safety`](../editor/src/ui/timeline/graph/t825_tests.rs), existing T-814/T-820 suites.
+- Remaining: normalized overlay ABSENT; desktop qualification PENDING. No lasso, grouped key drag, FFD graph, segment or event selection.
+- Latest checkpoint: T-825 local candidate. Public baseline remains separate.
 
 <a id="cap-11"></a>
 ### CAP-11 — Existing onion ghost generation

@@ -4,7 +4,7 @@ All **local T-813–T-816 GUI results remain PENDING_MANUAL / PENDING MANUAL REV
 This register requests no action now. The maintainer chose to continue development
 before grouped tests. No editor/browser/inference session was run by T-817.
 
-Use the **T-824 cumulative executable** for the grouped campaign; older binaries
+Use the **T-825 cumulative executable** for the grouped campaign; older binaries
 are retained for targeted comparisons, not substitutes. Internal version remains
 0.2.0-alpha.1 and cannot identify a candidate by itself. Check the SHA before use.
 
@@ -121,3 +121,17 @@ normal rendering, Save/Reload and perceived performance. Headless egui events
 and CPU measurements are not a desktop or artistic certificate. Historical
 video process tests retain their concurrency sensitivity; no assertion or
 ignore was changed. No human action is requested by this development task.
+
+## T-825 — Graph marquee selection
+
+**PENDING MANUAL REVIEW**, cumulatively with T-813–T-824. The local delivery is
+`outputs/T825-Graph-Marquee/Ankhimate-T825-dev.exe`; verify size/SHA in its
+CHECKPOINT.json before the grouped campaign. Its MANUAL-CHECKLIST.md contains
+22 deferred controls: scalar points, four directions, replace/Ctrl-union and
+Ctrl-click toggle, empty rectangles, navigation, handles, linking disabled
+states, shared Dopesheet selection, context changes, Undo/Redo and Save As on
+copies. No current GUI action is requested. Existing binaries remain retained.
+Headless egui events and synthetic CPU observations do not certify desktop
+feel, contrast or large-project performance. Historical video/process concurrency
+sensitivity remains; final automated gates use four test threads, without
+assertion/timeout or ignore changes.

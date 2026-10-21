@@ -27,6 +27,8 @@ use ankhimate_document::commands::key_cmds::{
 };
 use eframe::egui;
 
+mod marquee;
+
 const KEY_R: f32 = 4.0;
 
 /// The colour for one channel: the property's colour, shaded by axis.
@@ -67,6 +69,12 @@ pub fn ui(
     let visuals = ui.visuals().clone();
     painter.rect_filled(rect, 0.0, visuals.extreme_bg_color);
 
+    // Register below key/handle widgets: existing drags retain priority.
+    let bg = ui.interact(
+        rect.intersect(ui.clip_rect()),
+        ui.id().with("graph_background"),
+        egui::Sense::click_and_drag(),
+    );
     if ui.ctx().input(|i| i.key_pressed(egui::Key::K)) {
         set_key_for_active_bone(state, anim);
     }
@@ -241,6 +249,7 @@ pub fn ui(
     let animation = state.doc.animations.get(anim).cloned();
     let Some(animation) = animation else { return };
 
+    let mut points = Vec::new();
     let mut pending: Option<Edit> = None;
     let mut interp_edit: Option<InterpEdit> = None;
 
@@ -256,6 +265,7 @@ pub fn ui(
         if data.read_only {
             continue;
         }
+        let selectable = marquee::available(state, &animation, &data.addr);
         for ch in &data.channels {
             let color = channel_color(style.theme, data.label, ch.axis);
             // Sample the curve across the visible range for a smooth plot.
@@ -289,12 +299,27 @@ pub fn ui(
                 let Some(&value) = ch.values.get(k.index) else {
                     continue;
                 };
+                if !k.time.is_finite() || !value.is_finite() {
+                    continue;
+                }
                 let x = layout.time_to_x(k.time);
                 let y = val_to_y(value as f64);
                 if x < rect.left() - KEY_R || x > rect.right() + KEY_R {
                     continue;
                 }
                 let center = egui::pos2(x, y);
+                if selectable
+                    && center.is_finite()
+                    && rect.intersect(ui.clip_rect()).contains(center)
+                {
+                    points.push(marquee::Point {
+                        key: KeyRef {
+                            addr: data.addr.clone(),
+                            index: k.index,
+                        },
+                        center,
+                    });
+                }
                 painter.circle_filled(center, KEY_R, color);
                 painter.circle_stroke(
                     center,
@@ -308,7 +333,7 @@ pub fn ui(
                     continue;
                 }
                 let resp = ui.interact(
-                    hit,
+                    hit.intersect(rect),
                     ui.id()
                         .with(("graph_key", data.addr.stable_id(), ch.axis, k.index)),
                     egui::Sense::click_and_drag(),
@@ -369,6 +394,22 @@ pub fn ui(
             }
         }
     }
+
+    marquee::ui(
+        ui,
+        state,
+        anim,
+        &animation,
+        &selection,
+        points,
+        marquee::Mapping {
+            rect: rect.intersect(ui.clip_rect()),
+            horizontal: [layout.sheet_x0, layout.px_per_sec, layout.scroll_sec],
+            bounds: [lo, hi],
+        },
+        &bg,
+        &painter,
+    );
 
     // Playhead.
     let px = layout.time_to_x(state.session.playhead);
@@ -991,3 +1032,6 @@ mod tests {
 
 #[cfg(test)]
 mod t820_tests;
+
+#[cfg(test)]
+mod t825_tests;

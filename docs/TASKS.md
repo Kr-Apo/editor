@@ -1,5 +1,20 @@
 # Ankhimate — operational tasks and evidence
 
+## Local T-825 update — 2026-10-21
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for Graph Editor marquee of
+existing visible scalar key points. Empty-space primary drag replaces; Ctrl+drag
+unions, matching Dopesheet marquee. Ctrl-click still toggles. Native key/handle
+widgets retain priority; Escape, lost focus/pointer, outside release and stale
+identity/revision/animation/selection/view cancel. Selection commits on release
+through T-814 KeySelection; no author command or new persistent field.
+See [Graph selection](graph-editor.md#7-rectangular-key-selection-t-825).
+T-704/T-912 remain PARTIAL for normalized overlay and broader interaction
+qualification. Cumulative T-813–T-825 desktop checks remain PENDING MANUAL REVIEW.
+Older checkpoint notes below retain their historical scopes. No runtime, sampler,
+format, renderer, export, public reference or publication change.
+
+
 ## Local T-824 update — 2026-10-21
 
 **COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for bounded onion-skin refinement.
@@ -188,11 +203,11 @@ The matrix is an operational summary; the archive retains all original criteria.
 | [T-210](FEATURE_INVENTORY.md#t-210) — Keyed-value affordances in the inspector | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Does not add IK key dots or every future property; no whole-app accessibility certificate |
 | [T-211](FEATURE_INVENTORY.md#t-211) — Pose tools | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Arbitrary numeric retime dialog and broader original UI acceptance remain |
 | [T-703](FEATURE_INVENTORY.md#t-703) — Onion skinning | PARTIAL | PENDING_MANUAL | LOCAL_CANDIDATE | Local T-824 theme/opacity and stepping qualified headlessly; desktop scrubbing and perceived performance pending. |
-| [T-704](FEATURE_INVENTORY.md#t-704) — Curve editor refinement | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | T-820 adds local single-junction linking; normalized overlay, graph marquee and broad GUI qualification remain |
+| [T-704](FEATURE_INVENTORY.md#t-704) — Curve editor refinement | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | T-825 local marquee and T-820 linking; normalized overlay and broad GUI qualification remain |
 | [T-814](FEATURE_INVENTORY.md#t-814) — Shared key selection | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE | Broader T-704 stays partial; combined graph edits retain existing granularity; GUI pending |
 | [T-905](FEATURE_INVENTORY.md#t-905) — Non-destructive timeline offset | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Not arbitrary per-track/per-selection offsets for slots/constraints/deforms |
 | [T-906](FEATURE_INVENTORY.md#t-906) — Timeline markers | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Not runtime event callbacks; no fresh desktop certification |
-| [T-912](FEATURE_INVENTORY.md#t-912) — Graph editor ergonomics review | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | T-820 adds local tied handles; normalize/marquee and GUI pending; extreme sampling overflow remains shown as gaps |
+| [T-912](FEATURE_INVENTORY.md#t-912) — Graph editor ergonomics review | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | T-825 local marquee; normalized overlay and GUI pending; extreme sampling overflow remains shown as gaps |
 
 ### Meshes
 

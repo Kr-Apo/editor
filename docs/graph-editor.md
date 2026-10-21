@@ -135,7 +135,7 @@ snapping policy or shortcut: the existing `snap: frames` badge and Alt `free` re
 Automated command, selection, round-trip and in-memory egui regressions exercise
 these paths. No desktop session, screenshot, playback observation or GUI Windows
 qualification was performed. T-813 and T-814 remain **PENDING MANUAL REVIEW**.
-T-704's normalized overlay and graph marquee remain deferred. T-820's scoped
+T-704's normalized overlay remains deferred; T-825 adds the local marquee below. T-820's scoped
 linked editing is described below and is not a broader GUI qualification.
 
 ## 6. Session linking at a central key (T-820)
@@ -175,3 +175,65 @@ overflow/gap limitation. Setup and locked/missing targets cannot author changes.
 
 All T-820 desktop Windows checks remain **PENDING MANUAL REVIEW**. Existing
 automated egui pointer/text tests are headless state/command evidence only.
+
+## 7. Rectangular key selection (T-825)
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for existing scalar key points.
+T-704/T-912 remain PARTIAL; normalized overlay and broader GUI acceptance remain.
+
+Press on empty curve-plot space and drag past egui's normal drag threshold. The
+rectangle works in all four directions and uses the existing theme selection
+fill/border. Only visible finite key centres inside the plot/rectangle are
+candidates, including its boundary. A segment crossing the rectangle and Bezier
+handles are not selected. Collapsed or non-soloed rows, offscreen keys, events,
+FFD, constraints and other nonnumeric tracks are excluded. Bone scalar channels
+and slot alpha retain their existing raw display/storage conventions, including
+rotation's possible difference from shortest-arc sampling. No normalized display
+or new interpretation is introduced.
+
+- Plain drag replaces selection on release. A positive-area empty rectangle clears.
+- **Ctrl+drag** adds (union), matching the Dopesheet's existing marquee convention.
+  Empty additive rectangles preserve selection. Ctrl is captured at press.
+- **Ctrl-click** keeps its existing per-key toggle, including removal. There is
+  no subtractive marquee, new Shift selection rule or implicit Cmd remapping.
+- Plain empty click, subthreshold jitter and zero-area gestures keep selection.
+- Key and Bezier-handle widgets win over the background. Alt remains key-drag
+  free snapping; empty Alt drags do not start a marquee. Nonprimary buttons and
+  wheel/pinch stay reserved for existing navigation/menus. The existing wheel/
+  pinch/shared scrollbar navigation is unchanged; graph-specific middle-button
+  pan is not implemented by this task (the Dopesheet has its own middle pan).
+
+Selection does not change while drawing. **Escape**, loss of window focus,
+PointerGone, leaving the plot (including release outside), wheel/pinch, another
+button, hidden-graph frame gaps or a changed context cancels. Re-entering while
+still held never restarts a canceled gesture. Release and start again. The
+rectangle is clipped to the plot; this conservative V1 does not auto-scroll.
+
+A transient egui-memory gesture captures document identity/revision, active clip,
+exact animation, typed key addresses, visible positions/mapping and both key and
+object selection at press. The rectangle appears only after the native threshold.
+Every subsequent update revalidates that baseline. Changes to rows/folding/solo,
+zoom/pan/framing, keys, mode, clip, object selection, Undo/Redo or document cancel
+instead of mapping old indices to new keys. Full typed equality, not positions,
+times or address hashes alone, resolves duplicate screen positions. No new
+persistent key IDs, author fields or second KeySelection.
+
+Commit goes through native KeySelection. The same keys appear in Dopesheet and
+Properties. T-820 Aligned/Mirrored require one compatible junction and reset to
+Broken after a changed multi-selection; no first-key-only linked edit. Old numeric
+drafts are invalidated. Existing multi-key Broken Apply can copy all four handles
+to an entirely compatible selected set; selecting first/non-Bezier keys still
+refuses numeric tangent editing. Mixed existing FFD + scalar Ctrl-unions refuse
+without changing the FFD selection. FFD remains Dopesheet-only.
+
+Selection creates no Undo entry and changes neither dirty content, revision,
+curves, tangents, assets nor export bytes. Existing multi-selection operations
+retain their own native guards; this feature does not add collective key/handle
+movement. Preferences/selection remain transient and do not enter .ankh.
+
+CPU measurements distinguish display, rectangle search and native selection
+validation. Large selections retain pre-existing quadratic KeyClip/selection
+paths: a 10,000-key debug native set took roughly 0.57 s locally. This is not a
+new optimization or real-time guarantee; desktop responsiveness is unqualified.
+All Windows/light-dark/artistic checks remain **PENDING MANUAL REVIEW** together
+with T-813–T-824. No desktop GUI, GPU benchmark or inference was run.
