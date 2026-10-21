@@ -39,6 +39,7 @@ pub struct AnkhimateApp {
     show_settings: bool,
     /// Is the bulk-rename dialog up? (T-901)
     show_rename: bool,
+    retime: crate::ui::retime::Panel,
     /// Its settings, kept while it is open.
     rename: crate::ui::rename::RenameState,
     /// In-progress name for a new selection set (T-904).
@@ -525,6 +526,7 @@ impl Default for AnkhimateApp {
             show_startup: false,
             show_settings: false,
             show_rename: false,
+            retime: Default::default(),
             rename: Default::default(),
             naming_group: None,
             torn_off: Vec::new(),
@@ -1271,6 +1273,8 @@ at startup.",
                                     ui.close();
                                 }
 
+                                self.retime.menu(ui, &self.state);
+
                                 if let Some(action) = action {
                                     match action {
                                         PoseAction::SetAsSetup => self.state.set_pose_as_setup(),
@@ -1691,6 +1695,8 @@ at startup.",
             self.theme.apply(ctx);
             self.show_settings = open;
         }
+
+        self.retime.show(ctx, &mut self.state, &self.theme);
 
         // ── Bulk rename (T-901) ──────────────────────────────────────────
         // A panel can ask for it — the hierarchy's context menu does — because
@@ -2904,3 +2910,7 @@ mod fps_tests;
 #[cfg(test)]
 #[path = "app_highlight_tests.rs"]
 mod highlight_tests;
+
+#[cfg(test)]
+#[path = "app_retime_tests.rs"]
+mod retime_tests;

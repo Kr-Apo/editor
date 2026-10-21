@@ -814,15 +814,16 @@ not the current availability matrix. The current [tasks](TASKS.md),
 <a id="t-211"></a>
 ### T-211 — Pose tools
 
-**PARTIAL / AUTOMATED / PUBLIC_ALPHA** · Origin: T-211.
+**PARTIAL / PENDING_MANUAL / LOCAL_CANDIDATE** · Origin: T-211.
 
-- Delivered scope: Bake pose as setup, reset, fixed retime and clear operations
+- Delivered scope: Bake pose as setup, reset, fixed retime and clear operations; T-830 numeric whole-clip Time Scale/frame offset with pure preview and one native command
 - Entry point: Pose menu.
 - Implementation: [`editor/src/app_state.rs`](../editor/src/app_state.rs), [`document/src/commands/bone_cmds.rs`](../document/src/commands/bone_cmds.rs), [`document/src/commands/key_cmds.rs`](../document/src/commands/key_cmds.rs).
 - Test/reference suites: [`editor/src/app_state.rs`](../editor/src/app_state.rs), [`document/src/commands/key_cmds.rs`](../document/src/commands/key_cmds.rs)
 - Example test symbols (suite references, not a coverage claim): `set_pose_as_setup_bakes_what_is_on_screen`.
-- Contradictory check / remaining historical criteria: Arbitrary numeric retime dialog and broader original UI acceptance remain
-- Latest relevant checkpoint: T-812 integration; audited exact T-816 source.
+- Contradictory check / remaining historical criteria: Numeric dialog delivered locally; broader original UI/manual acceptance remains
+- Latest relevant checkpoint: T-830 local numeric retime; earlier fixed tools retain their public baseline.
+- Numeric contract: [preview, scope, duration and refusal rules](numeric-retiming.md).
 - Recommended action: Work only on the explicit remainder; preserve existing paths. Priority: Retain scoped implementation.
 
 <a id="t-703"></a>

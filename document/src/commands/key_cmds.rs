@@ -1148,6 +1148,10 @@ impl EditCommand for AddDeformKey {
 
 // ── Whole-clip pose tools (T-211) ───────────────────────────────────────────
 
+#[path = "retime_numeric.rs"]
+mod numeric;
+pub use numeric::{PreparedRetime, RetimeSummary};
+
 /// Every key time in a clip, transformed by `f`, with the duration following.
 ///
 /// Retiming and offsetting are the same operation with a different function, and
@@ -1179,6 +1183,19 @@ fn map_key_times(anim: &mut Animation, f: impl Fn(f32) -> f32) {
         }
     }
     anim.duration = f(anim.duration).max(0.0);
+}
+
+// One native mapping for mutation and numeric preparation. Keep the historical
+// duration rule: any nonzero shift preserves the clip length.
+fn mapped_time(time: f32, factor: f32, offset: f32) -> f32 {
+    time * factor + offset
+}
+fn retime_clip(anim: &mut Animation, factor: f32, offset: f32) {
+    let duration = anim.duration;
+    map_key_times(anim, |t| mapped_time(t, factor, offset));
+    if offset != 0.0 {
+        anim.duration = duration;
+    }
 }
 
 /// Scale a clip's timing, or shift every key by a fixed offset (T-211).
@@ -1226,13 +1243,7 @@ impl EditCommand for RetimeAnimation {
         if self.before.is_none() {
             self.before = Some((anim.timelines.clone(), anim.duration));
         }
-        let (factor, offset) = (self.factor, self.offset);
-        let duration = anim.duration;
-        map_key_times(anim, |t| t * factor + offset);
-        if offset != 0.0 {
-            // A shift moves the content, not the clip's length.
-            anim.duration = duration;
-        }
+        retime_clip(anim, self.factor, self.offset);
     }
 
     fn revert(&mut self, doc: &mut Document) {

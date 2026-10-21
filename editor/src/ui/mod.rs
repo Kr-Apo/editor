@@ -17,6 +17,7 @@ pub mod plugin_panel;
 pub mod png_sequence;
 pub mod psd_import;
 pub mod rename;
+pub mod retime;
 pub mod settings;
 pub mod skins;
 pub mod slot_editor;

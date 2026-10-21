@@ -424,6 +424,13 @@ The **Pose** menu offers these Animate-mode commands:
   when nothing is selected. It does not clear slot, event, draw-order, deform, or
   constraint data.
 
+**Retime…** adds arbitrary Time Scale and Offset in Frames with an explicit
+Prepare preview, Apply/Cancel, stale-context checks and collision refusal. Its
+whole-clip scope includes all native timelines; events/markers stay unchanged.
+Nonzero offset keeps duration unchanged even when combined with scaling. Read
+[the numeric contract](../numeric-retiming.md) before applying broad edits.
+Desktop qualification remains **PENDING MANUAL REVIEW**.
+
 These are undoable clip operations. Duplicate a clip before a broad creative
 retime when you want to compare versions rather than rely on undo history.
 

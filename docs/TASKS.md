@@ -1,5 +1,19 @@
 # Ankhimate — operational tasks and evidence
 
+## Local T-830 update — 2026-10-21
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for numeric whole-clip retiming.
+Pose → Retime… adds Time Scale and signed frame offset, explicit pure Prepare,
+context/FPS invalidation and one native Undo command. All 13 native timelines
+are included; events, markers and bone evaluation offsets remain unchanged.
+Nonzero offset preserves clip duration even with scaling. Collisions/overflow
+refuse; valid clamp/outside-duration and excluded metadata require acknowledgement.
+No-op/Cancel/refusal preserve history and Redo. T-211 remains PARTIAL for broader
+historical/manual acceptance; T-905 remains PARTIAL. Fixed shortcuts, T-827 capture,
+T-829 highlighting, renderer, sampler, formats and runtimes are unchanged.
+See [numeric retiming](numeric-retiming.md). Cumulative T-813–T-830 desktop checks
+remain **PENDING MANUAL REVIEW**. Earlier notes retain their historical scope.
+
 ## Local T-829 update — 2026-10-21
 
 **COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for large-selection highlighting.
@@ -283,7 +297,7 @@ The matrix is an operational summary; the archive retains all original criteria.
 | [T-209.2](FEATURE_INVENTORY.md#t-209-2) — Validated normal/mirrored multibone pose paste in… | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Auto-key-off retains preview policy; not a retargeter |
 | [T-209.3](FEATURE_INVENTORY.md#t-209-3) — Explicit bone-row mirrored offsets; signs | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Offsets, not asymmetric absolute setup poses; no slot/FFD/event mirror |
 | [T-210](FEATURE_INVENTORY.md#t-210) — Keyed-value affordances in the inspector | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Does not add IK key dots or every future property; no whole-app accessibility certificate |
-| [T-211](FEATURE_INVENTORY.md#t-211) — Pose tools | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Arbitrary numeric retime dialog and broader original UI acceptance remain |
+| [T-211](FEATURE_INVENTORY.md#t-211) — Pose tools | PARTIAL | AUTOMATED | PUBLIC_ALPHA | Numeric retime delivered locally in T-830; broader original UI/manual acceptance remains |
 | [T-703](FEATURE_INVENTORY.md#t-703) — Onion skinning | PARTIAL | PENDING_MANUAL | LOCAL_CANDIDATE | Local T-824 theme/opacity and stepping qualified headlessly; desktop scrubbing and perceived performance pending. |
 | [T-704](FEATURE_INVENTORY.md#t-704) — Curve editor refinement | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | T-825 local marquee and T-820 linking; normalized overlay and broad GUI qualification remain |
 | [T-814](FEATURE_INVENTORY.md#t-814) — Shared key selection | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE | Broader T-704 stays partial; combined graph edits retain existing granularity; GUI pending |
