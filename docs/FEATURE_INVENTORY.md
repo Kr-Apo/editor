@@ -1,5 +1,7 @@
 # Feature inventory — reconciled at exact T-831 / T-832 documentation
 
+T-834 local addendum: **Safe FFD Key Clipboard — COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** in its same-document/exact-owned-mesh scope. See [the contract](ffd-key-clipboard.md). T-209/T-404 remain PARTIAL. The T-832 101-ID matrix/categories, its 352 manual scenarios and the 28 T-833 controls stay unchanged; T-834 adds 37 pending controls. No GUI/inference/publication.
+
 T-833 local addendum: selected-bone offsets are implemented; see [the contract](selected-bone-key-offset.md). T-211 and T-905 remain PARTIAL; the frozen T-832 101-ID matrix and original 352 manual scenarios stay unchanged. T-833 adds 28 pending controls. No GUI/inference/public operation.
 
 T-832 reconciliation baseline (retained): **2026-10-21**. Product audited at T-831
@@ -354,15 +356,18 @@ No lack of manual testing alone keeps an implemented scope PARTIAL.
 
 **PARTIAL / PENDING_MANUAL / LOCAL_CANDIDATE**. Public base: PUBLIC_ALPHA. T-817 implementation: PARTIAL.
 
-- Historical criteria fulfilled: Existing owned key blocks/pose/mirror plus faster capture; separate reviewed region transfer.
-- Remaining condition / qualification or scope limit: General FFD/vector, constraint, draw-order and event block clipboard remain excluded; no separate empty-row destination tool. T-821 key editing is not FFD clipboard.
-- Evidence checkpoints: T-819; T-821; T-827.
+- Historical criteria fulfilled: T-834 adds same-owner native FFD vector blocks with exact topology guard, explicit row, strict collisions and one Undo.  Existing owned key blocks/pose/mirror plus faster capture; separate reviewed region transfer.
+- Remaining condition / qualification or scope limit: T-834 supports owned same-mesh FFD key blocks on an explicit existing row. Cross-project/cross-mesh, linked/shared/overridden sources, empty-row creation, constraints, draw-order and event blocks remain excluded. Scalar replacement semantics remain unchanged.
+- Evidence checkpoints: T-834; T-819; T-821; T-827.
 - Code: [`document/src/clipboard.rs`](../document/src/clipboard.rs); [`editor/src/key_clipboard.rs`](../editor/src/key_clipboard.rs); [`editor/src/pose_clipboard.rs`](../editor/src/pose_clipboard.rs); [`document/src/clipboard/keys.rs`](../document/src/clipboard/keys.rs); [`document/src/transfer.rs`](../document/src/transfer.rs).
 - Tests: [`editor/src/ui/timeline/sheet/clipboard_tests.rs`](../editor/src/ui/timeline/sheet/clipboard_tests.rs); [`editor/src/pose_clipboard.rs`](../editor/src/pose_clipboard.rs); [`editor/src/ui/timeline/sheet/t821_tests.rs`](../editor/src/ui/timeline/sheet/t821_tests.rs); [`document/src/clipboard/keys/t827_tests.rs`](../document/src/clipboard/keys/t827_tests.rs).
 - Automated validation: T-831 accepted checkpoint: 2058/0/4; referenced suites present (not rerun in T-832).
 - Manual validation: PENDING MANUAL REVIEW.
-- Status rationale: Inspected the current implementation and named tests; later work closes the stated sub-scope only. General FFD/vector, constraint, draw-order and event block clipboard remain excluded; no separate empty-row destination tool. T-821 key editing is not FFD clipboard.
+- Status rationale: Inspected the current implementation and named tests; later work closes the stated sub-scope only. T-834 supports owned same-mesh FFD key blocks on an explicit existing row. Cross-project/cross-mesh, linked/shared/overridden sources, empty-row creation, constraints, draw-order and event blocks remain excluded. Scalar replacement semantics remain unchanged.
 - Confidence: HIGH.
+
+
+T-834 sources: [`typed native payload/plan`](../document/src/clipboard/deform.rs), [`native tests`](../document/tests/ffd_clipboard.rs), [`editor lease/UI`](../editor/src/ffd_clipboard.rs), [`actual egui tests`](../editor/src/ui/timeline/sheet/t834_tests.rs).
 
 <a id="t-209-2"></a>
 ### T-209.2 — Validated normal/mirrored multibone pose paste in one native transaction
@@ -1881,3 +1886,7 @@ B01 region-transfer subset addressed by T-819, advanced transfer not complete. B
 ## T-833 — Selected-bone key offset (local addendum)
 
 Implemented destructive key-time offset for explicitly selected BoneIds, seven direct transform channels, unchanged duration and strict per-track collision refusal. Pure Prepare, leased Apply, consent for safe clamp/outside keys, one native Undo. No selection fallback. See [contract](selected-bone-key-offset.md). Historical 101 categories unchanged; T-211 remains PARTIAL. Windows qualification PENDING MANUAL REVIEW.
+
+## T-834 — Safe FFD Key Clipboard (local addendum)
+
+Same-project, exact unique owner/mesh only; rigid per-vertex and weighted per-influence vectors retained by value. Explicit existing nonempty Deform row, playhead placement, preserved interpolation, full topology/Setup/bind equality and strict collision refusal. Pure Copy/preview, leased consented Apply, one native Undo and exact Save/reopen. Linked/shared/overridden/sequence meshes and cross-project retargeting remain refused. Loader topology migration is still separate T-404 debt. Manual Windows qualification remains pending.

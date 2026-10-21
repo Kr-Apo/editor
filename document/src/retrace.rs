@@ -50,7 +50,11 @@ pub struct Plan {
     noop: bool,
 }
 
-fn topology(vertices: &[Vec2], uvs: &[Vec2], triangles: &[[u32; 3]]) -> Result<(), String> {
+pub(crate) fn topology(
+    vertices: &[Vec2],
+    uvs: &[Vec2],
+    triangles: &[[u32; 3]],
+) -> Result<(), String> {
     if vertices.len() < 3
         || vertices.len() != uvs.len()
         || triangles.is_empty()

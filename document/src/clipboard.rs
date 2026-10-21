@@ -13,6 +13,7 @@ use ankhimate_core::math::Transform;
 use ankhimate_core::skeleton::Bone;
 use ankhimate_core::slot::Slot;
 
+pub mod deform;
 pub mod keys;
 pub use keys::KeyClip;
 
@@ -237,6 +238,8 @@ pub enum Clipboard {
     Bones(BoneClip),
     Pose(PoseClip),
     Keys(KeyClip),
+    /// Same-document, exact owned mesh only; never a named retargeting payload.
+    Deform(std::sync::Arc<deform::DeformClip>),
 }
 
 impl Clipboard {
@@ -257,6 +260,7 @@ impl Clipboard {
                 n => format!("a pose ({n} bones)"),
             },
             Clipboard::Keys(clip) => format!("{} selected key(s)", clip.keys.len()),
+            Clipboard::Deform(clip) => format!("{} FFD key(s), exact mesh only", clip.keys().len()),
         }
     }
 }

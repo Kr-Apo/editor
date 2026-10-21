@@ -16,7 +16,7 @@ remain PARTIAL. No desktop Windows, artistic or runtime qualification is claimed
 8. Use **Delete FFD key**, or **FFD interpolation** → native preset.
 9. Undo/Redo restores exact offsets; Save As/reopen persists the authored changes.
 
-One key only. Mixed/grouped FFD selections are refused, not partly applied.
+Time/drag/delete/interpolation edits remain one-key only. T-834 adds same-track grouping for the dedicated clipboard; mixed/other-track groups remain refused. See [safe FFD clipboard](ffd-key-clipboard.md).
 Scalar/slot multi-selection and existing clipboard remain unchanged. FFD cannot
 be copied/pasted/mirrored through the general key clipboard or transferred via
 T-819. The Graph has no fabricated scalar average for vector FFD values, and

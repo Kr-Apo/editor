@@ -43,11 +43,14 @@ impl Lease {
     }
 }
 fn context(s: &AppState, c: &Capture) -> Result<(), String> {
+    context_addr(s, &c.key.addr)
+}
+fn context_addr(s: &AppState, addr: &TimelineAddr) -> Result<(), String> {
     let TimelineAddr::Deform {
         slot,
         attachment,
         owner,
-    } = &c.key.addr
+    } = addr
     else {
         return Err("Not a Deform address".into());
     };
@@ -62,15 +65,18 @@ fn context(s: &AppState, c: &Capture) -> Result<(), String> {
     Ok(())
 }
 pub fn editable(s: &AppState, c: &Capture) -> Result<(), String> {
+    editable_addr(s, &c.key.addr)
+}
+fn editable_addr(s: &AppState, addr: &TimelineAddr) -> Result<(), String> {
     if !s.session.is_animating() {
         return Err("Switch to Animate to edit FFD keys".into());
     }
-    context(s, c)?;
+    context_addr(s, addr)?;
     let TimelineAddr::Deform {
         slot,
         attachment,
         owner: Some(skin),
-    } = &c.key.addr
+    } = addr
     else {
         return Err("Unresolved FFD owner".into());
     };
@@ -89,8 +95,8 @@ pub fn editable(s: &AppState, c: &Capture) -> Result<(), String> {
     Ok(())
 }
 pub fn reason(s: &AppState, animation: AnimationId, key: KeyRef) -> Option<String> {
-    Lease::new(s, animation, key)
-        .and_then(|l| editable(s, &l.capture))
+    ankhimate_document::ffd_keys::validate(&s.doc, animation, &key)
+        .and_then(|_| editable_addr(s, &key.addr))
         .err()
 }
 pub fn selected(s: &mut AppState, anim: AnimationId) -> Result<Lease, String> {
@@ -234,8 +240,9 @@ pub fn menu(ui: &mut egui::Ui, s: &mut AppState, anim: AnimationId) {
             }
         }
     });
-    ui.add_enabled(false, egui::Button::new("Copy/Paste FFD keys"))
-        .on_disabled_hover_text("Vector FFD clipboard and cross-mesh retargeting are outside T821");
+    ui.weak(
+        "Copy FFD Keys/Paste FFD Keys reuse this exact mesh; the edits above remain single-key.",
+    );
 }
 #[cfg(test)]
 pub(crate) mod tests;

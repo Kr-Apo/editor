@@ -53,154 +53,183 @@ pub fn interp_valid(i: Interp) -> bool {
         _ => true,
     }
 }
+/// Validated native borrows for clipboard capture and row checks, without cloning vectors.
+pub(crate) struct Validated<'a> {
+    pub keys: &'a [Key<Vec<Vec2>>],
+    mesh: &'a ankhimate_core::attachment::MeshAttachment,
+    slot: &'a ankhimate_core::slot::Slot,
+    skin: &'a ankhimate_core::skin::Skin,
+    track: usize,
+    duration: f32,
+}
+pub(crate) fn read_borrowed<'a>(
+    d: &'a Document,
+    animation: AnimationId,
+    key: &KeyRef,
+) -> Result<Validated<'a>, String> {
+    let TimelineAddr::Deform {
+        slot,
+        attachment,
+        owner: Some(skin),
+    } = &key.addr
+    else {
+        return Err("FFD owner is unresolved; choose one exact owned mesh".into());
+    };
+    if owner(d, *slot, attachment)? != *skin {
+        return Err("FFD skin ownership changed".into());
+    }
+    let sl = d.skeleton.slots.get(*slot).ok_or("FFD slot is absent")?;
+    if !d.skeleton.bones.contains_key(sl.bone) {
+        return Err("FFD slot bone is absent".into());
+    }
+    let sk = d.skeleton.skins.get(*skin).ok_or("FFD skin is absent")?;
+    let Some(Attachment::Mesh(m)) = sk.get(*slot, attachment) else {
+        return Err("FFD target is not an owned mesh".into());
+    };
+    if m.linked.is_some() {
+        return Err("Linked meshes cannot be edited through FFD keys".into());
+    }
+    for s in d.skeleton.skins.values() {
+        for a in s.entries.values() {
+            if let Attachment::Mesh(other) = a
+                && let Some(l) = &other.linked
+            {
+                let source_skin = l
+                    .skin
+                    .as_deref()
+                    .or_else(|| {
+                        d.skeleton
+                            .skins
+                            .get(d.skeleton.default_skin)
+                            .map(|s| s.name.as_str())
+                    })
+                    .ok_or("Linked source default skin is absent")?;
+                if l.slot == sl.name && l.attachment == *attachment && source_skin == sk.name {
+                    return Err(
+                        "Source of a linked mesh is shared and read-only for FFD key editing"
+                            .into(),
+                    );
+                }
+            }
+        }
+    }
+    let n = m.setup_vertices.len();
+    if n < 3
+        || m.uvs.len() != n
+        || m.setup_vertices
+            .iter()
+            .chain(&m.uvs)
+            .any(|v| !v.is_finite())
+        || m.triangles.is_empty()
+        || m.triangles.iter().flatten().any(|i| *i as usize >= n)
+        || m.edges.iter().flatten().any(|i| *i as usize >= n)
+    {
+        return Err("FFD mesh topology/UVs are invalid".into());
+    }
+    if !m.weights.is_empty() && m.weights.len() != n {
+        return Err("FFD weight rows do not match setup vertices".into());
+    }
+    for weights in &m.weights {
+        let sum: f32 = weights.iter().map(|w| w.weight).sum();
+        if !weights.is_empty() && (!sum.is_finite() || (sum - 1.).abs() > 0.001) {
+            return Err("FFD influence weights must be normalized".into());
+        }
+        for w in weights {
+            if !d.skeleton.bones.contains_key(w.bone)
+                || !w.weight.is_finite()
+                || w.weight < 0.
+                || w.weight > 1.
+            {
+                return Err("FFD influence is invalid".into());
+            }
+            let b = m
+                .inverse_bind_matrices
+                .get(&w.bone)
+                .ok_or("FFD inverse bind is absent; no implicit rebind")?;
+            if [b.a, b.b, b.c, b.d, b.tx, b.ty]
+                .iter()
+                .any(|f| !f.is_finite())
+                || b.invert().is_none()
+            {
+                return Err("FFD inverse bind is invalid".into());
+            }
+        }
+    }
+    if m.inverse_bind_matrices.iter().any(|(id, b)| {
+        !d.skeleton.bones.contains_key(*id)
+            || [b.a, b.b, b.c, b.d, b.tx, b.ty]
+                .iter()
+                .any(|f| !f.is_finite())
+            || b.invert().is_none()
+    }) {
+        return Err("FFD bind cache contains invalid matrices or bone references".into());
+    }
+    let count = if m.weights.is_empty() {
+        n
+    } else {
+        m.influence_count()
+    };
+    if count == 0 {
+        return Err("FFD mesh has no representable offset entries".into());
+    }
+    let a = d
+        .animations
+        .get(animation)
+        .ok_or("FFD animation is absent")?;
+    let tracks = a
+        .timelines
+        .iter()
+        .enumerate()
+        .filter(|(_, t)| key.addr.matches_timeline(t))
+        .collect::<Vec<_>>();
+    if tracks.len() != 1 {
+        return Err("FFD track is absent or ambiguous".into());
+    }
+    let Timeline::Deform { keys, .. } = tracks[0].1 else {
+        unreachable!()
+    };
+    if keys.get(key.index).is_none() {
+        return Err("FFD key index is absent".into());
+    }
+    if !a.duration.is_finite()
+        || a.duration < 0.
+        || keys.iter().any(|k| {
+            !k.time.is_finite()
+                || k.time < 0.
+                || !interp_valid(k.interp)
+                || (!k.value.is_empty() && k.value.len() != count)
+                || k.value.iter().any(|v| !v.is_finite())
+        })
+        || keys.windows(2).any(|k| k[0].time >= k[1].time)
+    {
+        return Err("FFD keys have invalid times, interpolation or topology-sized offsets".into());
+    }
+    if m.ffd_keyframes.iter().any(|k| {
+        !k.time.is_finite()
+            || (!k.vertex_offsets.is_empty() && k.vertex_offsets.len() != count)
+            || k.vertex_offsets.iter().any(|v| !v.is_finite())
+    }) {
+        return Err("FFD inline data is invalid; key editing does not repair it".into());
+    }
+    Ok(Validated {
+        keys,
+        mesh: m,
+        slot: sl,
+        skin: sk,
+        track: tracks[0].0,
+        duration: a.duration,
+    })
+}
+/// Same validation as Capture::read; no payload or JSON snapshot allocation.
+pub fn validate(d: &Document, animation: AnimationId, key: &KeyRef) -> Result<(), String> {
+    read_borrowed(d, animation, key).map(|_| ())
+}
 impl Capture {
     pub fn read(d: &Document, animation: AnimationId, key: KeyRef) -> Result<Self, String> {
-        let TimelineAddr::Deform {
-            slot,
-            attachment,
-            owner: Some(skin),
-        } = &key.addr
-        else {
-            return Err("FFD owner is unresolved; choose one exact owned mesh".into());
-        };
-        if owner(d, *slot, attachment)? != *skin {
-            return Err("FFD skin ownership changed".into());
-        }
-        let sl = d.skeleton.slots.get(*slot).ok_or("FFD slot is absent")?;
-        if !d.skeleton.bones.contains_key(sl.bone) {
-            return Err("FFD slot bone is absent".into());
-        }
-        let sk = d.skeleton.skins.get(*skin).ok_or("FFD skin is absent")?;
-        let Some(Attachment::Mesh(m)) = sk.get(*slot, attachment) else {
-            return Err("FFD target is not an owned mesh".into());
-        };
-        if m.linked.is_some() {
-            return Err("Linked meshes cannot be edited through FFD keys".into());
-        }
-        for s in d.skeleton.skins.values() {
-            for a in s.entries.values() {
-                if let Attachment::Mesh(other) = a
-                    && let Some(l) = &other.linked
-                {
-                    let source_skin = l
-                        .skin
-                        .as_deref()
-                        .or_else(|| {
-                            d.skeleton
-                                .skins
-                                .get(d.skeleton.default_skin)
-                                .map(|s| s.name.as_str())
-                        })
-                        .ok_or("Linked source default skin is absent")?;
-                    if l.slot == sl.name && l.attachment == *attachment && source_skin == sk.name {
-                        return Err(
-                            "Source of a linked mesh is shared and read-only for FFD key editing"
-                                .into(),
-                        );
-                    }
-                }
-            }
-        }
-        let n = m.setup_vertices.len();
-        if n < 3
-            || m.uvs.len() != n
-            || m.setup_vertices
-                .iter()
-                .chain(&m.uvs)
-                .any(|v| !v.is_finite())
-            || m.triangles.is_empty()
-            || m.triangles.iter().flatten().any(|i| *i as usize >= n)
-            || m.edges.iter().flatten().any(|i| *i as usize >= n)
-        {
-            return Err("FFD mesh topology/UVs are invalid".into());
-        }
-        if !m.weights.is_empty() && m.weights.len() != n {
-            return Err("FFD weight rows do not match setup vertices".into());
-        }
-        for weights in &m.weights {
-            let sum: f32 = weights.iter().map(|w| w.weight).sum();
-            if !weights.is_empty() && (!sum.is_finite() || (sum - 1.).abs() > 0.001) {
-                return Err("FFD influence weights must be normalized".into());
-            }
-            for w in weights {
-                if !d.skeleton.bones.contains_key(w.bone)
-                    || !w.weight.is_finite()
-                    || w.weight < 0.
-                    || w.weight > 1.
-                {
-                    return Err("FFD influence is invalid".into());
-                }
-                let b = m
-                    .inverse_bind_matrices
-                    .get(&w.bone)
-                    .ok_or("FFD inverse bind is absent; no implicit rebind")?;
-                if [b.a, b.b, b.c, b.d, b.tx, b.ty]
-                    .iter()
-                    .any(|f| !f.is_finite())
-                    || b.invert().is_none()
-                {
-                    return Err("FFD inverse bind is invalid".into());
-                }
-            }
-        }
-        if m.inverse_bind_matrices.iter().any(|(id, b)| {
-            !d.skeleton.bones.contains_key(*id)
-                || [b.a, b.b, b.c, b.d, b.tx, b.ty]
-                    .iter()
-                    .any(|f| !f.is_finite())
-                || b.invert().is_none()
-        }) {
-            return Err("FFD bind cache contains invalid matrices or bone references".into());
-        }
-        let count = if m.weights.is_empty() {
-            n
-        } else {
-            m.influence_count()
-        };
-        if count == 0 {
-            return Err("FFD mesh has no representable offset entries".into());
-        }
-        let a = d
-            .animations
-            .get(animation)
-            .ok_or("FFD animation is absent")?;
-        let tracks = a
-            .timelines
-            .iter()
-            .enumerate()
-            .filter(|(_, t)| key.addr.matches_timeline(t))
-            .collect::<Vec<_>>();
-        if tracks.len() != 1 {
-            return Err("FFD track is absent or ambiguous".into());
-        }
-        let Timeline::Deform { keys, .. } = tracks[0].1 else {
-            unreachable!()
-        };
-        if keys.get(key.index).is_none() {
-            return Err("FFD key index is absent".into());
-        }
-        if !a.duration.is_finite()
-            || a.duration < 0.
-            || keys.iter().any(|k| {
-                !k.time.is_finite()
-                    || k.time < 0.
-                    || !interp_valid(k.interp)
-                    || (!k.value.is_empty() && k.value.len() != count)
-                    || k.value.iter().any(|v| !v.is_finite())
-            })
-            || keys.windows(2).any(|k| k[0].time >= k[1].time)
-        {
-            return Err(
-                "FFD keys have invalid times, interpolation or topology-sized offsets".into(),
-            );
-        }
-        if m.ffd_keyframes.iter().any(|k| {
-            !k.time.is_finite()
-                || (!k.vertex_offsets.is_empty() && k.vertex_offsets.len() != count)
-                || k.vertex_offsets.iter().any(|v| !v.is_finite())
-        }) {
-            return Err("FFD inline data is invalid; key editing does not repair it".into());
-        }
+        let v = read_borrowed(d, animation, &key)?;
+        let m = v.mesh;
+        let sl = v.slot;
+        let sk = v.skin;
         let mut binds = m
             .inverse_bind_matrices
             .iter()
@@ -210,10 +239,10 @@ impl Capture {
         Ok(Self {
             animation,
             key,
-            keys: keys.clone(),
+            keys: v.keys.to_vec(),
             mesh: serde_json::json!([m, binds, sl, sk.name, sk.bones, sk.constraints]),
-            track: tracks[0].0,
-            duration: a.duration,
+            track: v.track,
+            duration: v.duration,
         })
     }
     pub fn matches(&self, d: &Document) -> bool {

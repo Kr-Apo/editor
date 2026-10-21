@@ -797,3 +797,11 @@ fn t821_non_slot_influence_lock_and_generic_clipboard_destination_refuse() {
     );
     assert!(!s.history.can_undo());
 }
+
+#[test]
+fn t834_ffd_clipboard_route_is_missing_before_implementation() {
+    assert!(
+        include_str!("../ui/timeline/sheet.rs").contains("ffd_clipboard::menu"),
+        "Dopesheet lacks a safe FFD clipboard route"
+    );
+}

@@ -1,5 +1,7 @@
 # Ankhimate — Current known limitations after T-831
 
+T-834 local addendum: **Safe FFD Key Clipboard — COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** in its same-document/exact-owned-mesh scope. See [the contract](ffd-key-clipboard.md). T-209/T-404 remain PARTIAL. The T-832 101-ID matrix/categories, its 352 manual scenarios and the 28 T-833 controls stay unchanged; T-834 adds 37 pending controls. No GUI/inference/publication.
+
 T-833 local addendum: selected-bone offsets are implemented; see [the contract](selected-bone-key-offset.md). T-211 and T-905 remain PARTIAL; the frozen T-832 101-ID matrix and original 352 manual scenarios stay unchanged. T-833 adds 28 pending controls. No GUI/inference/public operation.
 
 T-832 reconciliation baseline (retained): **2026-10-21**. Product audited at T-831
@@ -22,7 +24,7 @@ new tests executed by this documentation mission.
 |---|---|---|
 | T-002 | Linux/Windows test/fmt/Clippy and core WASM workflow definitions | Actions disabled; no fresh remote green run; actual Clippy job lacks historical -D warnings |
 | T-208 | Clip create/rename/duplicate/delete/duration/loop manager retained | Clip reordering remains absent from the manager; do not recreate its existing operations. |
-| T-209 | Existing owned key blocks/pose/mirror plus faster capture; separate reviewed region transfer | General FFD/vector, constraint, draw-order and event block clipboard remain excluded; no separate empty-row destination tool. T-821 key editing is not FFD clipboard. |
+| T-209 | Existing owned key blocks/pose/mirror plus faster capture; separate reviewed region transfer | T-834 supports owned same-mesh FFD key blocks on an explicit existing row. Cross-project/cross-mesh, linked/shared/overridden sources, empty-row creation, constraints, draw-order and event blocks remain excluded. Scalar replacement semantics remain unchanged. |
 | T-211 | Bake/reset/clear and fixed retime retained; checked numeric whole-clip retime | T-833 adds explicit selected-bone transform-key offset, separate from whole-clip Retime. K keys pending poses; no dedicated Shift+K key-all-changed binding identified. Arbitrary KeyRefs/constraint/slot offsets and selected time scaling remain out of scope. |
 | T-302 | Initial PSD import plus exact-path refresh and one explicit path-change mapping | Bulk/multiple missing path mapping, complex/shared/mesh/FFD/sequence refresh, automatic added/deleted-layer reconciliation and Photoshop effects/masks remain outside qualified workflow. |
 | T-401 | Mesh vertices/triangles, constrained retriangulation, UV and exact local numeric drafts | No universal snapping or arbitrary linked-source/topology edit safety |
@@ -113,3 +115,9 @@ No current claim of absent onion theme/opacity, Graph marquee, normalized view, 
 ## Selected-bone offset limits (T-833)
 
 Only direct bone transformation tracks; no descendants, arbitrary KeyRefs, time scaling, slot/constraint/FFD/Path retiming or evaluation offsets. Explicit synchronous preparation/commit uses memory proportional to targeted key payload and scans timeline headers; no large-project Windows latency guarantee. Stale context requires Prepare again. A safe clamp or keys outside fixed clip duration require consent. Existing fixed shortcuts retain their historical weaker checks. See [contract](selected-bone-key-offset.md).
+
+## T-834 FFD clipboard bounds
+
+Only one unique owning skin/slot/attachment and its exact native mesh structure. Destination must already have a valid nonempty Deform track explicitly selected through its keys. No name/count-based matching, empty-row creation, cross-project or cross-mesh transfer, remapping, linked/shared/overridden or sequence mesh support. Missing/invalid derived binds refuse; no implicit repair. Full structural comparisons are conservative, including relevant Setup ancestry. Native identity is the owner entry key plus structural equality, not an unavailable heap-generation identifier. Existing T-821 time/delete controls remain single-key. Copy/Paste has no new keyboard binding; use dedicated context actions.
+
+The new clipboard modal never re-captures vector data on repaint; group/single sheet leases compare borrowed native data. The existing single-key T-821 action menu may still capture its native edit snapshot while open. CPU measurements are not physical Windows responsiveness certification.

@@ -492,6 +492,7 @@ impl AppState {
 
         match self.session.clipboard.clone() {
             Clipboard::Empty => self.session.set_status("Clipboard is empty"),
+            Clipboard::Deform(_) => self.session.set_status("Use Paste FFD Keys in the dopesheet on the same mesh"),
             Clipboard::Keys(_) => self.session.set_status("Use Paste keys at playhead in the dopesheet; global Paste still belongs to bones/poses"),
             Clipboard::Bones(clip) => {
                 // Paste under the active bone so the gesture reads as "another

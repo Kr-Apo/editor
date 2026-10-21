@@ -10,6 +10,7 @@ pub mod config;
 pub mod diagnostics;
 pub mod edit_router;
 pub mod export_preflight;
+mod ffd_clipboard;
 pub mod ffd_keys;
 pub mod fileops;
 pub mod geometry_edit;

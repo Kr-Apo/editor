@@ -522,3 +522,7 @@ See the [Path Position authoring contract](../path-position-animation.md) for
 Setup versus animated fractional position, inspector/Auto-key/K, single-key
 Dopesheet editing, native history and the explicit runtime export refusal.
 Manual Windows qualification is pending.
+
+### Safe FFD key clipboard (T-834)
+
+In Animate, select one or Ctrl-select multiple keys in the same **deform** row. Right-click → **Copy FFD Keys**. Move the playhead and explicitly select a key row on the exact same mesh (also in another clip of this project), then right-click → **Paste FFD Keys…**. Review the target, count and time range; accept outside-duration keys if needed, then Apply. Collisions never overwrite. Cancel/Escape and refusal preserve document/history. One Undo restores the paste. No cross-mesh/project remapping or new shortcuts. See [full contract](../ffd-key-clipboard.md). Windows qualification is pending.

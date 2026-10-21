@@ -286,6 +286,7 @@ pub struct Session {
     /// user presses `K`.
     pub auto_key: bool,
     pub path_preview: Option<crate::path_keys::Preview>,
+    pub(crate) ffd_paste: Option<crate::ffd_clipboard::Draft>,
     /// Bones whose preview transform is an unkeyed edit waiting for `K`
     /// (Animate mode with auto-key off). Empty otherwise.
     pub pending_pose: Vec<BoneId>,
@@ -517,6 +518,7 @@ impl Session {
             onion_skin: OnionSkinSettings::default(),
             auto_key: true,
             path_preview: None,
+            ffd_paste: None,
             pending_pose: Vec::new(),
             pending_slot_colors: SecondaryMap::new(),
             locked_bones: SecondaryMap::new(),

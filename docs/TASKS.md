@@ -1,5 +1,7 @@
 # Ankhimate — Current operational task status after T-831
 
+T-834 local addendum: **Safe FFD Key Clipboard — COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** in its same-document/exact-owned-mesh scope. See [the contract](ffd-key-clipboard.md). T-209/T-404 remain PARTIAL. The T-832 101-ID matrix/categories, its 352 manual scenarios and the 28 T-833 controls stay unchanged; T-834 adds 37 pending controls. No GUI/inference/publication.
+
 T-833 local addendum: selected-bone offsets are implemented; see [the contract](selected-bone-key-offset.md). T-211 and T-905 remain PARTIAL; the frozen T-832 101-ID matrix and original 352 manual scenarios stay unchanged. T-833 adds 28 pending controls. No GUI/inference/public operation.
 
 T-832 reconciliation baseline (retained): **2026-10-21**. Product audited at T-831
@@ -81,7 +83,7 @@ There are 101 historical IDs,3 original context IDs,28 original refinement recor
 | [T-205](FEATURE_INVENTORY.md#t-205) — Slot timelines UI | COMPLETE | AUTOMATED | PUBLIC_ALPHA / PUBLIC_ALPHA | Static dark tint is separate; no animated-dark channel is invented |
 | [T-207](FEATURE_INVENTORY.md#t-207) — Setup mode / Animate mode | COMPLETE | AUTOMATED | PUBLIC_ALPHA / PUBLIC_ALPHA | Every future edit surface still needs mode semantics; legacy metadata writes audited separately |
 | [T-208](FEATURE_INVENTORY.md#t-208) — Animation manager | PARTIAL | AUTOMATED | PUBLIC_ALPHA / PUBLIC_ALPHA | Clip reordering remains absent from the manager; do not recreate its existing operations. |
-| [T-209](FEATURE_INVENTORY.md#t-209) — Clipboard: copy / paste / duplicate | PARTIAL | PENDING_MANUAL | LOCAL_CANDIDATE / PUBLIC_ALPHA | General FFD/vector, constraint, draw-order and event block clipboard remain excluded; no separate empty-row destination tool. T-821 key editing is not FFD clipboard. |
+| [T-209](FEATURE_INVENTORY.md#t-209) — Clipboard: copy / paste / duplicate | PARTIAL | PENDING_MANUAL | LOCAL_CANDIDATE / PUBLIC_ALPHA | T-834 supports owned same-mesh FFD key blocks on an explicit existing row. Cross-project/cross-mesh, linked/shared/overridden sources, empty-row creation, constraints, draw-order and event blocks remain excluded. Scalar replacement semantics remain unchanged. |
 | [T-209.2](FEATURE_INVENTORY.md#t-209-2) — Validated normal/mirrored multibone pose paste in one native transaction | COMPLETE | AUTOMATED | PUBLIC_ALPHA / PUBLIC_ALPHA | Auto-key-off retains preview policy; not a retargeter |
 | [T-209.3](FEATURE_INVENTORY.md#t-209-3) — Explicit bone-row mirrored offsets; signs | COMPLETE | AUTOMATED | PUBLIC_ALPHA / PUBLIC_ALPHA | Offsets, not asymmetric absolute setup poses; no slot/FFD/event mirror |
 | [T-210](FEATURE_INVENTORY.md#t-210) — Keyed-value affordances in the inspector | COMPLETE | AUTOMATED | PUBLIC_ALPHA / PUBLIC_ALPHA | Does not add IK key dots or every future property; no whole-app accessibility certificate |

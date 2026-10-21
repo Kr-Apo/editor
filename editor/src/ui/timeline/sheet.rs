@@ -312,7 +312,7 @@ pub fn ui(
                         }
                     }
                     if resp.clicked() {
-                        crate::key_selection::set(state, anim, selection.keys.clone());
+                        crate::key_selection::set_sheet(state, anim, selection.keys.clone());
                     }
                     if resp.drag_started() && !selection.keys.iter().chain(std::iter::once(&kref)).any(|r|matches!(r.addr,ankhimate_document::commands::key_cmds::TimelineAddr::PathPosition{..})) {
                         if !selection.contains(&kref) {
@@ -327,7 +327,7 @@ pub fn ui(
                             drag.start_x =
                                 ui.input(|i| i.pointer.press_origin()).map_or(x, |p| p.x);
                             selection.set_single(kref.clone());
-                            crate::key_selection::set(state, anim, selection.keys.clone());
+                            crate::key_selection::set_sheet(state, anim, selection.keys.clone());
                             drag.ffd = crate::ffd_keys::selected(state, anim).ok();
                             use std::sync::atomic::{AtomicU64, Ordering};
                             static NEXT: AtomicU64 = AtomicU64::new(1);
@@ -342,7 +342,7 @@ pub fn ui(
                             selection.set_single(kref.clone());
                         }
                         if state.revision == selection_revision {
-                            crate::key_selection::set(state, anim, selection.keys.clone());
+                            crate::key_selection::set_sheet(state, anim, selection.keys.clone());
                             key_context_menu(ui, state, anim, &selection, style.operators);
                         }
                     });
@@ -501,7 +501,7 @@ pub fn ui(
     }
 
     if state.revision == selection_revision {
-        crate::key_selection::set(state, anim, selection.keys);
+        crate::key_selection::set_sheet(state, anim, selection.keys);
     } else {
         state.session.key_selection = Default::default();
     }
@@ -607,10 +607,11 @@ fn key_context_menu(
             ankhimate_document::commands::key_cmds::TimelineAddr::Deform { .. }
         )
     }) {
+        crate::ffd_clipboard::menu(ui, state, anim, &selection.keys);
         if selection.keys.len() == 1 {
             crate::ffd_keys::menu(ui, state, anim);
         } else {
-            ui.label("FFD actions require exactly one key; mixed/grouped selection is refused.");
+            ui.label("FFD time/delete actions require exactly one key; clipboard supports same-track groups.");
         }
         return;
     }
@@ -662,17 +663,7 @@ fn clipboard_menu(
             ankhimate_document::commands::key_cmds::TimelineAddr::Deform { .. }
         )
     }) {
-        for text in [
-            "Copy selected keys",
-            "Paste keys at playhead",
-            "Paste Keys Mirrored (Offsets)",
-        ] {
-            ui.add_enabled(false, egui::Button::new(text))
-                .on_disabled_hover_text(
-                    "FFD vector clipboard is outside T821; select scalar/slot rows instead",
-                );
-        }
-        ui.label("FFD clipboard is not supported; use the key's FFD edit actions.");
+        crate::ffd_clipboard::menu(ui, state, anim, &selection.keys);
         return;
     }
     // Canonical *visible row order*, independent of Ctrl-click order. Read-only
@@ -739,3 +730,6 @@ mod t821_tests;
 
 #[cfg(test)]
 mod t831_tests;
+
+#[cfg(test)]
+mod t834_tests;

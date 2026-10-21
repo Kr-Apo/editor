@@ -13,9 +13,17 @@ pub struct KeySelection {
     refs: Vec<KeyRef>,
     captured: Option<KeyClip>,
     ffd: Option<crate::ffd_keys::Lease>,
+    ffd_group: Option<crate::ffd_clipboard::GroupLease>,
 }
 pub fn read(state: &mut AppState, anim: AnimationId) -> Vec<KeyRef> {
     let s = &state.session.key_selection;
+    if let Some(group) = &s.ffd_group {
+        if s.animation == Some(anim) && group.matches(state) {
+            return s.refs.clone();
+        }
+        state.session.key_selection = Default::default();
+        return Vec::new();
+    }
     if let Some(lease) = &s.ffd {
         if s.animation == Some(anim) && lease.matches(state) {
             return s.refs.clone();
@@ -35,12 +43,19 @@ pub fn read(state: &mut AppState, anim: AnimationId) -> Vec<KeyRef> {
     }
 }
 pub fn set(state: &mut AppState, anim: AnimationId, refs: Vec<KeyRef>) {
+    set_inner(state, anim, refs, false);
+}
+fn set_inner(state: &mut AppState, anim: AnimationId, refs: Vec<KeyRef>, sheet_ffd: bool) {
     if refs.iter().any(|r| {
         matches!(
             r.addr,
             ankhimate_document::commands::key_cmds::TimelineAddr::Deform { .. }
         )
     }) {
+        if sheet_ffd {
+            set_ffd_sheet(state, anim, refs);
+            return;
+        }
         if refs.len() != 1 {
             state
                 .session
@@ -55,6 +70,7 @@ pub fn set(state: &mut AppState, anim: AnimationId, refs: Vec<KeyRef>) {
                     refs,
                     captured: None,
                     ffd: Some(l),
+                    ffd_group: None,
                 },
                 Err(e) => {
                     state.session.set_status(e);
@@ -73,6 +89,7 @@ pub fn set(state: &mut AppState, anim: AnimationId, refs: Vec<KeyRef>) {
                 refs,
                 captured,
                 ffd: None,
+                ffd_group: None,
             }
         } else {
             KeySelection::default()
@@ -197,7 +214,7 @@ fn key_count(t: &ankhimate_core::animation::Timeline) -> usize {
 
 impl KeySelection {
     pub fn clear_ffd(&mut self) {
-        if self.ffd.is_some() {
+        if self.ffd.is_some() || self.ffd_group.is_some() {
             *self = Self::default();
         }
     }
@@ -205,3 +222,41 @@ impl KeySelection {
 
 #[cfg(test)]
 mod t827_tests;
+
+/// Sheet-only same-track FFD grouping for the typed clipboard. The existing
+/// setter stays single-key for T821 mutation callers; scalar behavior delegates unchanged.
+pub(crate) fn set_sheet(state: &mut AppState, anim: AnimationId, refs: Vec<KeyRef>) {
+    set_inner(state, anim, refs, true);
+}
+fn set_ffd_sheet(state: &mut AppState, anim: AnimationId, refs: Vec<KeyRef>) {
+    if state.session.key_selection.refs == refs
+        && state
+            .session
+            .key_selection
+            .ffd_group
+            .as_ref()
+            .is_some_and(|g| g.matches(state))
+    {
+        return;
+    }
+    match crate::ffd_clipboard::GroupLease::new(state, anim, &refs) {
+        Ok(g) => {
+            state.session.key_selection = KeySelection {
+                animation: Some(anim),
+                revision: state.revision,
+                refs: g.refs(),
+                captured: None,
+                ffd: None,
+                ffd_group: Some(g),
+            }
+        }
+        Err(e) => state
+            .session
+            .set_status(format!("FFD selection refused: {e}")),
+    }
+}
+/// Lease comparison only: no capture, sorting or vector cloning during a modal repaint.
+pub(crate) fn matches_refs(state: &AppState, anim: AnimationId, refs: &[KeyRef]) -> bool {
+    let s = &state.session.key_selection;
+    s.animation == Some(anim) && s.revision == state.revision && s.refs == refs
+}

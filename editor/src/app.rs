@@ -1697,6 +1697,7 @@ at startup.",
         }
 
         self.retime.show(ctx, &mut self.state, &self.theme);
+        crate::ffd_clipboard::show(ctx, &mut self.state, &self.theme);
 
         // ── Bulk rename (T-901) ──────────────────────────────────────────
         // A panel can ask for it — the hierarchy's context menu does — because
@@ -2922,3 +2923,7 @@ mod path_tests;
 #[cfg(test)]
 #[path = "app_selected_offset_tests.rs"]
 mod selected_offset_tests;
+
+#[cfg(test)]
+#[path = "app_ffd_clipboard_tests.rs"]
+mod ffd_clipboard_tests;
