@@ -4,6 +4,8 @@ Local candidate: **COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE**. Desktop accept
 
 In Animate, select a clip, open **Pose → Retime…**, enter **Time Scale** and **Offset in Frames**, then **Prepare preview**. Inputs are drafts: no dirty state, revision or history changes. Apply commits one native `RetimeAnimation`; Cancel, Escape, backdrop and X discard the draft. No-op and refused operations never consume Redo. Separate Applies never merge.
 
+**Offset Selected Bones… (T-833)** is a separate Pose action with explicit selection only. It never changes this global action or fixed shortcuts. See [selected-bone contract](selected-bone-key-offset.md).
+
 ## Native contract
 
 Every existing timeline in the active clip is retimed, independent of bone selection: translate, rotate, scale, shear, slot visibility/color/attachment, draw order, IK mix/bend/softness, transform constraint mix and Deform (including weighted FFD offsets). No FFD payload or geometry is edited. Other clips are untouched. Numeric preparation refuses tracks driving a locked bone or a slot bound to one; constraint driven/target bones are also checked. Existing fixed shortcuts remain unchanged.

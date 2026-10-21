@@ -24,7 +24,7 @@ pub struct PreparedRetime {
     pub summary: RetimeSummary,
     pub command: RetimeAnimation,
 }
-fn times(t: &Timeline) -> Vec<f32> {
+pub(super) fn times(t: &Timeline) -> Vec<f32> {
     macro_rules! times {
         ($keys:expr) => {
             $keys.iter().map(|k| k.time).collect()
@@ -46,10 +46,10 @@ fn times(t: &Timeline) -> Vec<f32> {
         Timeline::Deform { keys, .. } => times!(keys),
     }
 }
-fn range(r: &mut Option<(f32, f32)>, t: f32) {
+pub(super) fn range(r: &mut Option<(f32, f32)>, t: f32) {
     *r = Some(r.map_or((t, t), |(a, b)| (a.min(t), b.max(t))));
 }
-fn checked(value: f64, name: &str) -> Result<f32, String> {
+pub(super) fn checked(value: f64, name: &str) -> Result<f32, String> {
     let result = value as f32;
     if !value.is_finite() || !result.is_finite() || (value != 0.0 && result == 0.0) {
         return Err(format!(

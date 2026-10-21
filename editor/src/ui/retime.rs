@@ -9,6 +9,9 @@ use ankhimate_document::commands::{
     key_cmds::{PreparedRetime, RetimeAnimation},
 };
 use eframe::egui;
+// Pose: Offset Selected Bones… uses an explicit, separate scope.
+// Pose → Offset Selected Bones… is an explicit, separate scope.
+mod selected;
 #[derive(PartialEq)]
 struct Stamp {
     document: u64,
@@ -46,6 +49,7 @@ impl Stamp {
 #[derive(Default)]
 pub struct Panel {
     draft: Option<Draft>,
+    selected: selected::Panel,
 }
 struct Draft {
     factor: String,
@@ -177,6 +181,7 @@ impl Draft {
 }
 impl Panel {
     pub fn menu(&mut self, ui: &mut egui::Ui, s: &AppState) {
+        self.selected.menu(ui, s);
         let r = ui.add_enabled(
             s.session.is_animating() && s.session.active_animation.is_some(),
             egui::Button::new("Retime…"),
@@ -188,6 +193,7 @@ impl Panel {
         }
     }
     pub fn show(&mut self, ctx: &egui::Context, s: &mut AppState, theme: &Theme) {
+        self.selected.show(ctx, s, theme);
         let Some(mut d) = self.draft.take() else {
             return;
         };

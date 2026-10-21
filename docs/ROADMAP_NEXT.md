@@ -1,6 +1,8 @@
 # Ankhimate — Next roadmap, reconciled after T-831
 
-Audit date: **2026-10-21**. Product frozen at T-831
+T-833 local addendum: selected-bone offsets are implemented; see [the contract](selected-bone-key-offset.md). T-211 and T-905 remain PARTIAL; the frozen T-832 101-ID matrix and original 352 manual scenarios stay unchanged. T-833 adds 28 pending controls. No GUI/inference/public operation.
+
+T-832 reconciliation baseline (retained): **2026-10-21**. Product audited at T-831
 `4e4d50b0aa5b7ac160b204540afa878f66fa4d61`, parent T-830
 `12252e476b95f9d2ac250d5d0746c589c10269b3`. **T-832 changes documentation only.**
 
@@ -15,7 +17,7 @@ T-816/T-817's 1,596 passes, the historical registration increase is 462, not 462
 new tests executed by this documentation mission.
 
 
-All missions below are **proposals, not authorizations or work started**. No new
+The original T-832 proposals remain below. Row 3 is now a bounded T-833 local delivery; other rows are **proposals, not authorizations or work started**. No new
 P0 corruption/crash is demonstrated. P0 below identifies release gates with data
 or compatibility impact, not a claim that every advanced feature is critical.
 
@@ -25,7 +27,7 @@ or compatibility impact, not a claim that every advanced feature is critical.
 |---|---|---|---|---|---|
 | 1 — Feature-level format/release policy (P0 gate) | T-605/T-108/T-502; valid old files load, new Path files persist and old readers reject | State minimum reader and exchange/candidate policy so colleagues do not mistake the unchanged version1 or app string for interoperability | High impact if communicated incorrectly; no current silent downgrade demonstrated | Frozen T-831 3-profile/old-reader evidence; Small documentary decision, code/migration only by later authorization | Matrix old/new with/without Path and all targets; no implicit field removal; stop before any unapproved schema/runtime/version change |
 | 2 — Cumulative Windows qualification (P0 release gate, no assumed code) | T-813–T-831 implementation and 352 pending instances already exist | Execute the retained map on exact T-831, record real focus/artwork/Undo/Save/recovery/export/performance behavior | Real data safety interactions; use disposable copies only; no new alpha implied | Order1 compatibility policy, complete fixtures and chosen Windows hardware; Medium manual campaign | Every source ID PASS/FAIL/NOT RUN with exact artifacts and reproducible failures; stop on data-loss/crash and preserve evidence; no automatic fix/publication |
-| 3 — Selection-scoped numeric retiming (P1 artist workflow) | T-211; whole-clip checked Retime and fixed shortcuts already work | Add an explicit selected-track/key scope without turning T-905 static offsets into key rewriting; avoids moving unrelated animation | Medium: collisions, duration/excluded metadata and stale addresses; no format/runtime extension expected | Existing commands/leases, clarify exact selection semantics first; Small/Medium | Red selection-scope test, untouched other tracks, refused batch retains Redo, one Undo and 3 cycles, Save/reopen; stop on ambiguous complex ownership |
+| 3 — Selected-bone offset delivered locally (T-833); broader scope deferred | T-211 remains PARTIAL | Only explicit bone transformation keys are offset; arbitrary KeyRefs, selected scale and Shift+K remain separate | No format/runtime change | Local automated evidence; Windows pending | Review T-833 before authorizing further work; do not reopen the global T-830 retime |
 | 4 — Bounded FFD key-block clipboard (P1) | T-209/T-404; scalar/slot key blocks and one-key FFD editing already work | Own vector payload for one exact compatible mesh/topology; reuse KeyClip/PasteKeys or a justified typed extension, no scalar flattening | High: influence-count layout, owner/skin/linked references and assets; no topology or retargeting | T-821 capture invariants and explicit mapping; Medium | Exact vector/time/curve snapshots, all-or-nothing mismatch/lock/stale refusal, clipboard-free Redo,3 cycles and Save/reopen; stop before topology/FFD format expansion |
 | 5 — Native PathSpacing animation (P1 optional enrichment) | T-502; static spacing and animated position already work | Add spacing keys only after auditing units/identity and version policy; retain same solver rather than replacing Path | Medium/high author-format exchange risk; JS support not assumed | Order1, manually reviewed PathPosition, separate authorization; Medium | Three-key5-bone numerical references across speed/open/closed cases, strict identity/history/3 profiles and explicit unsupported-export policy; stop if migration exceeds authorization |
 

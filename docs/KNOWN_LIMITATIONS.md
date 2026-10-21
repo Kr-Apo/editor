@@ -1,6 +1,8 @@
 # Ankhimate — Current known limitations after T-831
 
-Audit date: **2026-10-21**. Product frozen at T-831
+T-833 local addendum: selected-bone offsets are implemented; see [the contract](selected-bone-key-offset.md). T-211 and T-905 remain PARTIAL; the frozen T-832 101-ID matrix and original 352 manual scenarios stay unchanged. T-833 adds 28 pending controls. No GUI/inference/public operation.
+
+T-832 reconciliation baseline (retained): **2026-10-21**. Product audited at T-831
 `4e4d50b0aa5b7ac160b204540afa878f66fa4d61`, parent T-830
 `12252e476b95f9d2ac250d5d0746c589c10269b3`. **T-832 changes documentation only.**
 
@@ -21,7 +23,7 @@ new tests executed by this documentation mission.
 | T-002 | Linux/Windows test/fmt/Clippy and core WASM workflow definitions | Actions disabled; no fresh remote green run; actual Clippy job lacks historical -D warnings |
 | T-208 | Clip create/rename/duplicate/delete/duration/loop manager retained | Clip reordering remains absent from the manager; do not recreate its existing operations. |
 | T-209 | Existing owned key blocks/pose/mirror plus faster capture; separate reviewed region transfer | General FFD/vector, constraint, draw-order and event block clipboard remain excluded; no separate empty-row destination tool. T-821 key editing is not FFD clipboard. |
-| T-211 | Bake/reset/clear and fixed retime retained; checked numeric whole-clip retime | Numeric operation always covers the active clip: selection-only offset from the original task is not implemented. K keys pending poses; no dedicated Shift+K key-all-changed binding identified. |
+| T-211 | Bake/reset/clear and fixed retime retained; checked numeric whole-clip retime | T-833 adds explicit selected-bone transform-key offset, separate from whole-clip Retime. K keys pending poses; no dedicated Shift+K key-all-changed binding identified. Arbitrary KeyRefs/constraint/slot offsets and selected time scaling remain out of scope. |
 | T-302 | Initial PSD import plus exact-path refresh and one explicit path-change mapping | Bulk/multiple missing path mapping, complex/shared/mesh/FFD/sequence refresh, automatic added/deleted-layer reconciliation and Photoshop effects/masks remain outside qualified workflow. |
 | T-401 | Mesh vertices/triangles, constrained retriangulation, UV and exact local numeric drafts | No universal snapping or arbitrary linked-source/topology edit safety |
 | T-402 | Original tracer retained; safe nearest-vertex weight-row remap and bind preservation | FFD-dependent, linked/shared/overridden or pinned retrace is refused; no topology/FFD migration. General <100 ms release/artist preservation budget remains unqualified beyond one ring fixture. |
@@ -107,3 +109,7 @@ durability are not promised. No new corruption incident is demonstrated by this 
 T-827 removes repeated native key capture/resolution scans and T-829 removes idle selected-view membership scans in the measured bounded cases. A10k selection is no longer truthfully described as systematically quadratic end-to-end. Payload cloning, model/layout, active gestures and command application still cost time; no universal60 fps budget is certified. Historical default-concurrency video/process timeout sensitivity remains recorded; accepted final suites use4 threads without weaker assertions. T-818 diagnostics/navigation exists; automatic camera framing and general synchronous scan completion budgets do not.
 
 No current claim of absent onion theme/opacity, Graph marquee, normalized view, linked tangents, FPS Undo, numeric retime or PathPosition is valid. Their scoped limitations are documented in [current tasks](TASKS.md). [Older notes](checkpoint-journal-before-T832.md) retain their original dates and claims only as provenance. [Manual qualification](cumulative-manual-qa-map.md) remains pending and [priorities](roadmap-priorities.md) starts no development.
+
+## Selected-bone offset limits (T-833)
+
+Only direct bone transformation tracks; no descendants, arbitrary KeyRefs, time scaling, slot/constraint/FFD/Path retiming or evaluation offsets. Explicit synchronous preparation/commit uses memory proportional to targeted key payload and scans timeline headers; no large-project Windows latency guarantee. Stale context requires Prepare again. A safe clamp or keys outside fixed clip duration require consent. Existing fixed shortcuts retain their historical weaker checks. See [contract](selected-bone-key-offset.md).

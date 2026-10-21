@@ -1169,7 +1169,10 @@ impl EditCommand for AddDeformKey {
 
 #[path = "retime_numeric.rs"]
 mod numeric;
+#[path = "selected_offset.rs"]
+mod selected_offset;
 pub use numeric::{PreparedRetime, RetimeSummary};
+pub use selected_offset::{PreparedBoneOffset, SelectedOffsetSummary};
 
 /// Every key time in a clip, transformed by `f`, with the duration following.
 ///

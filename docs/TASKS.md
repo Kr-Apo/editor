@@ -1,6 +1,8 @@
 # Ankhimate — Current operational task status after T-831
 
-Audit date: **2026-10-21**. Product frozen at T-831
+T-833 local addendum: selected-bone offsets are implemented; see [the contract](selected-bone-key-offset.md). T-211 and T-905 remain PARTIAL; the frozen T-832 101-ID matrix and original 352 manual scenarios stay unchanged. T-833 adds 28 pending controls. No GUI/inference/public operation.
+
+T-832 reconciliation baseline (retained): **2026-10-21**. Product audited at T-831
 `4e4d50b0aa5b7ac160b204540afa878f66fa4d61`, parent T-830
 `12252e476b95f9d2ac250d5d0746c589c10269b3`. **T-832 changes documentation only.**
 
@@ -83,7 +85,7 @@ There are 101 historical IDs,3 original context IDs,28 original refinement recor
 | [T-209.2](FEATURE_INVENTORY.md#t-209-2) — Validated normal/mirrored multibone pose paste in one native transaction | COMPLETE | AUTOMATED | PUBLIC_ALPHA / PUBLIC_ALPHA | Auto-key-off retains preview policy; not a retargeter |
 | [T-209.3](FEATURE_INVENTORY.md#t-209-3) — Explicit bone-row mirrored offsets; signs | COMPLETE | AUTOMATED | PUBLIC_ALPHA / PUBLIC_ALPHA | Offsets, not asymmetric absolute setup poses; no slot/FFD/event mirror |
 | [T-210](FEATURE_INVENTORY.md#t-210) — Keyed-value affordances in the inspector | COMPLETE | AUTOMATED | PUBLIC_ALPHA / PUBLIC_ALPHA | Does not add IK key dots or every future property; no whole-app accessibility certificate |
-| [T-211](FEATURE_INVENTORY.md#t-211) — Pose tools | PARTIAL | PENDING_MANUAL | LOCAL_CANDIDATE / PUBLIC_ALPHA | Numeric operation always covers the active clip: selection-only offset from the original task is not implemented. K keys pending poses; no dedicated Shift+K key-all-changed binding identified. |
+| [T-211](FEATURE_INVENTORY.md#t-211) — Pose tools | PARTIAL | PENDING_MANUAL | LOCAL_CANDIDATE / PUBLIC_ALPHA | T-833 adds explicit selected-bone transform-key offset, separate from whole-clip Retime. K keys pending poses; no dedicated Shift+K key-all-changed binding identified. Arbitrary KeyRefs/constraint/slot offsets and selected time scaling remain out of scope. |
 | [T-703](FEATURE_INVENTORY.md#t-703) — Onion skinning | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE / PUBLIC_ALPHA | No product gap in retained T-703 scope. Manual visual contrast/scrubbing acceptance pending; no stateful physics ghosts or preference persistence promised. |
 | [T-704](FEATURE_INVENTORY.md#t-704) — Curve editor refinement | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE / PUBLIC_ALPHA | No remaining product bullet in retained scalar scope. Windows ergonomics pending. Normalized editing, multi-junction linking, FFD/Path Graph and middle-button pan are separate extensions, not retroactively added requirements. |
 | [T-814](FEATURE_INVENTORY.md#t-814) — Shared key selection | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE / LOCAL_CANDIDATE | Broader T-704 stays partial; combined graph edits retain existing granularity; GUI pending |

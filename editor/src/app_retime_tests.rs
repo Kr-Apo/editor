@@ -122,3 +122,11 @@ fn t830_separate_applies_never_merge_or_consume_redo_on_preview() {
     assert!(app.state.history.can_redo());
     assert_eq!(app.state.revision, rev);
 }
+
+#[test]
+fn t833_pose_has_explicit_selected_bone_offset_action() {
+    assert!(
+        include_str!("ui/retime.rs").contains("Offset Selected Bones…"),
+        "Selected-bone offset action is absent"
+    );
+}

@@ -434,6 +434,10 @@ Desktop qualification remains **PENDING MANUAL REVIEW**.
 These are undoable clip operations. Duplicate a clip before a broad creative
 retime when you want to compare versions rather than rely on undo history.
 
+### Offset selected bone keys
+
+In Animate, explicitly select bones and choose **Pose → Offset Selected Bones…**. Enter signed/fractional frames, then **Prepare preview**. Review names, counts, times and warnings before Apply. Only direct transformation channels move; descendants are included only when explicitly selected. No selection never means the whole clip. Duration stays fixed, collisions refuse the whole batch, and safe clamps/outside keys need consent. One Undo restores the operation. Cancel/Escape preserve the document and Redo. See [the full contract](../selected-bone-key-offset.md); Windows acceptance is pending.
+
 ### Pose clipboard is not key clipboard
 
 <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd> copies the displayed pose of selected

@@ -1,6 +1,8 @@
 # Ankhimate — Cumulative manual validation pending
 
-Audit date: **2026-10-21**. Product frozen at T-831
+T-833 local addendum: selected-bone offsets are implemented; see [the contract](selected-bone-key-offset.md). T-211 and T-905 remain PARTIAL; the frozen T-832 101-ID matrix and original 352 manual scenarios stay unchanged. T-833 adds 28 pending controls. No GUI/inference/public operation.
+
+T-832 reconciliation baseline (retained): **2026-10-21**. Product audited at T-831
 `4e4d50b0aa5b7ac160b204540afa878f66fa4d61`, parent T-830
 `12252e476b95f9d2ac250d5d0746c589c10269b3`. **T-832 changes documentation only.**
 
@@ -35,3 +37,7 @@ The [full self-contained map](cumulative-manual-qa-map.md) retains source IDs, e
 Use only the exact T-831 cumulative EXE,35,416,576 bytes, SHA-256 `0ba98d6dac970f305f4691f938d8978db37fd034b4a647805e4efb266cdaa3af`. The internal0.2.0-alpha.1 number is not identity. Retain earlier binaries for comparisons on separate copies. Use complete copied Jade/Crapaud/technical fixtures with assets; preserve originals, backups and recovery sidecars. Some closed/index/invalid-layout scenarios need an explicitly prepared compatible technical copy before execution.
 
 No model inference or provider qualification is performed or requested now. T-806/807/808/809 historical narrow reports do not establish general visual/model acceptance. B03 stays pending physical target/focus reproduction. A future campaign must record OS/GPU/driver/DPI/theme, artifact/fixture hashes and expected/actual PASS/FAIL/NOT RUN. See [priorities](roadmap-priorities.md) and [exchange compatibility](format-release-compatibility.md).
+
+## T-833 — 28 additional controls
+
+All are **PENDING MANUAL REVIEW**. The 352 baseline controls remain verbatim in [the retained map](cumulative-manual-qa-map.md). The new list accompanies the T-833 binary; no Windows/GUI test or inference has been executed. It covers explicit selection, preview, Cancel, Apply, history, collisions, locks, FPS changes, Path preservation and Save/reopen. The combined population is 380 scenario instances, not unique test cases or a completion percentage.

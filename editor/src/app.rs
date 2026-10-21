@@ -2918,3 +2918,7 @@ mod retime_tests;
 #[cfg(test)]
 #[path = "app_path_tests.rs"]
 mod path_tests;
+
+#[cfg(test)]
+#[path = "app_selected_offset_tests.rs"]
+mod selected_offset_tests;

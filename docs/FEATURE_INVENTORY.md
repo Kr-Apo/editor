@@ -1,6 +1,8 @@
 # Feature inventory — reconciled at exact T-831 / T-832 documentation
 
-Audit date: **2026-10-21**. Product frozen at T-831
+T-833 local addendum: selected-bone offsets are implemented; see [the contract](selected-bone-key-offset.md). T-211 and T-905 remain PARTIAL; the frozen T-832 101-ID matrix and original 352 manual scenarios stay unchanged. T-833 adds 28 pending controls. No GUI/inference/public operation.
+
+T-832 reconciliation baseline (retained): **2026-10-21**. Product audited at T-831
 `4e4d50b0aa5b7ac160b204540afa878f66fa4d61`, parent T-830
 `12252e476b95f9d2ac250d5d0746c589c10269b3`. **T-832 changes documentation only.**
 
@@ -412,14 +414,15 @@ No lack of manual testing alone keeps an implemented scope PARTIAL.
 
 **PARTIAL / PENDING_MANUAL / LOCAL_CANDIDATE**. Public base: PUBLIC_ALPHA. T-817 implementation: PARTIAL.
 
-- Historical criteria fulfilled: Bake/reset/clear and fixed retime retained; checked numeric whole-clip retime.
-- Remaining condition / qualification or scope limit: Numeric operation always covers the active clip: selection-only offset from the original task is not implemented. K keys pending poses; no dedicated Shift+K key-all-changed binding identified.
-- Evidence checkpoints: T-830.
+- Historical criteria fulfilled: Bake/reset/clear and fixed retime retained; checked numeric whole-clip retime plus T-833 selected-bone transform offset.
+- Remaining condition / qualification or scope limit: T-833 adds explicit selected-bone transform-key offset, separate from whole-clip Retime. K keys pending poses; no dedicated Shift+K key-all-changed binding identified. Arbitrary KeyRefs/constraint/slot offsets and selected time scaling remain out of scope.
+- Evidence checkpoints: T-830, T-833.
 - Code: [`editor/src/app_state.rs`](../editor/src/app_state.rs); [`document/src/commands/bone_cmds.rs`](../document/src/commands/bone_cmds.rs); [`document/src/commands/key_cmds.rs`](../document/src/commands/key_cmds.rs); [`editor/src/ui/retime.rs`](../editor/src/ui/retime.rs); [`document/src/commands/retime_numeric.rs`](../document/src/commands/retime_numeric.rs); [`editor/src/keymap.rs`](../editor/src/keymap.rs).
 - Tests: [`editor/src/app_state.rs`](../editor/src/app_state.rs); [`document/src/commands/key_cmds.rs`](../document/src/commands/key_cmds.rs); [`editor/src/ui/retime/tests.rs`](../editor/src/ui/retime/tests.rs); [`document/src/commands/retime_numeric_tests.rs`](../document/src/commands/retime_numeric_tests.rs).
+- T-833 source/tests: [`selected_offset.rs`](../document/src/commands/selected_offset.rs), [`native tests`](../document/src/commands/selected_offset_tests.rs), [`UI and lease`](../editor/src/ui/retime/selected.rs), [`egui tests`](../editor/src/ui/retime/selected/tests.rs), [`Save/export tests`](../editor/src/app_selected_offset_tests.rs).
 - Automated validation: T-831 accepted checkpoint: 2058/0/4; referenced suites present (not rerun in T-832).
 - Manual validation: PENDING MANUAL REVIEW.
-- Status rationale: Inspected the current implementation and named tests; later work closes the stated sub-scope only. Numeric operation always covers the active clip: selection-only offset from the original task is not implemented. K keys pending poses; no dedicated Shift+K key-all-changed binding identified.
+- Status rationale: Inspected the current implementation and named tests; later work closes the stated sub-scope only. T-833 adds explicit selected-bone transform-key offset, separate from whole-clip Retime. K keys pending poses; no dedicated Shift+K key-all-changed binding identified. Arbitrary KeyRefs/constraint/slot offsets and selected time scaling remain out of scope.
 - Confidence: HIGH.
 
 <a id="t-703"></a>
@@ -1874,3 +1877,7 @@ Original context ID, not an extra historical task. Retained provenance; no new p
 ## Findings B01 / B02 / B03
 
 B01 region-transfer subset addressed by T-819, advanced transfer not complete. B02 transport FPS bypass fixed locally by T-828; no statement about every metadata write. B03 bone-name context-menu usability remains an inherited physical observation awaiting targeted reproduction, with no new GUI result. No new demonstrated P0 corruption/crash/security issue; format exchange/release policy is a gate, not a fabricated incident.
+
+## T-833 — Selected-bone key offset (local addendum)
+
+Implemented destructive key-time offset for explicitly selected BoneIds, seven direct transform channels, unchanged duration and strict per-track collision refusal. Pure Prepare, leased Apply, consent for safe clamp/outside keys, one native Undo. No selection fallback. See [contract](selected-bone-key-offset.md). Historical 101 categories unchanged; T-211 remains PARTIAL. Windows qualification PENDING MANUAL REVIEW.
