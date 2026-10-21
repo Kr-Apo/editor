@@ -291,3 +291,22 @@ native large-selection validation is quadratic and remains a future scoped task;
 10k debug selections took about 0.6 s locally. Phase-separated CPU observations
 in the delivery are not a Windows/GPU performance guarantee. All 24 new manual
 scenarios and the cumulative T-813–T-825 desktop campaign remain pending.
+
+## 9. Large native selection validation (T-827)
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for the native capture bottleneck,
+not a general graph performance certificate. Earlier sections retain their
+checkpoint scope. Native large captures now index immutable tracks/names locally
+and deduplicate exact typed references while retaining request order and all key
+checks. Small requests retain the old path. There is no selection cap or persistent
+key cache. Scalar invalid/empty sets still clear; grouped/mixed FFD still refuses
+under its existing policy. Dirty/Undo/Redo semantics are unchanged.
+
+T-825 marquee and T-826 coordinates, colors, controls and View Only restrictions
+are unchanged. Faster native validation does not remove graph/sheet linear
+selection membership checks or repeated work in existing key-editing commands.
+Paired debug observations in the local delivery separate native set/read from
+whole selected-graph/sheet display; even 10k selected-key display can remain slow.
+Do not equate a faster capture with a certified frame rate or desktop input
+latency. All T-827 and cumulative T-813–T-826 manual checks remain pending;
+T-704/T-912 remain PARTIAL.

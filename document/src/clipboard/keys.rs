@@ -58,6 +58,14 @@ pub fn address(t: &Timeline) -> Result<TimelineAddr, String> {
 
 impl NamedTrack {
     pub fn capture(doc: &Document, addr: &TimelineAddr) -> Result<Self, String> {
+        Self::capture_using(doc, addr, |named| named.resolve(doc).map(|_| ()))
+    }
+
+    fn capture_using(
+        doc: &Document,
+        addr: &TimelineAddr,
+        resolve: impl FnOnce(&Self) -> Result<(), String>,
+    ) -> Result<Self, String> {
         let (name, kind) = match addr {
             TimelineAddr::Deform { .. } => {
                 return Err("FFD vectors are excluded from the general key clipboard".into());
@@ -109,7 +117,7 @@ impl NamedTrack {
             ),
         };
         let named = Self { name, kind };
-        named.resolve(doc)?; // Reject duplicate names, even on the source rig.
+        resolve(&named)?; // Reject duplicate names, even on the source rig.
         Ok(named)
     }
 
@@ -204,6 +212,15 @@ impl KeyClip {
         Ok(mirrored)
     }
     pub fn capture(doc: &Document, anim: AnimationId, refs: &[KeyRef]) -> Result<Self, String> {
+        // Small requests retain the old allocation-free-of-indexes path.
+        if refs.len() <= 16 {
+            Self::capture_linear(doc, anim, refs)
+        } else {
+            capture_batch::capture(doc, anim, refs)
+        }
+    }
+
+    fn capture_linear(doc: &Document, anim: AnimationId, refs: &[KeyRef]) -> Result<Self, String> {
         if refs.is_empty() {
             return Err("No selected keys".into());
         }
@@ -379,3 +396,8 @@ fn validate_existing_times(t: &Timeline) -> Result<(), String> {
     }
     Ok(())
 }
+
+mod capture_batch;
+
+#[cfg(test)]
+mod t827_tests;

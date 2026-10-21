@@ -190,3 +190,6 @@ impl KeySelection {
         }
     }
 }
+
+#[cfg(test)]
+mod t827_tests;

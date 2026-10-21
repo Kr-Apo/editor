@@ -4,7 +4,7 @@ All **local T-813–T-816 GUI results remain PENDING_MANUAL / PENDING MANUAL REV
 This register requests no action now. The maintainer chose to continue development
 before grouped tests. No editor/browser/inference session was run by T-817.
 
-Use the **T-826 cumulative executable** for the grouped campaign; older binaries
+Use the **T-827 cumulative executable** for the grouped campaign; older binaries
 are retained for targeted comparisons, not substitutes. Internal version remains
 0.2.0-alpha.1 and cannot identify a candidate by itself. Check the SHA before use.
 
@@ -147,3 +147,14 @@ blocked edits, Raw return, actual Raw Undo/Redo and Save As/reopen, then cumulat
 T-813–T-825 checks. Headless egui logical colors/hitboxes and CPU observations do
 not qualify Windows focus, accessibility, themes, visual legibility or loaded-clip
 responsiveness. No request to run this campaign now.
+
+## T-827 — large selection validation, deferred
+
+All 20 scenarios in local `outputs/T827-Key-Selection-Performance/MANUAL-CHECKLIST.md`
+remain **PENDING MANUAL REVIEW**, together with the cumulative T-813–T-826 campaign.
+Use `Ankhimate-T827-dev.exe` and check its SHA in local CHECKPOINT.json /
+WINDOWS-BUILD.json. Retain all older binaries. Test single/small/large selection,
+Ctrl-union/toggle, Graph Raw/Normalize, shared sheet/tangents, clip/stale context,
+Redo and Save/reopen on copies. Compare the same fixture against T-826; remaining
+highlight/edit costs can still cause stalls. Headless state tests and CPU timings
+are not Windows focus/visual/responsiveness acceptance. No test is requested now.

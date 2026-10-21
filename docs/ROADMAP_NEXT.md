@@ -1,5 +1,26 @@
 # Next roadmap — proposals after T-817 review
 
+## Local T-827 update — 2026-10-21
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for native large-key selection
+validation. KeyClip remains the authority: larger requests use operation-local
+full-identity deduplication, timeline/name indexes and lazy per-track resolution.
+Every distinct key still passes native value/time/interpolation checks, in the
+original request order. First occurrences, exact errors, session duplicates,
+scalar invalid-set clearing and FFD refusal policies remain unchanged. Small
+requests retain the original path; this is an algorithm choice, not a key limit.
+No persistent cache, document edit, dirty revision, Undo entry or Redo loss.
+
+Paired debug CPU observations and exact T-826 comparisons demonstrate the scoped
+gain; local delivery `outputs/T827-Key-Selection-Performance/` records methods and
+raw results. This does **not** certify interactive responsiveness: graph/sheet
+linear membership highlighting, native move/resolve scans and other consumer
+costs remain. T-825 gestures and T-826 Raw/Normalize View Only are unchanged.
+T-704/T-912 remain PARTIAL. Cumulative T-813–T-827 desktop checks remain
+**PENDING MANUAL REVIEW**; no GUI/GPU/inference or public operation. Earlier notes
+retain their historical scope, including the now-addressed native capture cost.
+
+
 ## Local T-826 update — 2026-10-21
 
 **COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for the bounded **Normalize View
@@ -266,3 +287,13 @@ for large selections (about 0.6 s for 10k debug keys locally; no responsiveness
 certificate). Normalized editing would need a tested inverse and a constant-channel
 policy; it is not authorized here. T-704/T-912 remain PARTIAL and the cumulative
 manual campaign remains pending. No next task is begun.
+
+## After T-827 — review only
+
+Native large KeyClip capture is now batched and equivalence-tested. Do not
+recreate it or replace T-814 shared selection. Future separately scoped work may
+address the measured selected-key membership/highlighting cost in Graph/sheet
+and repeated whole-track work in move_keys / destination resolve. No persistent
+cache should be introduced without an invalidation contract. These remaining
+costs prevent a global responsiveness claim despite faster native validation.
+Review this candidate; no further task is started. T-704/T-912 remain PARTIAL.

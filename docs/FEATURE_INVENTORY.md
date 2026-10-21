@@ -1,5 +1,26 @@
 # Feature inventory — exact T-816 product, T-817 documentary audit
 
+## Local T-827 update — 2026-10-21
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for native large-key selection
+validation. KeyClip remains the authority: larger requests use operation-local
+full-identity deduplication, timeline/name indexes and lazy per-track resolution.
+Every distinct key still passes native value/time/interpolation checks, in the
+original request order. First occurrences, exact errors, session duplicates,
+scalar invalid-set clearing and FFD refusal policies remain unchanged. Small
+requests retain the original path; this is an algorithm choice, not a key limit.
+No persistent cache, document edit, dirty revision, Undo entry or Redo loss.
+
+Paired debug CPU observations and exact T-826 comparisons demonstrate the scoped
+gain; local delivery `outputs/T827-Key-Selection-Performance/` records methods and
+raw results. This does **not** certify interactive responsiveness: graph/sheet
+linear membership highlighting, native move/resolve scans and other consumer
+costs remain. T-825 gestures and T-826 Raw/Normalize View Only are unchanged.
+T-704/T-912 remain PARTIAL. Cumulative T-813–T-827 desktop checks remain
+**PENDING MANUAL REVIEW**; no GUI/GPU/inference or public operation. Earlier notes
+retain their historical scope, including the now-addressed native capture cost.
+
+
 ## Local T-826 update — 2026-10-21
 
 **COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for the bounded **Normalize View
@@ -2124,3 +2145,13 @@ No public distribution or GUI claim. Preserve T-813–T-819; T-821 not started.
 - Limits: [contract](ffd-key-editing.md); one key, no general clipboard or vector graph,
   linked/shared-source and ambiguous owner refusal. T-404/T-209 remain PARTIAL.
 - GUI qualification is deferred cumulatively through T-821; no public release.
+
+<a id="t-827"></a>
+### T-827 — Large key selection validation performance
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for batch native capture.
+
+- Delivered scope: Same ordered KeyClip/KeySelection results, fewer repeated dedup/timeline/name validations within one immutable capture.
+- Implementation: [native capture](../document/src/clipboard/keys.rs), [operation-local indexes](../document/src/clipboard/keys/capture_batch.rs). Shared editor selection functions are unchanged.
+- Tests: [exact differential and operation-count tests](../document/src/clipboard/keys/t827_tests.rs), [history/clipboard/FFD/I/O consumers](../editor/src/key_selection/t827_tests.rs), [headless large marquee](../editor/src/ui/timeline/t827_tests.rs).
+- Limits: Existing graph/sheet membership and native edit/resolve scans remain; no general frame budget. Same single-FFD/mixed-selection policies and command mode/lock guards. 20 deferred manual checks; cumulative QA pending.

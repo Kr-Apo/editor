@@ -23,7 +23,7 @@ use ankhimate_core::ids::{AnimationId, BoneId, SkinId, SlotId};
 
 /// Which bone transform property a timeline drives. The dopesheet groups rows by
 /// this; `AddKey` uses it to pick the timeline and the value type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BoneProperty {
     Translate,
     Rotate,
@@ -46,7 +46,7 @@ impl BoneProperty {
 ///
 /// Timelines are stored in a `Vec`, but their *identity* is the target they
 /// drive, not their index — an index shifts when another timeline is inserted.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum TimelineAddr {
     /// Existing Deform track; None is explicitly unresolved, never a placeholder.
     Deform {

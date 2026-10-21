@@ -530,3 +530,6 @@ fn create_clip(state: &mut AppState) {
 
 #[cfg(test)]
 mod t814_tests;
+
+#[cfg(test)]
+mod t827_tests;
