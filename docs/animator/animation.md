@@ -143,6 +143,21 @@ frame snapping. Keys remain stored in seconds. Changing a project from 30 FPS to
 60 FPS does not move keys to preserve their old frame numbers; the same key at
 `0.5` seconds is displayed as frame 15 and then frame 30.
 
+Local T-828 makes this field undoable. Drag and release to apply, or click and
+type a whole FPS then press Enter or leave the field. One completed gesture is
+one **Set Project FPS** Undo entry; two gestures remain separate. Escape cancels
+the draft. Losing application focus or changing/undoing the document also cancels
+unfinished input. Drafts never change the grid or authored document. Invalid,
+fractional, non-finite or out-of-range text refuses instead of becoming a
+different FPS. Legacy file values outside the editing range remain readable and
+are not changed by displaying the transport; Undo restores the exact old value.
+
+Frame labels, snapping, stepping and Onion frames use the committed FPS,
+including after Undo/Redo. Playback still advances in seconds; clip durations,
+key times, values and curves are unchanged. Save and recovery use the existing
+project lifecycle. Windows interaction qualification remains pending.
+
+
 ### Pan and zoom
 
 - Use the zoom buttons, type or drag the **px/f** value, or use

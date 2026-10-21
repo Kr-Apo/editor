@@ -37,6 +37,50 @@ impl EditCommand for ReplaceDocument {
     }
 }
 
+/// Set the project's existing frame-grid cadence, without retiming any animation.
+/// Prepare against the current document and dispatch only a returned command.
+#[derive(Debug)]
+pub struct SetProjectFps {
+    after: u32,
+    before: Option<u32>,
+}
+impl SetProjectFps {
+    /// Existing transport editing bounds; these are not new file-format limits.
+    pub const MIN: u32 = 1;
+    pub const MAX: u32 = 240;
+    pub fn new(doc: &Document, fps: u32) -> Result<Option<Self>, String> {
+        if !(Self::MIN..=Self::MAX).contains(&fps) {
+            return Err("Project FPS must be a whole number from 1 to 240".into());
+        }
+        Ok((doc.meta.fps != fps).then_some(Self {
+            after: fps,
+            before: None,
+        }))
+    }
+}
+impl EditCommand for SetProjectFps {
+    fn apply(&mut self, doc: &mut Document) {
+        if self.before.is_none() {
+            self.before = Some(doc.meta.fps);
+        }
+        doc.meta.fps = self.after;
+    }
+    fn revert(&mut self, doc: &mut Document) {
+        if let Some(before) = self.before {
+            doc.meta.fps = before;
+        }
+    }
+    fn label(&self) -> &str {
+        "Set Project FPS"
+    }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+}
+
+#[cfg(test)]
+mod t828_tests;
+
 #[cfg(test)]
 mod tests {
     use super::*;

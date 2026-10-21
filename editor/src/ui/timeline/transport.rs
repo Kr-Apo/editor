@@ -8,6 +8,8 @@
 use crate::app_state::AppState;
 use eframe::egui;
 
+mod fps;
+
 pub fn ui(ui: &mut egui::Ui, state: &mut AppState) {
     use crate::ui::icons as icon;
 
@@ -139,13 +141,7 @@ pub fn ui(ui: &mut egui::Ui, state: &mut AppState) {
 
     // FPS spinbox.
     ui.label("fps");
-    let mut fps = state.doc.meta.fps as i32;
-    if ui
-        .add(egui::DragValue::new(&mut fps).range(1..=240).speed(1))
-        .changed()
-    {
-        state.doc.meta.fps = fps.max(1) as u32;
-    }
+    fps::ui(ui, state);
 
     ui.separator();
     // Current time readout in frames.
@@ -197,3 +193,6 @@ fn onion_controls(ui: &mut egui::Ui, settings: &mut crate::session::OnionSkinSet
 
 #[cfg(test)]
 mod t824_tests;
+
+#[cfg(test)]
+mod t828_tests;

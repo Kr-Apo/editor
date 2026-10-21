@@ -4,7 +4,7 @@ All **local T-813–T-816 GUI results remain PENDING_MANUAL / PENDING MANUAL REV
 This register requests no action now. The maintainer chose to continue development
 before grouped tests. No editor/browser/inference session was run by T-817.
 
-Use the **T-827 cumulative executable** for the grouped campaign; older binaries
+Use the **T-828 cumulative executable** for the grouped campaign; older binaries
 are retained for targeted comparisons, not substitutes. Internal version remains
 0.2.0-alpha.1 and cannot identify a candidate by itself. Check the SHA before use.
 
@@ -158,3 +158,13 @@ Ctrl-union/toggle, Graph Raw/Normalize, shared sheet/tangents, clip/stale contex
 Redo and Save/reopen on copies. Compare the same fixture against T-826; remaining
 highlight/edit costs can still cause stalls. Headless state tests and CPU timings
 are not Windows focus/visual/responsiveness acceptance. No test is requested now.
+
+## T-828 — project FPS history, deferred
+
+All controls **PENDING MANUAL REVIEW**. Use an isolated project copy: note FPS,
+edit by drag and typing, apply with release/Enter/blur; Undo/Redo; then edit a key
+and undo both independently. Verify two gestures, Escape, frame step, snap,
+Onion frames, unchanged seconds/durations, dirty status, Save As/reopen and
+diagnostics. Replay cumulative T-813–T-827 checks. No desktop QA was performed.
+The local delivery contains the detailed 22-row checklist and new Windows binary;
+retain earlier binaries for comparison.

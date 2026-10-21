@@ -2896,3 +2896,7 @@ mod mode_visibility_tests {
 #[cfg(test)]
 #[path = "paste_tests/menu_tests.rs"]
 mod pose_paste_menu_tests;
+
+#[cfg(test)]
+#[path = "app_fps_tests.rs"]
+mod fps_tests;

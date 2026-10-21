@@ -1,5 +1,24 @@
 # Feature inventory — exact T-816 product, T-817 documentary audit
 
+## Local T-828 update — 2026-10-21
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for project FPS history.
+The transport now commits `SetProjectFps` through native history once per finished
+gesture. Drag release, Enter or field blur apply; Escape, lost window focus,
+lost pointer during drag, stale document/revision or hidden-control gap cancel.
+Typing is a transient draft. Separate gestures remain separate Undo entries.
+The existing editing range is 1–240 whole FPS; invalid text refuses rather than
+silently clamping. Displaying legacy out-of-range values does not alter the file.
+Undo restores the exact prior u32. No key, curve or clip is retimed.
+Existing dirty snapshots, safe save, recovery and coalesced T-818 diagnostics
+are preserved; metadata fallback remains. B02 is resolved only for transport FPS.
+T-202 retains its historical COMPLETE status; B03 awaits desktop reproduction.
+T-827 indexes and graph Raw/Normalize behavior remain unchanged. All cumulative
+T-813–T-828 desktop controls are **PENDING MANUAL REVIEW**. No GUI, inference,
+runtime change or public operation. See [FPS transport](animator/animation.md#fps-is-a-grid-not-a-retime-command).
+Earlier notes below retain their historical scope.
+
+
 ## Local T-827 update — 2026-10-21
 
 **COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for native large-key selection
@@ -306,7 +325,7 @@ not the current availability matrix. The current [tasks](TASKS.md),
 - Implementation: [`document/src/doc.rs`](../document/src/doc.rs), [`document/src/commands/mod.rs`](../document/src/commands/mod.rs), [`editor/src/session.rs`](../editor/src/session.rs).
 - Test/reference suites: [`document/src/commands/mod.rs`](../document/src/commands/mod.rs), [`editor/src/app_state.rs`](../editor/src/app_state.rs)
 - Example test symbols (suite references, not a coverage claim): `undo_redo_roundtrips_a_create`; `ease_in_out_changes_motion_and_undo_reverts`.
-- Contradictory check / remaining historical criteria: Undo history is not persisted; not every historical UI metadata assignment uses a command (B02)
+- Contradictory check / remaining historical criteria: Undo history is not persisted; T-828 resolves transport FPS history locally; other metadata paths are not broadly certified
 - Latest relevant checkpoint: T-812 integration; audited exact T-816 source.
 - Recommended action: Retain tested scoped capability; do not redevelop. Priority: Retain scoped implementation.
 
@@ -641,7 +660,7 @@ not the current availability matrix. The current [tasks](TASKS.md),
 - Implementation: [`editor/src/ui/timeline/transport.rs`](../editor/src/ui/timeline/transport.rs), [`editor/src/edit_router.rs`](../editor/src/edit_router.rs).
 - Test/reference suites: [`editor/src/edit_router.rs`](../editor/src/edit_router.rs), [`editor/src/app_state.rs`](../editor/src/app_state.rs)
 - Example test symbols (suite references, not a coverage claim): `auto_key_off_defers_the_pose_until_k`.
-- Contradictory check / remaining historical criteria: FPS direct-mutation finding B02 is not fixed; pending preview is distinct from stored key
+- Contradictory check / remaining historical criteria: Transport FPS history B02 resolved locally in T-828; pending preview remains distinct from stored key
 - Latest relevant checkpoint: T-812 integration; audited exact T-816 source.
 - Recommended action: Retain tested scoped capability; do not redevelop. Priority: Retain scoped implementation.
 
@@ -2067,12 +2086,13 @@ reviewed import transports required bytes separately using native asset commands
 Original same-document Copy/Paste is retained. Advanced universal transfer is
 still partial and explicitly refused, not claimed complete or silently dropped.
 
-**B02 / P2 — transport FPS bypasses native history.** `ui/timeline/transport.rs`
-writes `state.doc.meta.fps` directly on change, without a native command. Source
-reproduction: change only project FPS in transport; no history command is dispatched.
-`App::is_dirty` compares document snapshots, so this audit does **not** claim that
-dirty tracking/autosave/close safety lose the change. Undo/revision consistency needs
-a targeted headless regression in a separately authorized correction.
+**B02 / P2 — transport FPS bypasses native history: RESOLVED LOCALLY by T-828.**
+The former direct assignment is replaced with validated `SetProjectFps` native
+dispatch. Tests prove gesture boundaries, cancellation, exact Undo/Redo, revision,
+dirty/save/recovery and no retime. Existing dirty snapshots and T-818 metadata
+monitoring already detected FPS changes; no lost-dirty bug is claimed. Desktop
+qualification remains pending; this closes the exact transport path, not all
+metadata history. See [FPS contract](animator/animation.md#fps-is-a-grid-not-a-retime-command).
 
 **B03 / P2 — bone-name context-menu usability.** Previously observed physically
 and retained in T-816 evidence; T-817 did not retest Windows. The icon workaround
@@ -2155,3 +2175,11 @@ No public distribution or GUI claim. Preserve T-813–T-819; T-821 not started.
 - Implementation: [native capture](../document/src/clipboard/keys.rs), [operation-local indexes](../document/src/clipboard/keys/capture_batch.rs). Shared editor selection functions are unchanged.
 - Tests: [exact differential and operation-count tests](../document/src/clipboard/keys/t827_tests.rs), [history/clipboard/FFD/I/O consumers](../editor/src/key_selection/t827_tests.rs), [headless large marquee](../editor/src/ui/timeline/t827_tests.rs).
 - Limits: Existing graph/sheet membership and native edit/resolve scans remain; no general frame budget. Same single-FFD/mixed-selection policies and command mode/lock guards. 20 deferred manual checks; cumulative QA pending.
+
+### T-828 — Native project FPS history
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** · Origin: B02 / P2.
+Native `SetProjectFps`; one validated gesture, one Undo entry; no-op/refusal
+preserves Redo and revision. Egui draft cancels on stale context and Escape.
+Seconds, keys, curves, clips, assets and formats are unchanged. Dirty, lifecycle,
+diagnostics and temporal regression tests are deterministic, without desktop QA.

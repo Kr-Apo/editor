@@ -1,5 +1,24 @@
 # Ankhimate — operational tasks and evidence
 
+## Local T-828 update — 2026-10-21
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for project FPS history.
+The transport now commits `SetProjectFps` through native history once per finished
+gesture. Drag release, Enter or field blur apply; Escape, lost window focus,
+lost pointer during drag, stale document/revision or hidden-control gap cancel.
+Typing is a transient draft. Separate gestures remain separate Undo entries.
+The existing editing range is 1–240 whole FPS; invalid text refuses rather than
+silently clamping. Displaying legacy out-of-range values does not alter the file.
+Undo restores the exact prior u32. No key, curve or clip is retimed.
+Existing dirty snapshots, safe save, recovery and coalesced T-818 diagnostics
+are preserved; metadata fallback remains. B02 is resolved only for transport FPS.
+T-202 retains its historical COMPLETE status; B03 awaits desktop reproduction.
+T-827 indexes and graph Raw/Normalize behavior remain unchanged. All cumulative
+T-813–T-828 desktop controls are **PENDING MANUAL REVIEW**. No GUI, inference,
+runtime change or public operation. See [FPS transport](animator/animation.md#fps-is-a-grid-not-a-retime-command).
+Earlier notes below retain their historical scope.
+
+
 ## Local T-827 update — 2026-10-21
 
 **COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for native large-key selection
@@ -203,7 +222,7 @@ The matrix is an operational summary; the archive retains all original criteria.
 | [T-104](FEATURE_INVENTORY.md#t-104) — Constraint system + correct IK blending | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Runtime common alpha excludes constraints; geometric singularities are not repaired |
 | [T-105](FEATURE_INVENTORY.md#t-105) — Skin layer | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Not arbitrary game-runtime skin composition or linked deformation qualification |
 | [T-106](FEATURE_INVENTORY.md#t-106) — Animation model + sampling | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Extreme finite handles can overflow sampler; no universal f32-range guarantee |
-| [T-107](FEATURE_INVENTORY.md#t-107) — Editor Document/Session split + command undo | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Undo history is not persisted; not every historical UI metadata assignment uses a command (B02) |
+| [T-107](FEATURE_INVENTORY.md#t-107) — Editor Document/Session split + command undo | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Undo history is not persisted; T-828 resolves transport FPS history locally; other metadata paths are not broadly certified |
 | [T-108](FEATURE_INVENTORY.md#t-108) — `formats` crate + .ankh v1 save/load | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Prototype ZIP unsupported; no authentic v0 migration; complete scope is current v1 only |
 | [T-707](FEATURE_INVENTORY.md#t-707) — Crash recovery, update check, feedback | PARTIAL | PENDING_MANUAL | PUBLIC_ALPHA | No panic-time live-document dump, recovery browser or complete update/feedback package |
 | [T-813](FEATURE_INVENTORY.md#t-813) — Format Compatibility & Project Reliability | COMPLETE | PENDING_MANUAL | LOCAL_CANDIDATE | No arbitrary structural repair, hostile-resource budget or power-loss certificate; GUI pending |
@@ -234,7 +253,7 @@ The matrix is an operational summary; the archive retains all original criteria.
 | ID / scope | Implementation | Validation | Availability | Remainder / priority |
 |---|---|---|---|---|
 | [T-201](FEATURE_INVENTORY.md#t-201) — Dopesheet panel | COMPLETE | PENDING_MANUAL | PUBLIC_ALPHA | Complex track addresses belong to the separately partial T-209/FFD workflow; local T-814 selection… |
-| [T-202](FEATURE_INVENTORY.md#t-202) — Playback + auto-key | COMPLETE | AUTOMATED | PUBLIC_ALPHA | FPS direct-mutation finding B02 is not fixed; pending preview is distinct from stored key |
+| [T-202](FEATURE_INVENTORY.md#t-202) — Playback + auto-key | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Transport FPS history B02 resolved locally in T-828; pending preview remains distinct from stored key |
 | [T-203](FEATURE_INVENTORY.md#t-203) — Bezier interpolation UI | COMPLETE | PENDING_MANUAL | PUBLIC_ALPHA | Complete scope excludes linked handles, normalize overlay and graph marquee (T-704) |
 | [T-204](FEATURE_INVENTORY.md#t-204) — Draw-order animation UI | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Generic dopesheet order-key clipboard remains excluded |
 | [T-205](FEATURE_INVENTORY.md#t-205) — Slot timelines UI | COMPLETE | AUTOMATED | PUBLIC_ALPHA | Static dark tint is separate; no animated-dark channel is invented |

@@ -2054,3 +2054,6 @@ mod texture_tests {
 
 #[cfg(test)]
 mod t824_tests;
+
+#[cfg(test)]
+mod t828_tests;

@@ -1,5 +1,24 @@
 # Known limitations — local T-811 candidate
 
+## Local T-828 update — 2026-10-21
+
+**COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for project FPS history.
+The transport now commits `SetProjectFps` through native history once per finished
+gesture. Drag release, Enter or field blur apply; Escape, lost window focus,
+lost pointer during drag, stale document/revision or hidden-control gap cancel.
+Typing is a transient draft. Separate gestures remain separate Undo entries.
+The existing editing range is 1–240 whole FPS; invalid text refuses rather than
+silently clamping. Displaying legacy out-of-range values does not alter the file.
+Undo restores the exact prior u32. No key, curve or clip is retimed.
+Existing dirty snapshots, safe save, recovery and coalesced T-818 diagnostics
+are preserved; metadata fallback remains. B02 is resolved only for transport FPS.
+T-202 retains its historical COMPLETE status; B03 awaits desktop reproduction.
+T-827 indexes and graph Raw/Normalize behavior remain unchanged. All cumulative
+T-813–T-828 desktop controls are **PENDING MANUAL REVIEW**. No GUI, inference,
+runtime change or public operation. See [FPS transport](animator/animation.md#fps-is-a-grid-not-a-retime-command).
+Earlier notes below retain their historical scope.
+
+
 ## Local T-827 update — 2026-10-21
 
 **COMPLETE / PENDING_MANUAL / LOCAL_CANDIDATE** for native large-key selection
