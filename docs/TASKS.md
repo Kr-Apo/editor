@@ -1,8 +1,19 @@
-# Current task status through T835 / T836 preparation
+# État local T837 — 22 octobre 2026
 
-This checkout is the **T836 local pre-alpha preparation**, based on accepted T835 `514c6aa8a6eeae8bb9dcb8c22e0dc35c48bb2cc2`. No product feature, version, format, runtime or public artifact is changed. The accepted public Alpha is **v0.2.0-alpha.1**, editor `9233b8e888c811e7c71300101f865a9e74b3f489`, runtime `c4c38df269cfcb30f941221454b7202f40d3fa5b`, as recorded by T812; this is not a fresh remote audit. RC2 remains a different, frozen archive.
+Ce checkout contient le correctif ciblé de persistance Recovery T837 sur T836 `1d3cc13bd5fda93c541dc8698918dedcdd146290`, avec documentation utilisateur et deux livraisons locales séparées. Aucun format, runtime, numéro de version ou artefact public n’est modifié. Les tests réellement exécutés et le commit final figurent dans la livraison T837. L’Alpha publique v0.2.0-alpha.1 et RC2 conservent leurs propres preuves.
 
-Use [Jade Sentinel](jade-sentinel.md) as the only active user character. [Current local workflow](prealpha-workflow.md), [compatibility](release-compatibility.md), and [manual campaign](MANUAL_QA_PENDING.md) distinguish implemented features from physical Windows acceptance. **444 manual scenario instances remain PENDING MANUAL REVIEW**. Baseline T835:2,133 Rust passes/4 historical ignores; T836 results are in its delivery, not invented here. No real inference, paid call, GUI or GPU certification.
+Les **444 contrôles manuels historiques restent PENDING MANUAL REVIEW** ; T837 ajoute 15 contrôles distincts, eux aussi en attente. Consultez [le catalogue utilisateur](FEATURES.md), [le démarrage](GETTING-STARTED.md), [la compatibilité](COMPATIBILITY.md) et [la récupération](project-recovery.md). Les 101 IDs conservent 62 COMPLETE, 33 PARTIAL, 1 ABSENT, 3 SUPERSEDED, 2 DEFERRED. T208/T209/T211/T404/T502 restent PARTIAL, sans reclassement par effet d’une mission récente.
+
+## Missions locales récentes
+
+- T833 : décalage des clés des bones sélectionnés, borné ; T211 reste PARTIAL.
+- T834 : clipboard FFD owned/same-track/same-document ; T209/T404 restent PARTIAL.
+- T835 : ordre auteur des clips ; T208 reste PARTIAL pour durées en frames et entrée Animate depuis le manager.
+- T836 : nettoyage documentaire, exemple Jade et préservation des preuves ; aucun correctif produit.
+- T837 : Ignore durable par état, revue volontaire des copies conservées, erreurs explicites ; candidat utilisateur séparé, catalogue français. Qualification physique différée. T707 n’est pas reclassé : pas de dump au panic ni navigateur global de disques.
+
+<details>
+<summary>Référence antérieure conservée — état daté T836 ou avant</summary>
 
 <details>
 <summary>Historical T832–T835 checkpoint context (not current test results)</summary>
@@ -235,3 +246,5 @@ The only whole historical ABSENT task is T-904 selection sets. T-705 localizatio
 [Animation manager guide](animation-manager.md): right-click a clip row, choose Move Up or Move Down. The native author list is saved through the existing `.ankh` animation array. IDs and complete clip payloads remain unchanged; one click is one Undo. Manager/picker share the order. Boundaries and stale popup contexts refuse before dispatch. No schema, sampler, evaluator, runtime, shortcut or release change.
 
 T-208 stays **PARTIAL / PENDING_MANUAL / LOCAL_CANDIDATE**: auditing its original criteria found the existing seconds display and Setup-preserving manager selection. These are separate from the delivered ordering scope and were not changed. Counts remain **62 COMPLETE /33 PARTIAL /1 ABSENT /3 SUPERSEDED /2 DEFERRED =101**. The byte-identical T-832 CSV is a historical snapshot; its old reorder-gap wording is superseded by this explicit T-835 addendum. T-209/T-404/T-502 remain partial. PathPosition minimum-reader release policy remains pending.
+
+</details>

@@ -1,3 +1,12 @@
+# État local T837 — 22 octobre 2026
+
+Ce checkout contient le correctif ciblé de persistance Recovery T837 sur T836 `1d3cc13bd5fda93c541dc8698918dedcdd146290`, avec documentation utilisateur et deux livraisons locales séparées. Aucun format, runtime, numéro de version ou artefact public n’est modifié. Les tests réellement exécutés et le commit final figurent dans la livraison T837. L’Alpha publique v0.2.0-alpha.1 et RC2 conservent leurs propres preuves.
+
+Les **444 contrôles manuels historiques restent PENDING MANUAL REVIEW** ; T837 ajoute 15 contrôles distincts, eux aussi en attente. Consultez [le catalogue utilisateur](FEATURES.md), [le démarrage](GETTING-STARTED.md), [la compatibilité](COMPATIBILITY.md) et [la récupération](project-recovery.md). Les 101 IDs conservent 62 COMPLETE, 33 PARTIAL, 1 ABSENT, 3 SUPERSEDED, 2 DEFERRED. T208/T209/T211/T404/T502 restent PARTIAL, sans reclassement par effet d’une mission récente.
+
+<details>
+<summary>Référence antérieure conservée — état daté T836 ou avant</summary>
+
 # Current local pre-alpha workflow — T836
 
 Start with [README](../README.md), [Jade](jade-sentinel.md), [compatibility](release-compatibility.md), [inventory](FEATURE_INVENTORY.md), [tasks](TASKS.md), [manual plan](MANUAL_QA_PENDING.md). Local source is based on accepted T835; public v0.2.0-alpha.1/RC2 stay frozen. T836 adds no product capability and changes no version, dependency, format or runtime.
@@ -22,3 +31,5 @@ T208 remains partial for duration-in-frames display and manager selection enteri
 Source housekeeping retires the M006/M007 packager and old primary walkthroughs into [historical records](history/README.md). Crapaud paths stay for required regression/evidence inputs and are marked historical-only. Unknown autosaves, old build caches, reports, executables, PSD/PNG oracles and licenses are preserved; no broad purge. A clean active workspace does not mean destroying provenance.
 
 The delivery contains a local Windows-Test-Candidate, exact hashes, disposable Jade qualification evidence and a Qwen handoff. Qwen must run independent checks, not accept the SOL report as its own test results. No inference/backend/cloud call is required or executed. No publication step is part of this procedure.
+
+</details>

@@ -35,6 +35,9 @@ use std::time::{Duration, Instant};
 #[cfg(test)]
 #[path = "autosave_clock_tests.rs"]
 mod clock_tests;
+#[path = "autosave_recovery.rs"]
+mod recovery;
+pub use recovery::RecoveryStore;
 static NEXT_UNTITLED: AtomicU64 = AtomicU64::new(0);
 
 /// Extension appended to the project's own name: `walk.ankh.autosave`.
@@ -140,7 +143,7 @@ impl Autosave {
             Some(path) => path_for(Some(path))?,
             None => {
                 if self.unsaved_path.is_none() {
-                    let root = std::env::temp_dir().join("ankhimate-recovery");
+                    let root = RecoveryStore::default().untitled;
                     if let Err(e) = std::fs::create_dir_all(&root) {
                         self.last_error = Some(e.to_string());
                         return None;
@@ -212,6 +215,7 @@ pub struct Recovery {
     pub project: Option<PathBuf>,
     /// A staged project payload keeps the original project's asset namespace.
     pub asset_origin: Option<PathBuf>,
+    version: String,
 }
 
 /// Is there an autosave newer than the project it shadows?
@@ -229,72 +233,11 @@ pub fn check(project: Option<&Path>) -> Option<Recovery> {
 }
 
 pub fn check_after_open(project: Option<&Path>, primary_valid: bool) -> Option<Recovery> {
-    let primary_time = project
-        .filter(|_| primary_valid)
-        .and_then(|p| std::fs::metadata(p).ok()?.modified().ok());
-    let mut candidates = Vec::new();
-    if let Some(path) = path_for(project) {
-        candidates.push((path, None));
-    }
-    if let Some(project) = project {
-        candidates.extend(
-            ankhimate_formats::container::recoverable_writes(project)
-                .into_iter()
-                .map(|p| (p, Some(project.to_path_buf()))),
-        );
-    } else if let Ok(entries) = std::fs::read_dir(std::env::temp_dir().join("ankhimate-recovery")) {
-        candidates.extend(
-            entries
-                .flatten()
-                .map(|e| e.path())
-                .filter(|p| {
-                    p.file_name().is_some_and(|n| {
-                        n.to_string_lossy().starts_with("untitled-")
-                            && n.to_string_lossy().ends_with(".ankh.autosave")
-                    })
-                })
-                .map(|p| (p, None)),
-        );
-    }
-    candidates
+    RecoveryStore::default()
+        .scan(project, primary_valid, false)
+        .copies
         .into_iter()
-        .filter_map(|(path, origin)| {
-            let metadata = std::fs::symlink_metadata(&path).ok()?;
-            if !metadata.is_file() || metadata.file_type().is_symlink() {
-                return None;
-            }
-            #[cfg(windows)]
-            {
-                use std::os::windows::fs::MetadataExt;
-                if metadata.file_attributes() & 0x400 != 0 {
-                    return None;
-                }
-            }
-            let modified = metadata.modified().ok()?;
-            if primary_time.is_some_and(|t| t >= modified) {
-                return None;
-            }
-            // A newer corrupt sidecar must not hide a valid interrupted-save
-            // payload. Keep an invalid ordinary sidecar as a fallback so Recover
-            // can report its error and Ignore still preserves the copy.
-            let valid =
-                ankhimate_formats::load_with_assets(&path, origin.as_deref().unwrap_or(&path))
-                    .is_ok();
-            if origin.is_some() && !valid {
-                return None;
-            }
-            Some((
-                valid,
-                modified,
-                Recovery {
-                    autosave: path,
-                    project: project.map(Path::to_path_buf),
-                    asset_origin: origin,
-                },
-            ))
-        })
-        .max_by_key(|(valid, time, _)| (*valid, *time))
-        .map(|(_, _, recovery)| recovery)
+        .next()
 }
 
 fn snapshot(state: &AppState) -> Option<serde_json::Value> {

@@ -1,3 +1,12 @@
+# État local T837 — 22 octobre 2026
+
+Ce checkout contient le correctif ciblé de persistance Recovery T837 sur T836 `1d3cc13bd5fda93c541dc8698918dedcdd146290`, avec documentation utilisateur et deux livraisons locales séparées. Aucun format, runtime, numéro de version ou artefact public n’est modifié. Les tests réellement exécutés et le commit final figurent dans la livraison T837. L’Alpha publique v0.2.0-alpha.1 et RC2 conservent leurs propres preuves.
+
+Les **444 contrôles manuels historiques restent PENDING MANUAL REVIEW** ; T837 ajoute 15 contrôles distincts, eux aussi en attente. Consultez [le catalogue utilisateur](FEATURES.md), [le démarrage](GETTING-STARTED.md), [la compatibilité](COMPATIBILITY.md) et [la récupération](project-recovery.md). Les 101 IDs conservent 62 COMPLETE, 33 PARTIAL, 1 ABSENT, 3 SUPERSEDED, 2 DEFERRED. T208/T209/T211/T404/T502 restent PARTIAL, sans reclassement par effet d’une mission récente.
+
+<details>
+<summary>Référence antérieure conservée — état daté T836 ou avant</summary>
+
 # Sharing projects and preparing a future alpha
 
 ## Which artifact is this?
@@ -18,3 +27,5 @@ Public v0.2.0-alpha.1 is the accepted T811/T812 release; RC2 is an older indepen
 No format migration/version bump/runtime change here. Tentative next editor candidate label **0.2.0-alpha.2** is a planning proposal only. Before a future alpha, approve exact source/binary, minimum feature reader, release notes,444-case qualification disposition and new clean-PC evidence. Do not reuse old-archive acceptance as certification of the new binary. Preserve all licenses, attribution and original artifacts.
 
 [Detailed historical format evidence](format-release-compatibility.md), [format specification](format-spec.md), [export boundaries](formats/export-runtime.md), [local workflow](prealpha-workflow.md).
+
+</details>

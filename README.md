@@ -1,5 +1,14 @@
 # Ankhimate — Kr-Apo Community Fork (Unofficial)
 
+État local **T837** : correction Recovery, documentation utilisateur et dossier Windows simplifié. Ce checkpoint n’est pas publié ; aucun changement de l’Alpha publique ni de RC2. [Fonctionnalités](docs/FEATURES.md), [premiers pas](docs/GETTING-STARTED.md), [compatibilité](docs/COMPATIBILITY.md), [développement et tâches](docs/TASKS.md).
+
+Pour la livraison Windows, double-cliquez sur Ankhimate.exe, puis File > Open… et Examples/Jade-Sentinel/Sentinelle.ankh. Faites Save As avant modification. Les sources Rust, fixtures et procédures de build restent ici ; le ZIP utilisateur ne les remplace pas. Licences MIT OR Apache-2.0 et crédits amont conservés.
+
+<details>
+<summary>Documentation de référence antérieure — T836 et publication précédente</summary>
+
+# Ankhimate — Kr-Apo Community Fork (Unofficial)
+
 Native Windows authoring for2D skeletal animation, with separate TypeScript game adapters. Maintained independently by Kr-Apo; derived from [Ankhimate/editor](https://github.com/Ankhimate/editor) and [Ankhimate/runtime](https://github.com/Ankhimate/runtime). No upstream endorsement or trademark license is claimed. Preserve original MIT OR Apache-2.0 licenses, copyrights and third-party attributions.
 
 ## Choose the right artifact
@@ -43,3 +52,5 @@ cargo run --locked -p xtask -- docs-check
 ## License and reporting
 
 [MIT](LICENSE-MIT) OR [Apache-2.0](LICENSE-APACHE); Jade has its own preserved MIT asset grant. Dependency/font notices remain separate. No source-art right is inferred from conversion. Use [SECURITY](SECURITY.md) and minimal reproducible bug reports with exact artifact/OS information. Do not upload private projects, credentials or unredacted personal paths. [Known limitations](docs/KNOWN_LIMITATIONS.md).
+
+</details>

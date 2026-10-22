@@ -65,6 +65,8 @@ pub struct AnkhimateApp {
     /// answered. `Some` means the recovery prompt is up.
     recovery: Option<crate::autosave::Recovery>,
     recovery_revision: u64,
+    recovery_store: crate::autosave::RecoveryStore,
+    recovery_more: Vec<crate::autosave::Recovery>,
     recovery_document: Option<serde_json::Value>,
     /// A reader running away from the UI thread. Importers can parse large
     /// atlases and execute plugin JavaScript; neither may stall egui's frame.
@@ -535,6 +537,8 @@ impl Default for AnkhimateApp {
             autosave: crate::autosave::Autosave::default(),
             recovery: None,
             recovery_revision: 0,
+            recovery_store: Default::default(),
+            recovery_more: Vec::new(),
             recovery_document: None,
             file_load: None,
             psd_base: None,
@@ -962,6 +966,10 @@ impl eframe::App for AnkhimateApp {
                                     }
                                 });
                                 ui.separator();
+                                if ui.button("Review Recovery Copies…").on_hover_text("Review retained copies, including those previously ignored; no files are deleted").clicked() {
+                                    file_action = Some(FileAction::ReviewRecovery);
+                                    ui.close();
+                                }
                                 if ui.button("Startup Window").clicked() {
                                     self.show_startup = true;
                                     ui.close();
@@ -1843,6 +1851,7 @@ enum PoseAction {
 #[derive(Clone, Debug, PartialEq)]
 enum FileAction {
     TransferProject,
+    ReviewRecovery,
     New,
     Close,
     Open,
@@ -2253,7 +2262,11 @@ impl AnkhimateApp {
         }
         let destructive = matches!(
             action,
-            FileAction::New | FileAction::Close | FileAction::Open | FileAction::OpenPath(_)
+            FileAction::New
+                | FileAction::Close
+                | FileAction::Open
+                | FileAction::OpenPath(_)
+                | FileAction::ReviewRecovery
         ) || matches!(&action, FileAction::Import(id) if id != "import.psd")
             || (action == FileAction::ApplyPsd
                 && self
@@ -2288,7 +2301,21 @@ impl AnkhimateApp {
     }
 
     fn offer_recovery(&mut self, project: Option<&std::path::Path>, valid: bool) {
-        self.recovery = crate::autosave::check_after_open(project, valid);
+        let scan = self.recovery_store.scan(project, valid, false);
+        self.set_recovery_offers(scan.copies, scan.warnings);
+    }
+
+    fn set_recovery_offers(
+        &mut self,
+        mut copies: Vec<crate::autosave::Recovery>,
+        warnings: Vec<String>,
+    ) {
+        copies.reverse();
+        self.recovery = copies.pop();
+        self.recovery_more = copies;
+        if !warnings.is_empty() {
+            self.status = Some(warnings.join("; "));
+        }
         self.recovery_revision = self.state.revision;
         self.recovery_document = document_snapshot(&self.state);
     }
@@ -2318,7 +2345,17 @@ impl AnkhimateApp {
     }
 
     fn ignore_recovery(&mut self) {
-        self.recovery = None;
+        let Some(copy) = self.recovery.as_ref() else {
+            return;
+        };
+        match self.recovery_store.ignore(copy) {
+            Ok(()) => self.recovery = self.recovery_more.pop(),
+            Err(e) => {
+                self.status = Some(format!(
+                    "Could not remember Ignore: {e}. The copy is preserved; Ignore was not completed."
+                ))
+            }
+        }
     }
 
     fn recover_project(&mut self) {
@@ -2331,12 +2368,20 @@ impl AnkhimateApp {
             self.status = Some("Recovery cancelled: the current document changed. Ignore this offer and reopen to try again.".into());
             return;
         }
+        if let Err(e) = recovery.ensure_unchanged() {
+            self.status = Some(format!("Could not recover: {e}"));
+            return;
+        }
         let origin = recovery
             .asset_origin
             .as_deref()
             .unwrap_or(&recovery.autosave);
         match ankhimate_formats::load_with_assets(&recovery.autosave, origin) {
             Ok((loaded, _)) => {
+                if let Err(e) = recovery.ensure_unchanged() {
+                    self.status = Some(format!("Could not recover: {e}"));
+                    return;
+                }
                 let unresolved = loaded
                     .report
                     .dangling
@@ -2350,6 +2395,7 @@ impl AnkhimateApp {
                 self.saved_document = None;
                 self.autosave.reset();
                 self.recovery = None;
+                self.recovery_more.clear();
                 self.status = Some(if unresolved.is_empty() {
                     "Recovered from a recovery copy — save to keep it".into()
                 } else {
@@ -2374,6 +2420,7 @@ impl AnkhimateApp {
         let chrome = self.theme.clone();
         let mut restore = false;
         let mut dismiss = false;
+        let mut later = false;
         let dialog = crate::ui::dialog::Dialog::new("recovery", "Recover unsaved work?")
             .width(460.0).show(ctx, &chrome, |ui| {
                 ui.label("A recovery copy was left by a previous or interrupted session. Recover loads it without overwriting your project.");
@@ -2382,10 +2429,15 @@ impl AnkhimateApp {
                 ui.add_space(10.0);
                 ui.horizontal(|ui| {
                     restore = ui.button("Recover").clicked();
-                    dismiss = ui.button("Ignore").on_hover_text("Keeps the recovery file").clicked();
+                    dismiss = ui.button("Ignore").on_hover_text("Remembers this unchanged copy; keeps its files. Find it again with File > Review Recovery Copies…").clicked();
                 });
+                if self.status.as_ref().is_some_and(|s| s.starts_with("Could not remember Ignore:") || s.starts_with("Could not recover:")) {
+                    later = ui.button("Later (this session)").on_hover_text("No persistent decision; this copy can be offered again next startup").clicked();
+                }
             });
-        if restore {
+        if later {
+            self.recovery = self.recovery_more.pop();
+        } else if restore {
             self.recover_project();
         } else if dismiss || dialog.closed {
             self.ignore_recovery();
@@ -2497,6 +2549,23 @@ impl AnkhimateApp {
     fn execute_file_action(&mut self, action: FileAction) {
         use crate::fileops;
         let outcome = match action {
+            FileAction::ReviewRecovery => {
+                let mut scan = self.recovery_store.scan(
+                    self.current_path.as_deref(),
+                    self.current_path.is_some(),
+                    true,
+                );
+                if self.current_path.is_some() {
+                    let untitled = self.recovery_store.scan(None, false, true);
+                    scan.copies.extend(untitled.copies);
+                    scan.warnings.extend(untitled.warnings);
+                }
+                if scan.copies.is_empty() && scan.warnings.is_empty() {
+                    self.status = Some("No recovery copies found".into());
+                }
+                self.set_recovery_offers(scan.copies, scan.warnings);
+                return;
+            }
             FileAction::TransferProject => {
                 if !self.state.session.can_edit_structure() {
                     self.state

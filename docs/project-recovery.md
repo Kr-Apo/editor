@@ -44,14 +44,29 @@ Open the original path. Even a missing/corrupt primary can trigger an offer. The
 shows the actual recovery filename. Recover reads that copy and marks it dirty; it does
 not write over the primary. Save As to a **new** folder/name if you want to keep both
 versions. Keep the primary, sidecar and asset folders until you have reopened the result.
-Ignore/Escape dismisses the offer and preserves all recovery files.
+T837: Ignore/Escape records an immutable receipt for the exact canonical identity,
+SHA-256 content and modification state, preserving every recovery/asset file.
+An unchanged copy stays suppressed after restart; new identities or changed states
+remain eligible. File > Review Recovery Copies… explicitly includes ignored copies
+for the active project and retained untitled documents, behind Save/Discard/Cancel.
+For another named project, open its path first. Multiple offers advance on Ignore.
+If persistence fails, the offer remains and the error says Ignore was not completed.
+Later (this session) is then an explicit non-durable escape; no data is removed.
 
 A valid primary suppresses copies with equal/older modification times. Otherwise, valid
 copies take precedence over corrupt sidecars; the newest valid one is offered. A corrupt
 ordinary copy can remain a fallback to expose its error. Source timestamps can be changed
 by backup/sync tools, so this is a recovery heuristic, not a version-control history.
 A failed Recover preserves the current document, selection and history. A pending offer
-cannot replace a document edited since discovery. No recovery browser/purge is provided.
+cannot replace a document edited since discovery. No global disk browser or purge is provided. A targeted explicit review is available
+in File; it retains the established stale-copy filter. Ignore receipts contain no
+project payload or path in clear text. They live in the application config directory
+under recovery-decisions-v1 (temp fallback only if config discovery fails).
+Exclusive receipt creation avoids multi-instance lost updates. Incomplete/corrupt
+receipts never suppress a copy and are never overwritten. File flush is requested;
+directory durability, adversarial concurrent path changes and power-loss recovery
+are not guaranteed. A changed/deleted copy at action time fails without replacing
+the current document. Windows Temp cleanup remains outside the application's control.
 
 Interrupted saves can leave a sibling `.ankh-save-PID-counter` directory containing
 `manifest.json`, `new` and/or `previous`. Keep the entire directory and original asset

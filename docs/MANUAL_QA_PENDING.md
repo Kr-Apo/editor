@@ -1,22 +1,11 @@
-# Deferred Windows manual campaign — T836
+# État local T837 — 22 octobre 2026
 
-This checkout is the **T836 local pre-alpha preparation**, based on accepted T835 `514c6aa8a6eeae8bb9dcb8c22e0dc35c48bb2cc2`. No product feature, version, format, runtime or public artifact is changed. The accepted public Alpha is **v0.2.0-alpha.1**, editor `9233b8e888c811e7c71300101f865a9e74b3f489`, runtime `c4c38df269cfcb30f941221454b7202f40d3fa5b`, as recorded by T812; this is not a fresh remote audit. RC2 remains a different, frozen archive.
+Ce checkout contient le correctif ciblé de persistance Recovery T837 sur T836 `1d3cc13bd5fda93c541dc8698918dedcdd146290`, avec documentation utilisateur et deux livraisons locales séparées. Aucun format, runtime, numéro de version ou artefact public n’est modifié. Les tests réellement exécutés et le commit final figurent dans la livraison T837. L’Alpha publique v0.2.0-alpha.1 et RC2 conservent leurs propres preuves.
 
-Use [Jade Sentinel](jade-sentinel.md) as the only active user character. [Current local workflow](prealpha-workflow.md), [compatibility](release-compatibility.md), and [manual campaign](MANUAL_QA_PENDING.md) distinguish implemented features from physical Windows acceptance. **444 manual scenario instances remain PENDING MANUAL REVIEW**. Baseline T835:2,133 Rust passes/4 historical ignores; T836 results are in its delivery, not invented here. No real inference, paid call, GUI or GPU certification.
+Les **444 contrôles manuels historiques restent PENDING MANUAL REVIEW** ; T837 ajoute 15 contrôles distincts, eux aussi en attente. Consultez [le catalogue utilisateur](FEATURES.md), [le démarrage](GETTING-STARTED.md), [la compatibilité](COMPATIBILITY.md) et [la récupération](project-recovery.md). Les 101 IDs conservent 62 COMPLETE, 33 PARTIAL, 1 ABSENT, 3 SUPERSEDED, 2 DEFERRED. T208/T209/T211/T404/T502 restent PARTIAL, sans reclassement par effet d’une mission récente.
 
-| Provenance | Pending instances | Retained source |
-|---|---:|---|
-| T813–T831 map, including B03 |352| [Frozen full map](cumulative-manual-qa-map.md) |
-| T833 selected bone offset |28| Exact original delivery checklist |
-| T834 FFD clipboard |37| Exact original delivery checklist |
-| T835 animation ordering |27| Exact original delivery checklist |
-| **Total** |**444**| No PASS or removed case |
-
-The T836 delivery provides a444-row traceable consolidation with source text/hashes, source binaries and fixture requirements. The current cumulative executable is `Ankhimate-T836-dev.exe` in Windows-Test-Candidate; identify it by SHA in that delivery, not its unchanged internal0.2.0-alpha.1 version. Keep older binaries for source-specific comparisons on separate copies. Jade is the main user character. Technical PSD/IK/Path/invalid-data/many-key fixtures remain necessary; do not pretend the small Jade project exercises every historical case. The historical Crapaud fixture stays solely for its original regression/evidence paths and is not in the candidate.
-
-Start with [Jade](jade-sentinel.md). Record OS/GPU/driver/DPI/theme/focus, exact artifact/fixture hashes, expected/actual and reviewer/date. New/Open/Close Save/Discard/Cancel, failed Save/SaveAs, recovery Ignore/Recover, Undo/Redo, FFD/Graph/Path, exports/preflight/collisions and large selections need physical review. Stop on data loss, corruption or crash and preserve inputs/sidecars/logs. Do not overwrite a reference or discard recovery files.
-
-No Windows gesture, artistic result or Qwen inference is qualified by this cleanup. Existing narrow historical reports remain evidence for their own artifacts, not blanket acceptance. The new handoff prepares tests; it does not execute a model.
+<details>
+<summary>Référence antérieure conservée — état daté T836 ou avant</summary>
 
 <details>
 <summary>Retained historical campaign instructions (source artifact requirements)</summary>
@@ -74,5 +63,7 @@ All are **PENDING MANUAL REVIEW** in the T-834 delivery checklist. Prior 352 T-8
 ## T-835 — Animation ordering
 
 27 additional controls, all **PENDING MANUAL REVIEW**, are listed in the local T-835 delivery. Prior 417 instances through T-834 remain pending and intact; cumulative population **444 scenario instances** (not unique tests or a completion percentage). Test disposable projects, exact candidate binary and assets, native row context actions, boundaries, active clip, interleaved history, FFD/PathPosition and all author save profiles. No GUI or inference execution was performed for T-835. See [manager steps](animation-manager.md).
+
+</details>
 
 </details>

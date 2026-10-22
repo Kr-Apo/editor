@@ -1128,3 +1128,198 @@ fn t813_save_as_after_recovery_keeps_original_and_sidecar_and_reopens() {
     assert_eq!(std::fs::read(primary).unwrap(), original);
     assert_eq!(std::fs::read(sidecar).unwrap(), recovery_bytes);
 }
+
+#[test]
+fn t837_ignore_survives_restart_without_modifying_recovery_data() {
+    let dir = tempfile::tempdir().unwrap();
+    let project = dir.path().join("unsaved.ankh");
+    let copy = crate::autosave::path_for(Some(&project)).unwrap();
+    let app = edited();
+    assert!(matches!(
+        crate::fileops::write_to(&app.state, &copy),
+        crate::fileops::FileOutcome::Saved(_)
+    ));
+    let before = std::fs::read(&copy).unwrap();
+    let mut first = AnkhimateApp::default();
+    first.offer_recovery(Some(&project), false);
+    assert!(first.recovery.is_some());
+    first.ignore_recovery();
+    assert!(first.recovery.is_none());
+    let mut restarted = AnkhimateApp::default();
+    restarted.offer_recovery(Some(&project), false);
+    assert!(
+        restarted.recovery.is_none(),
+        "Ignore must survive a clean restart for this unchanged copy"
+    );
+    assert_eq!(std::fs::read(copy).unwrap(), before);
+}
+
+#[test]
+fn t837_clean_untitled_new_and_close_never_schedule_a_recovery() {
+    let mut app = AnkhimateApp::default();
+    let ctx = egui::Context::default();
+    let now = std::time::Instant::now();
+    app.config.autosave_secs = 1;
+    for seconds in [0, 2, 300] {
+        let _ = ctx.run_ui(Default::default(), |ui| {
+            app.poll_autosave(ui.ctx(), now + std::time::Duration::from_secs(seconds))
+        });
+        assert!(!app.should_autosave());
+    }
+    app.run_file_action(FileAction::New);
+    assert!(!app.is_dirty() && !app.should_autosave());
+    app.run_file_action(FileAction::Close);
+    assert!(app.close_allowed && !app.confirm_unsaved);
+    assert!(!AnkhimateApp::default().is_dirty());
+}
+
+#[test]
+fn t837_manual_review_reopens_ignored_named_copies_and_recover_save_as_keeps_assets() {
+    let dir = tempfile::tempdir().unwrap();
+    let project = dir.path().join("missing.ankh");
+    let copy = crate::autosave::path_for(Some(&project)).unwrap();
+    let jade = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../samples/jade-sentinel/Sentinelle.ankh");
+    let mut source = AnkhimateApp::default();
+    source.open_initial(Some(jade));
+    assert_eq!(source.state.doc.assets.len(), 5);
+    assert!(matches!(
+        crate::fileops::write_to(&source.state, &copy),
+        crate::fileops::FileOutcome::Saved(_)
+    ));
+    let before = std::fs::read(&copy).unwrap();
+    let mut app = AnkhimateApp {
+        recovery_store: crate::autosave::RecoveryStore::isolated(dir.path().join("registry")),
+        ..Default::default()
+    };
+    app.open_initial(Some(project.clone()));
+    app.ignore_recovery();
+    app.offer_recovery(Some(&project), false);
+    assert!(app.recovery.is_none());
+    // A missing primary still retains its namespace when the explicit review is requested.
+    app.current_path = Some(project);
+    app.run_file_action(FileAction::ReviewRecovery);
+    assert!(app.recovery.is_some());
+    app.recover_project();
+    assert!(app.is_dirty());
+    assert_eq!(app.state.doc.assets.len(), 5);
+    assert_eq!(
+        source
+            .state
+            .doc
+            .assets
+            .images
+            .values()
+            .map(|a| &a.bytes)
+            .collect::<Vec<_>>(),
+        app.state
+            .doc
+            .assets
+            .images
+            .values()
+            .map(|a| &a.bytes)
+            .collect::<Vec<_>>()
+    );
+    assert!(!app.state.history.can_undo() && !app.state.history.can_redo());
+    let target = dir.path().join("Saved Copy.ankh");
+    app.save_project_to(&target);
+    assert!(!app.is_dirty());
+    let mut reopened = AnkhimateApp::default();
+    reopened.open_initial(Some(target));
+    assert_eq!(
+        document_snapshot(&app.state),
+        document_snapshot(&reopened.state)
+    );
+    assert_eq!(std::fs::read(copy).unwrap(), before);
+}
+
+#[test]
+fn t837_review_on_dirty_document_obeys_cancel_and_failed_save_without_losing_redo() {
+    let dir = tempfile::tempdir().unwrap();
+    let mut app = edited();
+    app.state.undo();
+    app.state.doc.meta.name = "still dirty".into();
+    let before = document_snapshot(&app.state);
+    let selection = app.state.session.selected_bones.clone();
+    assert!(app.state.history.can_redo());
+    app.run_file_action(FileAction::ReviewRecovery);
+    assert!(app.confirm_unsaved);
+    app.confirm_file_action(UnsavedChoice::Cancel, None);
+    assert_eq!(before, document_snapshot(&app.state));
+    assert_eq!(selection, app.state.session.selected_bones);
+    assert!(app.state.history.can_redo());
+    app.run_file_action(FileAction::ReviewRecovery);
+    app.confirm_file_action(UnsavedChoice::Save, Some(dir.path()));
+    assert!(app.confirm_unsaved && app.recovery.is_none());
+    assert_eq!(before, document_snapshot(&app.state));
+    assert!(app.state.history.can_redo());
+}
+
+#[test]
+fn t837_ignore_persistence_error_keeps_offer_document_and_redo_with_an_honest_error() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().join("registry");
+    std::fs::create_dir_all(&root).unwrap();
+    std::fs::write(root.join("decisions"), b"blocked").unwrap();
+    let project = dir.path().join("source.ankh");
+    let copy = crate::autosave::path_for(Some(&project)).unwrap();
+    let mut app = edited();
+    app.state.undo();
+    app.recovery_store = crate::autosave::RecoveryStore::isolated(root);
+    crate::fileops::write_to(&app.state, &copy);
+    app.offer_recovery(Some(&project), false);
+    let before = document_snapshot(&app.state);
+    app.ignore_recovery();
+    assert!(app.recovery.is_some());
+    assert!(
+        app.status
+            .as_ref()
+            .unwrap()
+            .contains("Could not remember Ignore")
+    );
+    assert_eq!(before, document_snapshot(&app.state));
+    assert!(app.state.history.can_redo() && copy.exists());
+}
+
+#[test]
+fn t837_recovery_replaced_after_offer_cannot_replace_the_current_document() {
+    let dir = tempfile::tempdir().unwrap();
+    let project = dir.path().join("source.ankh");
+    let copy = crate::autosave::path_for(Some(&project)).unwrap();
+    let mut app = edited();
+    crate::fileops::write_to(&app.state, &copy);
+    app.offer_recovery(Some(&project), false);
+    let before = document_snapshot(&app.state);
+    std::fs::write(&copy, b"another writer").unwrap();
+    app.recover_project();
+    assert_eq!(before, document_snapshot(&app.state));
+    assert!(app.recovery.is_some());
+    assert!(app.status.as_ref().unwrap().contains("changed"));
+}
+
+#[test]
+fn t837_multiple_ignored_offers_advance_without_mutating_the_document() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = crate::autosave::RecoveryStore::isolated(dir.path().to_path_buf());
+    std::fs::create_dir_all(&store.untitled).unwrap();
+    let mut app = edited();
+    for name in ["one", "two"] {
+        crate::fileops::write_to(
+            &app.state,
+            &store
+                .untitled
+                .join(format!("untitled-{name}.ankh.autosave")),
+        );
+    }
+    app.recovery_store = store;
+    app.offer_recovery(None, false);
+    let before = document_snapshot(&app.state);
+    assert!(app.recovery.is_some());
+    app.ignore_recovery();
+    assert!(app.recovery.is_some());
+    app.ignore_recovery();
+    assert!(app.recovery.is_none());
+    assert_eq!(before, document_snapshot(&app.state));
+    app.offer_recovery(None, false);
+    assert!(app.recovery.is_none());
+}

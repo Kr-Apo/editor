@@ -1,8 +1,11 @@
-# Feature inventory — current local scopes through T835
+# État local T837 — 22 octobre 2026
 
-This checkout is the **T836 local pre-alpha preparation**, based on accepted T835 `514c6aa8a6eeae8bb9dcb8c22e0dc35c48bb2cc2`. No product feature, version, format, runtime or public artifact is changed. The accepted public Alpha is **v0.2.0-alpha.1**, editor `9233b8e888c811e7c71300101f865a9e74b3f489`, runtime `c4c38df269cfcb30f941221454b7202f40d3fa5b`, as recorded by T812; this is not a fresh remote audit. RC2 remains a different, frozen archive.
+Ce checkout contient le correctif ciblé de persistance Recovery T837 sur T836 `1d3cc13bd5fda93c541dc8698918dedcdd146290`, avec documentation utilisateur et deux livraisons locales séparées. Aucun format, runtime, numéro de version ou artefact public n’est modifié. Les tests réellement exécutés et le commit final figurent dans la livraison T837. L’Alpha publique v0.2.0-alpha.1 et RC2 conservent leurs propres preuves.
 
-Use [Jade Sentinel](jade-sentinel.md) as the only active user character. [Current local workflow](prealpha-workflow.md), [compatibility](release-compatibility.md), and [manual campaign](MANUAL_QA_PENDING.md) distinguish implemented features from physical Windows acceptance. **444 manual scenario instances remain PENDING MANUAL REVIEW**. Baseline T835:2,133 Rust passes/4 historical ignores; T836 results are in its delivery, not invented here. No real inference, paid call, GUI or GPU certification.
+Les **444 contrôles manuels historiques restent PENDING MANUAL REVIEW** ; T837 ajoute 15 contrôles distincts, eux aussi en attente. Consultez [le catalogue utilisateur](FEATURES.md), [le démarrage](GETTING-STARTED.md), [la compatibilité](COMPATIBILITY.md) et [la récupération](project-recovery.md). Les 101 IDs conservent 62 COMPLETE, 33 PARTIAL, 1 ABSENT, 3 SUPERSEDED, 2 DEFERRED. T208/T209/T211/T404/T502 restent PARTIAL, sans reclassement par effet d’une mission récente.
+
+<details>
+<summary>Référence antérieure conservée — état daté T836 ou avant</summary>
 
 <details>
 <summary>Historical T832–T835 checkpoint context (not current test results)</summary>
@@ -1905,3 +1908,5 @@ Same-project, exact unique owner/mesh only; rigid per-vertex and weighted per-in
 ## T-835 local animation ordering evidence
 
 The [manager guide](animation-manager.md) describes native author order, adjacent swaps, persistence, identity-preserving interleaved history and stale menu refusal. Automated in-memory egui/command/Save/Reload/CPU/export checks exercise the implemented scope; no Windows interaction was run. T-208 remains PARTIAL for its original frame-display and manager-mode-selection criteria, rather than promoting from the shorthand T-832 reorder remainder alone. The frozen 101-row T-832 CSV and all 101 anchors remain preserved; counts stay 62/33/1/3/2. T-209, T-404 and T-502 are unchanged.
+
+</details>
