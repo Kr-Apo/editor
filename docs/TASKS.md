@@ -1,3 +1,12 @@
+# T838 — v0.1.5 local release preparation
+
+Current local preparation,2026-10-22, based on accepted T837 `726217cb1795873ede43d7f41e935452c0e28002`. Product0.1.5 is a deliberate numbering reset, not a schema/runtime change. Welcome no longer shows a version; Help > About Ankhimate keeps build diagnostics. The four maintainer-supplied English guides are integrated with justified context corrections. New Editor/Runtime community forks are not created and their URLs are unset. The former public Alpha/RC2 are historical artifacts, not current download endpoints.
+
+Historical101IDs remain62 COMPLETE/33 PARTIAL/1 ABSENT/3 SUPERSEDED/2 DEFERRED. T208/T209/T211/T404/T502 remain PARTIAL. All459 existing manual controls remain PENDING MANUAL REVIEW; the new18-step smoke test is separate. See [release preparation](t838-release-preparation.md), [features](FEATURES.md), [compatibility](COMPATIBILITY.md), [runtime contract](editor-runtime-compatibility.md).
+
+<details>
+<summary>Historical local state through T837 — retained evidence, not current release identity</summary>
+
 # État local T837 — 22 octobre 2026
 
 Ce checkout contient le correctif ciblé de persistance Recovery T837 sur T836 `1d3cc13bd5fda93c541dc8698918dedcdd146290`, avec documentation utilisateur et deux livraisons locales séparées. Aucun format, runtime, numéro de version ou artefact public n’est modifié. Les tests réellement exécutés et le commit final figurent dans la livraison T837. L’Alpha publique v0.2.0-alpha.1 et RC2 conservent leurs propres preuves.
@@ -246,5 +255,7 @@ The only whole historical ABSENT task is T-904 selection sets. T-705 localizatio
 [Animation manager guide](animation-manager.md): right-click a clip row, choose Move Up or Move Down. The native author list is saved through the existing `.ankh` animation array. IDs and complete clip payloads remain unchanged; one click is one Undo. Manager/picker share the order. Boundaries and stale popup contexts refuse before dispatch. No schema, sampler, evaluator, runtime, shortcut or release change.
 
 T-208 stays **PARTIAL / PENDING_MANUAL / LOCAL_CANDIDATE**: auditing its original criteria found the existing seconds display and Setup-preserving manager selection. These are separate from the delivered ordering scope and were not changed. Counts remain **62 COMPLETE /33 PARTIAL /1 ABSENT /3 SUPERSEDED /2 DEFERRED =101**. The byte-identical T-832 CSV is a historical snapshot; its old reorder-gap wording is superseded by this explicit T-835 addendum. T-209/T-404/T-502 remain partial. PathPosition minimum-reader release policy remains pending.
+
+</details>
 
 </details>

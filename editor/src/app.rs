@@ -37,6 +37,7 @@ pub struct AnkhimateApp {
     show_startup: bool,
     /// Is the settings window up? (T-701)
     show_settings: bool,
+    show_about: bool,
     /// Is the bulk-rename dialog up? (T-901)
     show_rename: bool,
     retime: crate::ui::retime::Panel,
@@ -527,6 +528,7 @@ impl Default for AnkhimateApp {
             config: crate::config::Config::default(),
             show_startup: false,
             show_settings: false,
+            show_about: false,
             show_rename: false,
             retime: Default::default(),
             rename: Default::default(),
@@ -1217,6 +1219,8 @@ at startup.",
                                 }
                             });
 
+                            crate::ui::about::menu(ui, &mut self.show_about);
+
                             // ── Pose menu (T-211) ────────────────────────
                             // Acts on the selection, or the whole rig when
                             // nothing is selected.
@@ -1395,6 +1399,7 @@ at startup.",
         // for yet, half-visible around the dialog's edges. Taking the whole
         // central area states the truth: nothing is open, and this is where you
         // choose. The title bar stays so the window controls do.
+        crate::ui::about::show(ctx, &mut self.show_about);
         if self.show_startup {
             let mut choice = crate::ui::startup::StartupChoice::None;
             egui::CentralPanel::default()

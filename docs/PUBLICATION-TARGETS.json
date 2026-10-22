@@ -1,0 +1,11 @@
+{
+  "editorForkURL": null,
+  "runtimeForkURL": null,
+  "ownerProposed": "Kr-Apo",
+  "editorNameProposed": "ankhimate",
+  "runtimeNameProposed": "ankhimate-runtime",
+  "status": "NOT_CREATED; names unreserved and subject to approval/authenticated availability check",
+  "upstreamEditor": "https://github.com/Ankhimate/editor",
+  "upstreamRuntime": "https://github.com/Ankhimate/runtime",
+  "pushAllowed": false
+}

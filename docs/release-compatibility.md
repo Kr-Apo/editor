@@ -1,3 +1,12 @@
+# T838 — v0.1.5 local release preparation
+
+Current local preparation,2026-10-22, based on accepted T837 `726217cb1795873ede43d7f41e935452c0e28002`. Product0.1.5 is a deliberate numbering reset, not a schema/runtime change. Welcome no longer shows a version; Help > About Ankhimate keeps build diagnostics. The four maintainer-supplied English guides are integrated with justified context corrections. New Editor/Runtime community forks are not created and their URLs are unset. The former public Alpha/RC2 are historical artifacts, not current download endpoints.
+
+Historical101IDs remain62 COMPLETE/33 PARTIAL/1 ABSENT/3 SUPERSEDED/2 DEFERRED. T208/T209/T211/T404/T502 remain PARTIAL. All459 existing manual controls remain PENDING MANUAL REVIEW; the new18-step smoke test is separate. See [release preparation](t838-release-preparation.md), [features](FEATURES.md), [compatibility](COMPATIBILITY.md), [runtime contract](editor-runtime-compatibility.md).
+
+<details>
+<summary>Historical local state through T837 — retained evidence, not current release identity</summary>
+
 # État local T837 — 22 octobre 2026
 
 Ce checkout contient le correctif ciblé de persistance Recovery T837 sur T836 `1d3cc13bd5fda93c541dc8698918dedcdd146290`, avec documentation utilisateur et deux livraisons locales séparées. Aucun format, runtime, numéro de version ou artefact public n’est modifié. Les tests réellement exécutés et le commit final figurent dans la livraison T837. L’Alpha publique v0.2.0-alpha.1 et RC2 conservent leurs propres preuves.
@@ -27,5 +36,7 @@ Public v0.2.0-alpha.1 is the accepted T811/T812 release; RC2 is an older indepen
 No format migration/version bump/runtime change here. Tentative next editor candidate label **0.2.0-alpha.2** is a planning proposal only. Before a future alpha, approve exact source/binary, minimum feature reader, release notes,444-case qualification disposition and new clean-PC evidence. Do not reuse old-archive acceptance as certification of the new binary. Preserve all licenses, attribution and original artifacts.
 
 [Detailed historical format evidence](format-release-compatibility.md), [format specification](format-spec.md), [export boundaries](formats/export-runtime.md), [local workflow](prealpha-workflow.md).
+
+</details>
 
 </details>

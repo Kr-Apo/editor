@@ -1,19 +1,12 @@
-# Ankhimate — local pre-alpha context through T835 / T836 preparation
+# Ankhimate v0.1.5 — local preparation
 
-Unofficial Kr-Apo community fork; preserve upstream licenses/attributions. Public v0.2.0-alpha.1 was accepted/published in T812; RC2 remains a separate unchanged archive. This checkout is a local candidate, not a new release; internal version is not artifact identity. No inference/model package/publication authorized by cleanup.
+Unofficial community fork of Ankhimate/editor. New fork URLs are not created. Product numbering reset0.1.5 is independent of author/envelope1 and native runtimev2. PathPosition is editor/CPU-only. No universal runtime parity, automatic AI approval or artistic qualification is claimed.
 
-Jade Sentinel is the only active user character. Technical synthetic and historical Crapaud fixtures remain solely for regression/evidence and are not in the local Windows test folder. Never invent the unsaved Qwen rig or a Jade PSD. Current candidate has native save/recovery/diagnostics, bounded rig transfer, FFD/Graph/PSD/weighted tools, numeric retime/selected offsets, owned FFD clipboard and saved clip ordering. Implementation is not universal manual/artist/model acceptance;444 manual instances remain pending.
+- README.md
+- docs/FEATURES.md
+- docs/COMPATIBILITY.md
+- docs/TASKS.md
+- docs/editor-runtime-compatibility.md
+- docs/CANDIDATE_BUILD.md
 
-Author schema1/envelope1/runtime v2/app0.2.0-alpha.1 are separate. PathPosition requires a recent editor; old readers reject it and current game export refuses it. Old editor resaves may change clip order. PixiJS/Phaser are external protected subset consumers; never infer all editor features are supported. No silent downgrade or hand-edited JSON workaround.
-
-- [Current workflow](docs/prealpha-workflow.md)
-- [Jade Sentinel](docs/jade-sentinel.md)
-- [Inventory](docs/FEATURE_INVENTORY.md)
-- [Tasks](docs/TASKS.md)
-- [Known limitations](docs/KNOWN_LIMITATIONS.md)
-- [Compatibility](docs/release-compatibility.md)
-- [Build](docs/CANDIDATE_BUILD.md)
-- [AI consent and tools](docs/AI_ASSISTANT.md)
-- [Native tool manual](docs/ai/ANKHIMATE-AI.md)
-- [Manual campaign](docs/MANUAL_QA_PENDING.md)
-- [Historical records](docs/history/README.md)
+Historical reports/archives retain their original versions and URLs as provenance, not active downloads. No new publication.

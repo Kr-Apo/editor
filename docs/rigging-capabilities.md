@@ -27,7 +27,7 @@ The public **v0.2.0-alpha.1** and the local T-813–T-816 development candidates
 different checkpoints. T-816 neither changes that release nor packages runtimes.
 Consult [known alpha limitations](KNOWN_LIMITATIONS.md),
 [format specification](format-spec.md) and the external
-[runtime documentation](https://github.com/Kr-Apo/ankhimate-runtime).
+[runtime documentation](editor-runtime-compatibility.md).
 The older [RC2 compatibility guide](alpha/RUNTIME_COMPATIBILITY.md) is explicitly
 an RC2 contract, not a new certification of T-816.
 

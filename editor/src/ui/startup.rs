@@ -87,11 +87,7 @@ pub fn ui(ui: &mut egui::Ui, config: &mut Config) -> StartupChoice {
         // ── Masthead ─────────────────────────────────────────────
         ui.heading(egui::RichText::new("Ankhimate").size(30.0));
         ui.label(
-            egui::RichText::new(format!(
-                "2D skeletal animation · {}",
-                env!("CARGO_PKG_VERSION")
-            ))
-            .color(ui.visuals().weak_text_color()),
+            egui::RichText::new("2D skeletal animation").color(ui.visuals().weak_text_color()),
         );
         ui.add_space(22.0);
 
@@ -225,4 +221,36 @@ pub fn ui(ui: &mut egui::Ui, config: &mut Config) -> StartupChoice {
         config.forget_recent(&path);
     }
     choice
+}
+
+#[cfg(test)]
+mod t838_tests {
+    #[test]
+    fn t838_welcome_has_no_product_version_but_keeps_title_and_navigation() {
+        let ctx = eframe::egui::Context::default();
+        let mut config = crate::config::Config::default();
+        let mut labels = Vec::new();
+        for _ in 0..2 {
+            let output = ctx.run_ui(Default::default(), |ui| {
+                super::ui(ui, &mut config);
+            });
+            labels = output
+                .shapes
+                .into_iter()
+                .filter_map(|s| match s.shape {
+                    eframe::egui::Shape::Text(t) => Some(t.galley.job.text.clone()),
+                    _ => None,
+                })
+                .collect();
+        }
+        assert!(labels.iter().any(|s| s == "Ankhimate"));
+        assert!(
+            labels
+                .iter()
+                .all(|s| !s.contains(env!("CARGO_PKG_VERSION"))),
+            "welcome must not show product version: {labels:?}"
+        );
+        assert!(labels.iter().any(|s| s.contains("Open")));
+        assert!(labels.iter().any(|s| s.contains("New")));
+    }
 }

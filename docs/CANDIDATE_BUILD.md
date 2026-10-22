@@ -1,27 +1,18 @@
-# Build and validate the local T836 candidate
+# Build the local v0.1.5 candidate
 
-This is source/candidate preparation, not a publication procedure. Select the reviewed clean `chore/t836-prealpha-cleanup` commit from CHECKPOINT.json. Local T813–T836 changes are not assumed available on public main. Do not amend, merge, push, tag or publish as part of validation.
+Use pinned Rust1.95, MSVC/Windows SDK for x64, and the pinned community-plugins submodule. Clone the approved future Editor fork only after its URL exists, checkout the exact source commit, and initialize submodules recursively. Current local source is identified by CHECKPOINT.json in the T838 delivery; no new public clone URL is asserted.
 
-Rust1.95.0 is pinned. Windows x64 needs MSVC C++ tools and Windows SDK. Obtain the committed `community-plugins` submodule at its pinned revision for importer integration fixtures; do not silently substitute another package. Python3 is only needed for optional local evidence scripts; Windows users need no toolchain to open the EXE. No model or FFmpeg is bundled.
-
-```sh
+```powershell
 cargo fmt --all -- --check
 cargo test --workspace --locked --all-targets -- --test-threads=4
 cargo clippy --workspace --locked --all-targets
 cargo build --workspace --locked
 cargo check --locked -p ankhimate-core --target wasm32-unknown-unknown
 cargo run --locked -p xtask -- docs-check
+$env:ANKHIMATE_SOURCE_COMMIT = (git rev-parse HEAD).Trim()
+cargo build --release --locked -p ankhimate-editor
 ```
 
-Run the controlled workspace suite without a concurrent Windows release build. Keep all logs and four historical ignored tests. If GIF Windows error32 recurs, retain the first failure and exact test, compare unchanged source, replay in isolation, then run the controlled full suite without a build in parallel. Never weaken assertions/timeouts/ignores. No fixed root cause or repair is claimed by cleanup.
+Build only from a clean exact commit when assigning that commit identity. If ANKHIMATE_SOURCE_COMMIT is omitted, About honestly says provenance was not recorded; it never invents a hash. The delivered Windows build injects the final committed SHA and validates its presence. The reference packaging build also uses static CRT, path remapping, stripped debug data and no UPX. No PE VERSIONINFO resource existed; Cargo identity/About/manifests are authoritative, not a fabricated Windows resource claim.
 
-For a local portable executable in PowerShell (after the suite):
-
-```powershell
-$env:RUSTFLAGS='-C target-feature=+crt-static -C strip=symbols -C debuginfo=0'
-cargo build --locked --release -p ankhimate-editor
-```
-
-The delivery build additionally remaps build paths and validates PE architecture/DLL imports. Plain developer builds do not automatically have those properties. Close a running editor before overwriting its EXE. Build outputs belong in a separate disposable cache; never purge historical deliveries/checkpoints or autosaves. Product code/dependencies are unchanged by T836.
-
-The local Windows-Test-Candidate includes only current EXE, authorized Jade project/assets, licenses and instructions; no PSD sources, Crapaud, models, credentials, caches or browser runtime are required. Source images are already present as project asset bytes; duplicate original PNGs are excluded. Verify every SHA before copying for tests. No new ZIP/alpha packaging is performed. The former M006/M007 packager is [retired source text](../tools/history/package-m0072-alpha.ps1.txt), not the current entry point. See [local workflow](prealpha-workflow.md).
+Package into a new folder/ZIP, preserve all legal notices and source offers, copy Jade and its five assets unchanged, supply English user guides, checksum every file, extract into a new directory and compare every path/size/hash. No .cmd launcher, source/cache/model/runtime demo in the user folder. The qualification folder retains source references, reports and459 pending historical controls. Release/publication operations are separate and require approval. Do not run release Windows compilation concurrently with the full GIF test suite.

@@ -1,3 +1,4 @@
+pub mod about;
 pub mod animations;
 pub mod assets;
 pub mod atlas;

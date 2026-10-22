@@ -1,12 +1,18 @@
-# Premiers pas — candidat local T837
+# Getting Started — v0.1.5 Local Candidate (T838)
 
-1. Extrayez complètement le ZIP dans un dossier ordinaire accessible en écriture. Double-cliquez sur **Ankhimate.exe**. Aucun script n’est requis. L’exécutable n’est pas signé ; ce candidat n’est pas une nouvelle publication publique.
-2. À l’accueil ou par **File > Open…**, ouvrez `Examples/Jade-Sentinel/Sentinelle.ankh` dans le dossier extrait. Il n’existe pas de bouton spécial « Open Jade ». Gardez `Sentinelle.assets` au même endroit : cinq PNG y sont requis.
-3. Examinez les bones et slots de la hiérarchie, puis choisissez **Animate** et un clip dans le manager/Timeline. `idle` dure 2 s ; `attack` dure 1,5 s avec impact à 0,75 s. Jouez et déplacez le playhead.
-4. Faites **File > Save As…** (Ctrl+Shift+S) dans un nouveau dossier/nom avant toute modification. Conservez l’exemple de référence. Vérifiez le mode Setup/Animate avant d’éditer.
-5. Effectuez une petite modification, Undo/Redo, puis **Save** (Ctrl+S). Rouvrez votre copie pour contrôler projet et assets. Un Save échoué ne doit pas vous faire poursuivre une fermeture ou un remplacement.
-6. Dans le panneau **Export**, choisissez **Data / atlas** et le preset natif pour un jeu compatible, ou **Image sequence / Spritesheet** pour les pixels. Choisissez un dossier de sortie neuf et lisez le preflight. Les exports CPU utilisent le skin par défaut, blending Normal, sans physique. MP4/GIF nécessitent FFmpeg externe.
+1. **Extract the ZIP completely** into a normal folder you can write to. Double-click **Ankhimate.exe**. No launcher script is required. This executable is unsigned, and this candidate is not a new public release.
+2. On the welcome screen, or through **File > Open…**, open `Examples/Jade-Sentinel/Sentinelle.ankh` from the extracted folder. There is no dedicated “Open Jade” button. Keep the `Sentinelle.assets` folder alongside the project: it contains five required PNG images.
+3. Explore the **bones** and **slots** in the hierarchy, then switch to **Animate** and choose a clip in the animation manager or Timeline. `idle` lasts 2 seconds; `attack` lasts 1.5 seconds and has an impact at 0.75 seconds. Try playback and move the playhead.
+4. Before editing, choose **File > Save As…** (**Ctrl+Shift+S**) and save under a new name or in a new folder. Preserve the original example. Check whether you are in Setup or Animate mode before making changes.
+5. Make a small edit, try **Undo/Redo**, then choose **Save** (**Ctrl+S**). Reopen your saved copy to check both the project and its assets. If Save fails, do not proceed with a workflow that closes or replaces the current document until your work is safe.
+6. In the **Export** panel, use **Data / atlas** and the native preset for a compatible game runtime, or choose **Image sequence / Spritesheet** for rendered frames. Select a new output folder and read the preflight results. CPU exports use the default skin and Normal blending, without physics. MP4/GIF require an external FFmpeg installation.
 
-Un dialogue **Recover unsaved work?** peut proposer une ancienne copie conservée. Recover la charge sans écraser son primaire ; utilisez Save As. Ignore mémorise ce seul état sans supprimer les fichiers ; retrouvez-les via **File > Review Recovery Copies…**. Une copie nouvelle/modifiée est à nouveau éligible. Si le choix ne peut être mémorisé, l’erreur est affichée ; **Later (this session)** n’est pas durable. Ne supprimez pas vos sidecars pour essayer ce candidat.
+## Recovery copies
 
-Consultez [les fonctions](FEATURES.md), [la compatibilité](COMPATIBILITY.md) et [les limites](KNOWN-LIMITATIONS.md). Les essais physiques Windows du nouveau candidat restent à réaliser par le mainteneur.
+An old recovery copy may trigger a **Recover unsaved work?** dialog. **Recover** loads the copy without overwriting its original project; use **Save As** afterwards. **Ignore** remembers the decision for that specific recovery state without deleting any files. You can revisit ignored copies through **File > Review Recovery Copies…**. New or changed copies can be offered again. If the Ignore decision cannot be saved, an error is shown; **Later (this session)** postpones the dialog only for the current session. Do not delete project sidecars just to try this candidate.
+
+For more information, see [Features](FEATURES.md), [Compatibility](COMPATIBILITY.md), and [Known Limitations](KNOWN-LIMITATIONS.md). Physical Windows testing of this new candidate is still pending maintainer review.
+
+## Build identity
+
+The welcome screen intentionally has no version suffix. Use **Help > About Ankhimate** for product **0.1.5**, local/development build status, source commit and license information. This is a new local candidate; none of the pending physical checks is automatically passed.

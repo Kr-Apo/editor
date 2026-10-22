@@ -1,3 +1,12 @@
+# T838 — v0.1.5 local release preparation
+
+Current local preparation,2026-10-22, based on accepted T837 `726217cb1795873ede43d7f41e935452c0e28002`. Product0.1.5 is a deliberate numbering reset, not a schema/runtime change. Welcome no longer shows a version; Help > About Ankhimate keeps build diagnostics. The four maintainer-supplied English guides are integrated with justified context corrections. New Editor/Runtime community forks are not created and their URLs are unset. The former public Alpha/RC2 are historical artifacts, not current download endpoints.
+
+Historical101IDs remain62 COMPLETE/33 PARTIAL/1 ABSENT/3 SUPERSEDED/2 DEFERRED. T208/T209/T211/T404/T502 remain PARTIAL. All459 existing manual controls remain PENDING MANUAL REVIEW; the new18-step smoke test is separate. See [release preparation](t838-release-preparation.md), [features](FEATURES.md), [compatibility](COMPATIBILITY.md), [runtime contract](editor-runtime-compatibility.md).
+
+<details>
+<summary>Historical local state through T837 — retained evidence, not current release identity</summary>
+
 # État local T837 — 22 octobre 2026
 
 Ce checkout contient le correctif ciblé de persistance Recovery T837 sur T836 `1d3cc13bd5fda93c541dc8698918dedcdd146290`, avec documentation utilisateur et deux livraisons locales séparées. Aucun format, runtime, numéro de version ou artefact public n’est modifié. Les tests réellement exécutés et le commit final figurent dans la livraison T837. L’Alpha publique v0.2.0-alpha.1 et RC2 conservent leurs propres preuves.
@@ -1908,5 +1917,7 @@ Same-project, exact unique owner/mesh only; rigid per-vertex and weighted per-in
 ## T-835 local animation ordering evidence
 
 The [manager guide](animation-manager.md) describes native author order, adjacent swaps, persistence, identity-preserving interleaved history and stale menu refusal. Automated in-memory egui/command/Save/Reload/CPU/export checks exercise the implemented scope; no Windows interaction was run. T-208 remains PARTIAL for its original frame-display and manager-mode-selection criteria, rather than promoting from the shorthand T-832 reorder remainder alone. The frozen 101-row T-832 CSV and all 101 anchors remain preserved; counts stay 62/33/1/3/2. T-209, T-404 and T-502 are unchanged.
+
+</details>
 
 </details>
