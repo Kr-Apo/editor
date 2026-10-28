@@ -2,7 +2,7 @@
 
 # Ankhimate — Available Features
 
-**Historical T838 v0.1.5 feature baseline.** Ankhimate — Kr-Apo Community Fork (Unofficial) is a native Windows application for 2D skeletal animation, derived from Ankhimate/editor. Upstream licenses and credits still apply. The application's interface uses English labels.
+**Classic v0.1.6 corrective candidate.** Ankhimate — Kr-Apo Community Fork (Unofficial) is a native Windows application for 2D skeletal animation, derived from Ankhimate/editor. Upstream licenses and credits still apply. The application's interface uses English labels.
 
 A character combines images, **bones**, **slots**, and **attachments**; animation clips bring those elements to life in an `.ankh` project. Jade Sentinel is the only user-facing example bundled with this candidate. This build is different from the historical v0.2.0-alpha.1 and the RC2 archive: the product numbering reset is independent of project/runtime format versions and does not make this candidate a release.
 

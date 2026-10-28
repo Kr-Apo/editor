@@ -1,6 +1,6 @@
 > **P01-RC1 local candidate — 28 October 2026.** Read the [current contracts and qualification boundary](p01-rc1-workflow.md) before the historical notes below. Proposed Classic v0.1.6 is not tagged/released here. Runtime package versions are unchanged; ReplayV1 A17 is explicit and separate from Legacy playback.
 
-# Getting Started — v0.1.5 Local Candidate (T838)
+# Getting Started — v0.1.6 Corrective Candidate (P01-RC1)
 
 1. **Extract the ZIP completely** into a normal folder you can write to. Double-click **Ankhimate.exe**. No launcher script is required. This executable is unsigned, and this candidate is not a new public release.
 2. On the welcome screen, or through **File > Open…**, open `Examples/Jade-Sentinel/Sentinelle.ankh` from the extracted folder. There is no dedicated “Open Jade” button. Keep the `Sentinelle.assets` folder alongside the project: it contains five required PNG images.

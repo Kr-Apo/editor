@@ -19,7 +19,7 @@ Rig image parts into a skeleton, animate them on a timeline, and export rendered
 3. Double-click `Ankhimate.exe`. No Rust toolchain or launcher script is required.
 4. To explore a sample, choose **File > Open…** and select `Examples/Jade-Sentinel/Sentinelle.ankh`. Keep its `Sentinelle.assets` folder next to the project.
 
-The Windows executable is **unsigned**. The welcome screen does not display the product version; **Help > About Ankhimate** shows **0.1.5**, build status and source commit.
+The published v0.1.5 Windows executable is **unsigned**; its About dialog identifies that version. The P01-RC1 candidate instead reports **0.1.6** and its exact source commit. No v0.1.6 download or tag is announced before final approval.
 
 The release is tagged at **[`f436474ace8580742113bf3447b430bbbd74153f`](https://github.com/Kr-Apo/editor/tree/v0.1.5)**. That tag preserves the corresponding source even when the `main` branch receives further documentation changes.
 
@@ -41,7 +41,7 @@ See [Features](docs/FEATURES.md) for detailed capabilities and scope.
 
 ## Not there yet
 
-Ankhimate v0.1.5 is an early public release with important limits:
+The published v0.1.5 and proposed v0.1.6 remain early builds with important limits:
 
 - **Runtime compatibility:** the separate TypeScript core and PixiJS/Phaser adapters support selected exported features, not every editor constraint, attachment, blend mode or deformation. **PathPosition is not supported in current game-runtime exports.**
 - **CPU-rendered export:** currently uses the default skin and Normal blending, with no physics. Ankhimate spritesheet JSON is not a native Phaser atlas format.
