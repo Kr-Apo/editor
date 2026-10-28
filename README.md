@@ -29,6 +29,8 @@ The installer-free archive contains no AI model or FFmpeg executable. See [Getti
 
 Read the [full feature guide](docs/FEATURES.md), [rigging walkthrough](docs/rigging-walkthrough.md) and [FFD/weights guide](docs/p01-rc1-workflow.md).
 
+<img width="512" height="512" alt="frog-knight-demo" src="https://github.com/user-attachments/assets/fee7498d-7a3c-406f-b2fb-a2b620a8d640" />
+
 ## Optional native AI Assistant
 
 Ankhimate supports configurable **OpenAI, Anthropic, DeepSeek, Ollama, LM Studio and NInfer** provider profiles, including local AI servers. It can inspect supported project data and propose reviewed native edits, including selected animation, weight, FFD and event operations. **Every native modification requires explicit approval and validation**, with Undo/Redo support. No model is bundled, and artistic quality is not guaranteed.
@@ -89,5 +91,5 @@ Bug reports and focused contributions are welcome. Include version, reproduction
 
 ## License & origin
 
-Ankhimate is open source under **[MIT](LICENSE-MIT) OR [Apache-2.0](LICENSE-APACHE)**. This is the **unofficial Kr-Apo community fork** of [Ankhimate/editor](https://github.com/Ankhimate/editor), not endorsed by upstream maintainers. Original credits and third-party notices are preserved in [the source notices](docs/THIRD_PARTY_SOURCE_NOTICE.md).<img width="512" height="512" alt="frog-knight-demo" src="https://github.com/user-attachments/assets/fee7498d-7a3c-406f-b2fb-a2b620a8d640" />
+Ankhimate is open source under **[MIT](LICENSE-MIT) OR [Apache-2.0](LICENSE-APACHE)**. This is the **unofficial Kr-Apo community fork** of [Ankhimate/editor](https://github.com/Ankhimate/editor), not endorsed by upstream maintainers. Original credits and third-party notices are preserved in [the source notices](docs/THIRD_PARTY_SOURCE_NOTICE.md).
 
