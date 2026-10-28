@@ -13,3 +13,9 @@ ankhimate-document = { version = "0.1.0", path = "../document" }
 glam = "0.33.1"
 image = { version = "0.25.10", default-features = false, features = ["png", "jpeg", "webp"] }
 serde = { version = "1.0.228", features = ["derive"] }
+
+[dev-dependencies]
+ankhimate-formats = { path = "../formats" }
+ankhimate-export = { path = "../export" }
+serde_json = "1.0.150"
+tempfile = "3"

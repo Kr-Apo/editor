@@ -82,12 +82,37 @@ impl Target {
                 return target;
             }
         }
-        let mut legacy = crate::presets::default_preset();
-        for template in &mut legacy.templates {
-            template.body = template.body.replace(crate::presets::DARK_TINT_FIELD, "");
+        // Recognize exact historical templates without migrating saved user data.
+        // E1 rounded durations; A2 changes only the built-in template's precision.
+        let current = crate::presets::default_preset();
+        let mut e1_duration = current.clone();
+        for t in &mut e1_duration.templates {
+            t.body = t.body.replace("{{json duration}}", "{{round duration 4}}");
         }
-        if legacy.templates == preset.templates {
-            return Self::LegacyRuntime;
+        for current in [current, e1_duration] {
+            let mut previous = current.clone();
+            for t in &mut previous.templates {
+                for field in [
+                    "length", "x", "y", "rotation", "scale_x", "scale_y", "shear_x", "shear_y",
+                ] {
+                    let rounded = format!("{{{{round {field} 4}}}}");
+                    let precise = format!(
+                        "{{{{#if @root.skeleton.precise_bind_numbers}}}}{{{{json {field}}}}}{{{{else}}}}{rounded}{{{{/if}}}}"
+                    );
+                    t.body = t.body.replace(&precise, &rounded);
+                }
+            }
+            if current.templates == preset.templates || previous.templates == preset.templates {
+                return Self::Runtime;
+            }
+            for mut legacy in [current, previous] {
+                for t in &mut legacy.templates {
+                    t.body = t.body.replace(crate::presets::DARK_TINT_FIELD, "");
+                }
+                if legacy.templates == preset.templates {
+                    return Self::LegacyRuntime;
+                }
+            }
         }
         Self::Custom
     }
@@ -450,16 +475,26 @@ pub fn inspect(
                                 "Mesh vertices, UVs, triangles or weight counts disagree",
                             );
                         }
-                        for weights in &g.weights {
-                            if (weights.is_empty() && target != Target::Document)
-                                || weights.iter().any(|(bone, w)| {
-                                    !bones.contains(bone.as_str()) || !w.is_finite() || *w < 0.0
-                                })
-                                || (!weights.is_empty()
-                                    && weights.iter().map(|(_, w)| w).sum::<f32>() <= 0.0)
+                        for (vertex, weights) in g.weights.iter().enumerate() {
+                            let sum = weights.iter().map(|(_, w)| w).sum::<f32>();
+                            let reason = if weights.is_empty() && target != Target::Document {
+                                Some("empty influence set in a weighted mesh")
+                            } else if weights
+                                .iter()
+                                .any(|(bone, _)| !bones.contains(bone.as_str()))
                             {
-                                out.push(Error,"invalid-weights",&subject,"Missing bone, negative/non-finite weight or empty influence set");
-                                break;
+                                Some("influence references a missing bone")
+                            } else if weights.iter().any(|(_, w)| !w.is_finite() || *w < 0.0) {
+                                Some("negative or non-finite influence weight")
+                            } else if !weights.is_empty() && (!sum.is_finite() || sum <= 0.0) {
+                                Some("non-finite or non-positive total weight")
+                            } else {
+                                None
+                            };
+                            if let Some(reason) = reason {
+                                out.push(Error, "invalid-weights", &subject, format!(
+                                    "vertex {vertex}: {reason}; influences {weights:?}; sum {sum}. Correct this vertex with explicitly chosen existing bones and finite nonnegative weights with a positive normalized total. Disconnected islands may require manual binding; no bone is inferred by preflight."
+                                ));
                             }
                         }
                     } else {
@@ -586,7 +621,7 @@ pub fn inspect(
                     "Rendered export does not simulate physics",
                 );
             } else if target.is_runtime() {
-                out.push(Warning,"runtime-physics-incompatible",&constraint.name,"Known incompatibility: the native export uses target with an empty bones list, while the current TypeScript runtime reads bones[0]. Physics does not activate on real native exports; it is excluded from the alpha runtime scope");
+                out.push(Warning,"runtime-physics-unqualified",&constraint.name,"Native Physics uses target for the simulated bone and an empty bones list. TypeScript readers before T839 ignore this form; T839 repairs activation only. Substep limits, accumulator ownership and transport behavior still differ from Rust. PixiJS rejects constraints; Phaser physics is unqualified. Explicit consent is required");
             }
         }
         if constraint.kind == "path" && target != Target::Document {
@@ -641,7 +676,7 @@ pub fn inspect(
                     && let Some(link) = &m.linked
                     && inherits_animated_source(project, clip, link, &mut BTreeSet::new())
                 {
-                    out.push(Error,"rendered-linked-deform",&clip.name,format!("Linked mesh `{}` inherits animated source deforms. The CPU renderer looks up the current attachment's deform only; this export cannot preserve that inheritance",entry.name));
+                    out.push(Error,"rendered-linked-deform",&clip.name,format!("Linked mesh `{}` inherits animated source deforms. Native CPU ownership is qualified only for the fixed-skin direct-link pilot; rendered sequence inheritance remains excluded pending separate export qualification",entry.name));
                 }
             }
         }

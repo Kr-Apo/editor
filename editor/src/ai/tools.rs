@@ -22,6 +22,36 @@ pub const MAX_ACTIONS: usize = 128;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "op", deny_unknown_fields)]
 pub enum Action {
+    #[serde(rename = "deform.key")]
+    DeformKey {
+        animation: String,
+        skin: String,
+        slot: String,
+        attachment: String,
+        time: f32,
+        offsets: Vec<[f32; 2]>,
+    },
+    #[serde(rename = "deform.key_delete")]
+    DeformDelete {
+        animation: String,
+        skin: String,
+        slot: String,
+        attachment: String,
+        time: f32,
+    },
+    #[serde(rename = "key.delete")]
+    KeyDelete {
+        animation: String,
+        bone: String,
+        channel: Channel,
+        time: f32,
+    },
+    #[serde(rename = "event.add")]
+    EventAdd {
+        animation: String,
+        name: String,
+        time: f32,
+    },
     #[serde(rename = "mesh.set_weights")]
     MeshSet {
         skin: String,
@@ -223,6 +253,10 @@ impl Action {
     }
     pub fn operation(&self) -> &'static str {
         match self {
+            Self::DeformKey { .. } => "deform.key",
+            Self::DeformDelete { .. } => "deform.key_delete",
+            Self::KeyDelete { .. } => "key.delete",
+            Self::EventAdd { .. } => "event.add",
             Self::MeshSet { .. } => "mesh.set_weights",
             Self::MeshNormalize { .. } => "mesh.normalize_weights",
             Self::MeshSmooth { .. } => "mesh.smooth_weights",
@@ -364,6 +398,14 @@ pub fn validate(source: &Snapshot, plan: &EditPlan) -> Result<PreparedEdit, Box<
             })
         };
         match action {
+            Action::DeformKey { .. }
+            | Action::DeformDelete { .. }
+            | Action::KeyDelete { .. }
+            | Action::EventAdd { .. } => {
+                let (id, details) = super::artistic::apply(&mut scratch, source, action, index)?;
+                review.push(details);
+                selected = Some(id);
+            }
             a if a.is_setup() => {
                 let before = if a.is_weights() {
                     Some(super::weights::review(&scratch, a))
@@ -702,8 +744,15 @@ pub fn definitions(editing: bool) -> Vec<Value> {
             }
         }
     }
+    if editing {
+        defs[1]["parameters"]["properties"]["actions"]["items"]["oneOf"]
+            .as_array_mut()
+            .unwrap()
+            .extend(super::artistic::definitions());
+    }
     defs.push(super::vision::definition());
     defs.push(super::weights::read_definition());
+    defs.push(super::artistic::read_definition());
     if editing {
         defs.push(super::rig::definition());
         defs.push(super::assembly::definition());

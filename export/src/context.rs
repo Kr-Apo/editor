@@ -31,7 +31,10 @@ use ankhimate_core::transforms::Affine2;
 use ankhimate_formats::schema::{self, Project};
 use serde::Serialize;
 use serde_json::{Map, Value, json};
-use std::collections::BTreeMap;
+use std::{
+    cell::RefCell,
+    collections::{BTreeMap, BTreeSet},
+};
 
 /// Bumped when a field is renamed or removed. Additions do not bump it.
 pub const CONTEXT_VERSION: u32 = 1;
@@ -40,7 +43,7 @@ pub const CONTEXT_VERSION: u32 = 1;
 ///
 /// Threaded through attachment building so weighted vertices can be written per
 /// influence; see [`to_bone_space`].
-type BoneSpace<'a> = dyn Fn(&str, &str, f32, f32) -> (f32, f32) + 'a;
+type BoneSpace<'a> = dyn Fn(&str, &str, f32, f32) -> (f64, f64) + 'a;
 
 /// Everything a template can address, as a JSON tree.
 #[derive(Debug, Clone, Serialize)]
@@ -59,11 +62,15 @@ pub struct Context {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub atlas: Option<Value>,
     pub export: Value,
+    /// Invalid derived bindings are inspectable, never publishable.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub binding_errors: Vec<String>,
 }
 
 impl Context {
     /// Build the context for one export.
     pub fn build(project: &Project, atlas: Option<&Atlas>, export: ExportInfo) -> Self {
+        let (skeleton, binding_errors) = skeleton(project);
         Self {
             context_version: CONTEXT_VERSION,
             project: json!({
@@ -71,7 +78,8 @@ impl Context {
                 "fps": project.fps,
                 "version": project.version,
             }),
-            skeleton: skeleton(project),
+            skeleton,
+            binding_errors,
             animations: project
                 .animations
                 .iter()
@@ -167,7 +175,7 @@ fn art_scale(project: &Project) -> f32 {
     }
 }
 
-fn skeleton(project: &Project) -> Value {
+fn skeleton(project: &Project) -> (Value, Vec<String>) {
     let order = bone_order(project);
     let index_of = |name: &str| order.iter().position(|n| n == name);
     let asset_size = |name: &str| {
@@ -188,12 +196,22 @@ fn skeleton(project: &Project) -> Value {
             .find(|s| s.name == slot)
             .and_then(|s| worlds.get(&s.bone))
     };
+    let errors = RefCell::new(BTreeSet::new());
     let bone_space = |slot: &str, bone: &str, x: f32, y: f32| {
-        match (host_of(slot), worlds.get(bone)) {
+        let result = match (host_of(slot), worlds.get(bone)) {
             (Some(host), Some(target)) => to_bone_space(host, target, x, y),
-            // An unresolved name is reported at load, not here; leaving the
-            // point alone misplaces one influence rather than all of them.
-            _ => (x, y),
+            _ => Err("unresolved host or influence bone".to_string()),
+        };
+        match result {
+            Ok(point) => point,
+            Err(reason) => {
+                errors.borrow_mut().insert(format!(
+                    "weighted bind slot {slot:?}, bone {bone:?}, point ({x}, {y}): {reason}"
+                ));
+                // Explicitly invalid inspection data, never WORLD or identity.
+                // run::plan checks binding_errors before rendering any file.
+                (f64::NAN, f64::NAN)
+            }
         }
     };
 
@@ -340,7 +358,12 @@ fn skeleton(project: &Project) -> Value {
             .collect()
     };
 
-    json!({
+    let value = json!({
+        "precise_bind_numbers": project.skins.iter().flat_map(|s| &s.entries).any(|e| match &e.attachment {
+            schema::Attachment::Mesh(m) => !m.weights.is_empty(),
+            schema::Attachment::BoundingBox(b) => !b.weights.is_empty(),
+            _ => false,
+        }),
         "bones": bones,
         "slots": slots,
         "draw_order": project.draw_order,
@@ -352,7 +375,8 @@ fn skeleton(project: &Project) -> Value {
         "path_constraints": of_kind("path"),
         "physics": of_kind("physics"),
         "constraint_order": project.constraint_order,
-    })
+    });
+    (value, errors.into_inner().into_iter().collect())
 }
 
 /// Every distinct event name in the project, sorted for a stable export.
@@ -671,20 +695,71 @@ fn setup_worlds(project: &Project) -> BTreeMap<String, Affine2> {
 /// world transform followed by the inverse of the influence's: lift into world
 /// space, then drop back down.
 ///
-/// A singular matrix — a bone scaled to zero on an axis — has no inverse; the
-/// point passes through unchanged rather than becoming NaN and poisoning the
-/// whole vertex array.
-fn to_bone_space(host: &Affine2, bone: &Affine2, x: f32, y: f32) -> (f32, f32) {
-    let world = host.transform_point(glam::Vec2::new(x, y));
-    let det = bone.a * bone.d - bone.b * bone.c;
-    if det.abs() < f32::EPSILON {
-        return (world.x, world.y);
+/// Inversion eligibility follows core Affine2::invert, not machine epsilon.
+/// Solve in f64 with relative translations first: world-then-subtract in f32
+/// loses small offsets near a large common origin. JSON numbers retain these
+/// derived coordinates; authored vertices and coefficients remain f32.
+/// Independently reconstruct WORLD; determinant alone is not a stability proof.
+fn to_bone_space(host: &Affine2, bone: &Affine2, x: f32, y: f32) -> Result<(f64, f64), String> {
+    let native_det = bone.determinant();
+    if ![
+        host.a, host.b, host.c, host.d, host.tx, host.ty, bone.a, bone.b, bone.c, bone.d, bone.tx,
+        bone.ty, x, y,
+    ]
+    .iter()
+    .all(|v| v.is_finite())
+    {
+        return Err("non-finite source/bind matrix".into());
     }
-    let (dx, dy) = (world.x - bone.tx, world.y - bone.ty);
-    (
-        (bone.d * dx - bone.c * dy) / det,
-        (bone.a * dy - bone.b * dx) / det,
-    )
+    let native_world = host.transform_point(glam::Vec2::new(x, y));
+    if !native_world.is_finite() {
+        return Err("non-finite native WORLD position".into());
+    }
+    if !native_det.is_finite()
+        || bone.invert().is_none_or(|m| {
+            ![m.a, m.b, m.c, m.d, m.tx, m.ty]
+                .iter()
+                .all(|v| v.is_finite())
+        })
+    {
+        return Err(format!(
+            "non-invertible native bind (det={native_det}); no LOCAL coordinates emitted"
+        ));
+    }
+    let [a, b, c, d, tx, ty] = [bone.a, bone.b, bone.c, bone.d, bone.tx, bone.ty].map(f64::from);
+    let det = a * d - b * c;
+    let (x, y) = (f64::from(x), f64::from(y));
+    let dx = (f64::from(host.tx) - tx) + f64::from(host.a) * x + f64::from(host.c) * y;
+    let dy = (f64::from(host.ty) - ty) + f64::from(host.b) * x + f64::from(host.d) * y;
+    let local = ((d * dx - c * dy) / det, (a * dy - b * dx) / det);
+    let expected = (
+        f64::from(host.a) * x + f64::from(host.c) * y + f64::from(host.tx),
+        f64::from(host.b) * x + f64::from(host.d) * y + f64::from(host.ty),
+    );
+    let reconstructed = (
+        a * local.0 + c * local.1 + tx,
+        b * local.0 + d * local.1 + ty,
+    );
+    let error = (reconstructed.0 - expected.0)
+        .abs()
+        .max((reconstructed.1 - expected.1).abs());
+    if ![
+        det,
+        local.0,
+        local.1,
+        reconstructed.0,
+        reconstructed.1,
+        error,
+    ]
+    .iter()
+    .all(|v| v.is_finite())
+        || error > 0.01
+    {
+        return Err(format!(
+            "bind not representable faithfully (det={native_det}, WORLD reconstruction error={error}, tolerance=0.01)"
+        ));
+    }
+    Ok(local)
 }
 
 /// The same weights as one **flat number array**, bones addressed by index.
@@ -704,9 +779,9 @@ fn flat_vertices(
     bone_index: &dyn Fn(&str) -> Option<usize>,
     slot: &str,
     bone_space: &BoneSpace,
-) -> Vec<f32> {
+) -> Vec<f64> {
     if weights.is_empty() {
-        return vertices.to_vec();
+        return vertices.iter().map(|v| f64::from(*v)).collect();
     }
 
     let mut out = Vec::new();
@@ -718,7 +793,7 @@ fn flat_vertices(
         // A weight naming a bone that does not exist is dropped rather than
         // written as index -1: a negative index is an out-of-bounds read in
         // every consumer, and a missing influence merely shifts one vertex.
-        let resolved: Vec<(usize, f32, (f32, f32))> = per_vertex
+        let resolved: Vec<(usize, f32, (f64, f64))> = per_vertex
             .iter()
             .filter_map(|(bone, weight)| {
                 bone_index(bone).map(|i| (i, *weight, bone_space(slot, bone, x, y)))
@@ -726,17 +801,17 @@ fn flat_vertices(
             .collect();
 
         if resolved.is_empty() {
-            out.push(x);
-            out.push(y);
+            out.push(f64::from(x));
+            out.push(f64::from(y));
             continue;
         }
-        out.push(resolved.len() as f32);
+        out.push(resolved.len() as f64);
         for (index, weight, (bx, by)) in resolved {
-            out.push(index as f32);
+            out.push(index as f64);
             // In the bone's own space, not the mesh's — see `packed_weights`.
             out.push(bx);
             out.push(by);
-            out.push(weight);
+            out.push(f64::from(weight));
         }
     }
     out
@@ -954,8 +1029,10 @@ fn animation(anim: &schema::Animation, project: &Project) -> Value {
             ),
             schema::Timeline::SlotColor { slot, keys } => slots.push(json!({
                 "name": slot, "channel": "color",
-                "keys": keys.iter().map(|k| json!({
-                    "time": k.time, "color": k.value, "curve": interp(&k.interp),
+                "keys": keys.iter().enumerate().map(|(i, k)| json!({
+                    "time": k.time, "color": k.value,
+                    // Arrival easing in author data becomes the outgoing segment.
+                    "curve": keys.get(i + 1).map_or_else(|| json!("linear"), |next| interp(&next.interp)),
                 })).collect::<Vec<_>>(),
             })),
             schema::Timeline::SlotVisible { slot, keys } => slots.push(json!({
@@ -1002,7 +1079,7 @@ fn animation(anim: &schema::Animation, project: &Project) -> Value {
                     // Per axis, with the whole-channel names kept beside them
                     // for a template written before the axes were split. See
                     // the setup-value emission in `constraint` for why.
-                    "keys": keys.iter().map(|k| {
+                    "keys": keys.iter().enumerate().map(|(i, k)| {
                         let driven = |x: f32, y: f32| if y == 0.0 { x } else { y };
                         json!({
                             "time": k.time,
@@ -1016,7 +1093,7 @@ fn animation(anim: &schema::Animation, project: &Project) -> Value {
                             "scale_y": k.value.scale_y,
                             "shear_x": k.value.shear_x,
                             "shear_y": k.value.shear_y,
-                            "curve": interp(&k.interp),
+                            "curve": keys.get(i + 1).map_or_else(|| json!("linear"), |next| interp(&next.interp)),
                         })
                     }).collect::<Vec<_>>(),
                 }))
@@ -1458,4 +1535,197 @@ fn atlas_value(atlas: &Atlas, stem: &str, art_scale: f32) -> Value {
             "rotated": r.rotated,
         })).collect::<Vec<_>>(),
     })
+}
+
+/// Check the actual serialized native numbers, including old saved templates
+/// which round bones. Reuse core setup evaluation; do not invent another FK.
+pub(crate) fn verify_native_bindings(project: &Project, text: &str) -> Result<(), String> {
+    let weighted = project
+        .skins
+        .iter()
+        .flat_map(|s| &s.entries)
+        .any(|e| match &e.attachment {
+            schema::Attachment::Mesh(m) => !m.weights.is_empty(),
+            schema::Attachment::BoundingBox(b) => !b.weights.is_empty(),
+            _ => false,
+        });
+    if !weighted {
+        return Ok(());
+    }
+    let data: Value = serde_json::from_str(text).map_err(|e| e.to_string())?;
+    let mut serialized = project.clone();
+    let bones = data["bones"].as_array().ok_or("missing native bones")?;
+    for bone in &mut serialized.bones {
+        let entry = bones
+            .iter()
+            .find(|v| v["name"] == bone.name)
+            .ok_or("missing native bone")?;
+        for (name, value) in [
+            ("length", &mut bone.length),
+            ("x", &mut bone.tx),
+            ("y", &mut bone.ty),
+            ("rotation", &mut bone.rotation),
+            ("scaleX", &mut bone.sx),
+            ("scaleY", &mut bone.sy),
+            ("shearX", &mut bone.shear_x),
+            ("shearY", &mut bone.shear_y),
+        ] {
+            *value = entry[name].as_f64().ok_or("invalid native bone number")? as f32;
+            if !value.is_finite() {
+                return Err("non-finite serialized bone".into());
+            }
+        }
+    }
+    let original_worlds = setup_worlds(project);
+    let placed_worlds = setup_worlds(&serialized);
+    let place = |m: &Affine2, x: f64, y: f64| {
+        (
+            f64::from(m.a) * x + f64::from(m.c) * y + f64::from(m.tx),
+            f64::from(m.b) * x + f64::from(m.d) * y + f64::from(m.ty),
+        )
+    };
+    for skin in &project.skins {
+        for entry in &skin.entries {
+            let vertices = match &entry.attachment {
+                schema::Attachment::Mesh(m) if !m.weights.is_empty() => &m.vertices,
+                schema::Attachment::BoundingBox(b) if !b.weights.is_empty() => &b.vertices,
+                _ => continue,
+            };
+            let host = project
+                .slots
+                .iter()
+                .find(|s| s.name == entry.slot)
+                .ok_or("missing slot")?;
+            let original = original_worlds
+                .get(&host.bone)
+                .ok_or("missing source host")?;
+            let placed = placed_worlds
+                .get(&host.bone)
+                .ok_or("missing serialized host")?;
+            let attachment = &data["skins"]
+                .as_array()
+                .ok_or("missing native skins")?
+                .iter()
+                .find(|s| s["name"] == skin.name)
+                .ok_or("missing native skin")?["attachments"]
+                .as_array()
+                .ok_or("missing native attachments")?
+                .iter()
+                .find(|a| a["slot"] == entry.slot && a["name"] == entry.name)
+                .ok_or("missing native attachment")?["attachment"];
+            let rows = attachment["weights"]
+                .as_array()
+                .ok_or("missing native weights")?;
+            if rows.len() * 2 != vertices.len() {
+                return Err("native weight/vertex dimensions disagree".into());
+            }
+            for (i, row) in rows.iter().enumerate() {
+                let expected = place(
+                    original,
+                    f64::from(vertices[i * 2]),
+                    f64::from(vertices[i * 2 + 1]),
+                );
+                let (mut x, mut y, mut total) = (0., 0., 0.);
+                for w in row["bones"]
+                    .as_array()
+                    .ok_or("invalid native influence row")?
+                {
+                    let matrix = placed_worlds
+                        .get(w["bone"].as_str().ok_or("invalid bone name")?)
+                        .ok_or("unknown influence")?;
+                    let p = place(
+                        matrix,
+                        w["x"].as_f64().ok_or("invalid local x")?,
+                        w["y"].as_f64().ok_or("invalid local y")?,
+                    );
+                    let weight = w["weight"].as_f64().ok_or("invalid coefficient")?;
+                    x += p.0 * weight;
+                    y += p.1 * weight;
+                    total += weight;
+                }
+                let actual = if total > 0. {
+                    (x / total, y / total)
+                } else {
+                    place(
+                        placed,
+                        f64::from(vertices[i * 2]),
+                        f64::from(vertices[i * 2 + 1]),
+                    )
+                };
+                let error = (expected.0 - actual.0)
+                    .abs()
+                    .max((expected.1 - actual.1).abs());
+                if !error.is_finite() || error > 0.01 {
+                    return Err(format!(
+                        "native weighted bind {:?}/{:?}, vertex {i}: serialized bone/binding precision loses fidelity ({error} > 0.01); use the current native preset",
+                        entry.slot, entry.name
+                    ));
+                }
+            }
+        }
+    }
+    Ok(())
+}
+#[cfg(test)]
+mod native_bind_math_tests {
+    use super::*;
+    fn m(a: f32, b: f32, c: f32, d: f32, tx: f32, ty: f32) -> Affine2 {
+        Affine2 { a, b, c, d, tx, ty }
+    }
+    #[test]
+    fn binding_inverse_checks_precision_not_determinant_magnitude() {
+        let identity = m(1., 0., 0., 1., 0., 0.);
+        let cases = [
+            ("identity", identity),
+            ("translation", m(1., 0., 0., 1., 37., -25.)),
+            ("rotation", m(0.6, 0.8, -0.8, 0.6, 7., -2.)),
+            ("uniform", m(2., 0., 0., 2., 0., 0.)),
+            ("nonuniform", m(0.125, 0., 0., 16., 0., 0.)),
+            ("reflection", m(-2., 0., 0., 0.5, 4., 8.)),
+            ("det1e-7", m(0.0005, 0., 0., 0.0002, 0., 0.)),
+            ("det1e-8", m(0.0001, 0., 0., 0.0001, 0., 0.)),
+            ("near1e-12", m(0.000001, 0., 0., 0.00000101, 0., 0.)),
+            ("ill_conditioned", m(1e-18, 0., 0., 1e18, 0., 0.)),
+        ];
+        for (name, bone) in cases {
+            let (x, y) = to_bone_space(&identity, &bone, 3.25, -7.5).unwrap();
+            let reconstructed = (
+                f64::from(bone.a) * x + f64::from(bone.c) * y + f64::from(bone.tx),
+                f64::from(bone.b) * x + f64::from(bone.d) * y + f64::from(bone.ty),
+            );
+            let error = (reconstructed.0 - 3.25)
+                .abs()
+                .max((reconstructed.1 + 7.5).abs());
+            let det = f64::from(bone.a) * f64::from(bone.d) - f64::from(bone.b) * f64::from(bone.c);
+            let norm = (f64::from(bone.a).abs() + f64::from(bone.c).abs())
+                .max(f64::from(bone.b).abs() + f64::from(bone.d).abs());
+            let inv_norm = ((f64::from(bone.d).abs() + f64::from(bone.c).abs()) / det.abs())
+                .max((f64::from(bone.b).abs() + f64::from(bone.a).abs()) / det.abs());
+            eprintln!(
+                "{name}: det={det}, condition_inf={}, local=({x},{y}), reconstruction_error={error}",
+                norm * inv_norm
+            );
+            assert!(error <= 0.01, "{name}");
+        }
+    }
+    #[test]
+    fn no_nonfinite_singular_or_native_rejected_bind_becomes_world_data() {
+        let host = m(1., 0., 0., 1., 17., -11.);
+        for bone in [
+            m(0., 0., 0., 1., 0., 0.),
+            m(1e-7, 0., 0., 1e-7, 0., 0.),
+            m(f32::INFINITY, 0., 0., 1., 0., 0.),
+            m(f32::NAN, 0., 0., 1., 0., 0.),
+            m(f32::MAX, 0., 0., f32::MAX, 0., 0.),
+        ] {
+            assert!(to_bone_space(&host, &bone, 3., 5.).is_err());
+        }
+        assert!(to_bone_space(&host, &host, f32::NAN, 1.).is_err());
+        let threshold = 1e-12f32;
+        let below = f32::from_bits(threshold.to_bits() - 1);
+        let above = f32::from_bits(threshold.to_bits() + 1);
+        assert!(to_bone_space(&host, &m(1., 0., 0., below, 0., 0.), 3., 5.).is_err());
+        assert!(to_bone_space(&host, &m(1., 0., 0., threshold, 0., 0.), 3., 5.).is_ok());
+        assert!(to_bone_space(&host, &m(1., 0., 0., above, 0., 0.), 3., 5.).is_ok());
+    }
 }

@@ -1,3 +1,5 @@
+> **P01-RC1 local candidate — 28 October 2026.** Read the [current contracts and qualification boundary](p01-rc1-workflow.md) before the historical notes below. Proposed Classic v0.1.6 is not tagged/released here. Runtime package versions are unchanged; ReplayV1 A17 is explicit and separate from Legacy playback.
+
 # T838 — v0.1.5 local release preparation
 
 Current local preparation,2026-10-22, based on accepted T837 `726217cb1795873ede43d7f41e935452c0e28002`. Product0.1.5 is a deliberate numbering reset, not a schema/runtime change. Welcome no longer shows a version; Help > About Ankhimate keeps build diagnostics. The four maintainer-supplied English guides are integrated with justified context corrections. New Editor/Runtime community forks are not created and their URLs are unset. The former public Alpha/RC2 are historical artifacts, not current download endpoints.
@@ -259,3 +261,7 @@ T-208 stays **PARTIAL / PENDING_MANUAL / LOCAL_CANDIDATE**: auditing its origina
 </details>
 
 </details>
+
+## P01-RC1 — local corrective candidate
+
+R1: atomic refusal of incomplete geodesic Auto Weight and per-vertex export diagnostics. R2: Animate mesh activation and explicit full pose/rest FFD keys. R3: bounded native artistic proposals. Trace degeneracy remains unreproduced, not resolved. T404/T209 and historical manual-review counts are not promoted.

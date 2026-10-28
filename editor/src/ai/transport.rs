@@ -355,8 +355,11 @@ async fn run(
             if !defs.iter().any(|d| d["name"] == call.name) {
                 return Err("Unknown or unauthorized native tool. No writes were made.".into());
             }
-            let cache_key = matches!(call.name.as_str(), "ankhimate_read" | "ankhimate_read_mesh")
-                .then(|| format!("{}:{}", call.name, call.arguments));
+            let cache_key = matches!(
+                call.name.as_str(),
+                "ankhimate_read" | "ankhimate_read_mesh" | "ankhimate_read_deform"
+            )
+            .then(|| format!("{}:{}", call.name, call.arguments));
             if let Some(source) = cache_key.as_ref().and_then(|key| read_cache.get(key)) {
                 messages.push(Message::result(&call.id,json!({"cache_hit":true,"source_call_id":source,"revision":context.as_ref().map(|c|c.revision),"note":"Unchanged native read already present in this Send; use the earlier tool result."})));
                 continue;
@@ -372,6 +375,15 @@ async fn run(
                     }
                     notify((sender, ctx), Event::ViewportRequested);
                     json!({"status":"awaiting_image_consent","image_sent":false,"instruction":"Ask the user to Capture viewport, review it and authorize a new Send. You have NOT observed any image from this tool."})
+                }
+                "ankhimate_read_deform" => {
+                    let source = context
+                        .as_ref()
+                        .ok_or("Project metadata sharing was not authorized")?;
+                    match serde_json::from_value::<super::artistic::ReadDeform>(call.arguments) {
+                        Ok(args)=>super::artistic::read(source,&args).unwrap_or_else(|error|json!({"status":"unavailable","cause":error,"document_changed":false})),
+                        Err(_)=>json!({"status":"unavailable","cause":"Use the exact paginated FFD-read schema","document_changed":false}),
+                    }
                 }
                 "ankhimate_read_mesh" => {
                     let source = context

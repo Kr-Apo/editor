@@ -1,3 +1,5 @@
+> **P01-RC1 local candidate — 28 October 2026.** Read the [current contracts and qualification boundary](p01-rc1-workflow.md) before the historical notes below. Proposed Classic v0.1.6 is not tagged/released here. Runtime package versions are unchanged; ReplayV1 A17 is explicit and separate from Legacy playback.
+
 # Known Limitations — v0.1.5 (T838)
 
 - This is an **unsigned, local-only Windows x64 candidate**. Physical Windows interaction and artistic workflows are still pending review. The former public Alpha is a different, preserved artifact; its old fork URL is no longer an active distribution endpoint.

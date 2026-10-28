@@ -560,37 +560,33 @@ fn attachment_draw(
             }))
         }
         Attachment::Mesh(mesh) => {
-            let geometry = doc
+            let name = pose
+                .attachment_name(&doc.skeleton, slot_id)
+                .ok_or_else(|| Error::Invalid("Mesh selection is absent".into()))?;
+            let resolved = doc
                 .skeleton
-                .resolve_linked_mesh(&[doc.skeleton.default_skin], mesh);
+                .resolve_mesh_pose(&[doc.skeleton.default_skin], pose, slot_id, name)
+                .map_err(|e| Error::Invalid(e.to_string()))?;
+            let geometry = resolved.geometry;
             if geometry.triangles.is_empty() {
                 return Ok(None);
             }
-            let texture = sequence_texture(&mesh.sequence).unwrap_or_else(|| mesh.texture.clone());
+            let texture =
+                sequence_texture(&mesh.sequence).unwrap_or_else(|| resolved.texture.to_owned());
             if doc.assets.by_name(&texture).is_none() {
                 return Ok(None);
             }
-            let deform = pose
-                .attachment_name(&doc.skeleton, slot_id)
-                .and_then(|name| pose.deforms.get(&(slot_id, name.to_string())));
-            let weighted = !geometry.weights.is_empty();
-            let bone_world = pose.world(slot.bone);
-            let vertices = (0..geometry.setup_vertices.len())
-                .map(|index| {
-                    let offsets: Vec<Vec2> = match deform {
-                        Some(values) if weighted => values
-                            .get(geometry.influence_range(index))
-                            .unwrap_or_default()
-                            .to_vec(),
-                        Some(values) => vec![values.get(index).copied().unwrap_or_default()],
-                        None => Vec::new(),
-                    };
-                    Vertex {
-                        world: geometry.skin_vertex_with_deform(index, &offsets, pose, &bone_world),
-                        uv: geometry.uvs.get(index).copied().unwrap_or_default(),
-                        color,
-                        dark,
-                    }
+            let positions = resolved
+                .vertices(pose)
+                .map_err(|e| Error::Invalid(e.to_string()))?;
+            let vertices = positions
+                .into_iter()
+                .enumerate()
+                .map(|(i, world)| Vertex {
+                    world,
+                    uv: geometry.uvs.get(i).copied().unwrap_or_default(),
+                    color,
+                    dark,
                 })
                 .collect();
             Ok(Some(Draw {
@@ -1751,3 +1747,6 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+mod inherited_ffd_tests;

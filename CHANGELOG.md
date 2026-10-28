@@ -1,4 +1,24 @@
-# T-811 — Proposed next alpha (0.2.0-alpha.1)
+# P01-RC1 — Proposed Classic 0.1.6 (not released)
+
+Local corrective candidate; final maintainer approval is required for a tag and
+Windows release. Auto Weight now refuses disconnected vertices without usable
+influences before changing the document or Redo. Native export diagnostics name
+the faulty rows. Trace diagnostics include triangle geometry; the reported
+Frog Knight degeneracy was not reproduced and is not declared fixed.
+
+Animate exposes the existing mesh vertex tool and explicit full pose/setup FFD
+keys. The isolated Frog Knight GUI exercise includes Save, Undo/Redo, reopen,
+playback and native export; this is not a general runtime admission certificate.
+The existing native AI proposal flow gains paged stored-FFD reads, full FFD key
+write/delete, exact bone-key deletion and default-payload events. No live model
+qualification is claimed. See [the candidate guide](docs/p01-rc1-workflow.md).
+
+Runtime source and documentation integration through A17 is coordinated but
+independently versioned; no new npm package is claimed. Existing formats and
+historical references remain unchanged. The following T-811 section records an
+older proposal, not the version or publication status of this candidate.
+
+# T-811 — Historical proposed alpha (0.2.0-alpha.1)
 
 **Local candidate; not published.** Ankhimate — Kr-Apo Community Fork (Unofficial).
 Original Ankhimate/editor and Ankhimate/runtime provenance and MIT OR Apache-2.0

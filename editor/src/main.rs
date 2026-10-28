@@ -28,6 +28,10 @@ pub mod renderer;
 pub mod session;
 pub mod spritesheet_export;
 pub mod system_open;
+#[cfg(test)]
+mod t840a_physics_tests;
+#[cfg(test)]
+mod t840b1_physics_tests;
 pub mod tangent_linking;
 pub mod theme;
 pub mod transfer;

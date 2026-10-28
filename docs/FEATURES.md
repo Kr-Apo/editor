@@ -1,6 +1,8 @@
+> **P01-RC1 local candidate — 28 October 2026.** Read the [current contracts and qualification boundary](p01-rc1-workflow.md) before the historical notes below. Proposed Classic v0.1.6 is not tagged/released here. Runtime package versions are unchanged; ReplayV1 A17 is explicit and separate from Legacy playback.
+
 # Ankhimate — Available Features
 
-**Local v0.1.5 development candidate (T838), October 22, 2026 — not published.** Ankhimate — Kr-Apo Community Fork (Unofficial) is a native Windows application for 2D skeletal animation, derived from Ankhimate/editor. Upstream licenses and credits still apply. The application's interface uses English labels.
+**Historical T838 v0.1.5 feature baseline.** Ankhimate — Kr-Apo Community Fork (Unofficial) is a native Windows application for 2D skeletal animation, derived from Ankhimate/editor. Upstream licenses and credits still apply. The application's interface uses English labels.
 
 A character combines images, **bones**, **slots**, and **attachments**; animation clips bring those elements to life in an `.ankh` project. Jade Sentinel is the only user-facing example bundled with this candidate. This build is different from the historical v0.2.0-alpha.1 and the RC2 archive: the product numbering reset is independent of project/runtime format versions and does not make this candidate a release.
 

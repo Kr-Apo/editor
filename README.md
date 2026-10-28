@@ -1,3 +1,5 @@
+> **P01-RC1 local candidate — 28 October 2026.** Read the [current contracts and qualification boundary](docs/p01-rc1-workflow.md) before the historical notes below. Proposed Classic v0.1.6 is not tagged/released here. Runtime package versions are unchanged; ReplayV1 A17 is explicit and separate from Legacy playback.
+
 # Ankhimate
 
 **A native 2D skeletal animation editor written in Rust** — bones, skins, meshes, weights, keyframes and an extensible export pipeline.

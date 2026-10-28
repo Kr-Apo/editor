@@ -280,6 +280,46 @@ impl Panel {
         let mut keys = 0;
         for action in &pending.edit.plan.actions {
             match action {
+                tools::Action::DeformKey {
+                    animation,
+                    skin,
+                    slot,
+                    attachment,
+                    time,
+                    offsets,
+                } => {
+                    ui.label(format!("FFD key: {animation} at {time}s · {skin}/{slot}/{attachment} · {} native offset pairs", offsets.len()));
+                }
+                tools::Action::DeformDelete {
+                    animation,
+                    skin,
+                    slot,
+                    attachment,
+                    time,
+                } => {
+                    ui.label(format!(
+                        "Delete FFD key: {animation} at {time}s · {skin}/{slot}/{attachment}"
+                    ));
+                }
+                tools::Action::KeyDelete {
+                    animation,
+                    bone,
+                    channel,
+                    time,
+                } => {
+                    ui.label(format!(
+                        "Delete bone key: {animation} · {bone} {channel:?} at {time}s"
+                    ));
+                }
+                tools::Action::EventAdd {
+                    animation,
+                    name,
+                    time,
+                } => {
+                    ui.label(format!(
+                        "Add event: {animation} · {name} at {time}s (default native payload)"
+                    ));
+                }
                 tools::Action::Create {
                     name,
                     duration,
@@ -391,7 +431,8 @@ impl Panel {
                     ui.group(|ui|{
                         ui.strong(change["op"].as_str().unwrap_or("Assembly"));
                         let before=&change["before"];let after=&change["after"];
-                        if before.get("draw_order").is_some(){ui.label(format!("Before draw order: {}",before["draw_order"]));ui.label(format!("After draw order: {}",after["draw_order"]));}
+                        if change.get("target").is_some(){ui.label("Native animation edit; review exact target and values before approval.");ui.collapsing("Animation values before / after",|ui|{ui.label(format!("Target: {}",change["target"]));ui.label(format!("Before: {before}"));ui.label(format!("After: {after}"));});}
+                        else if before.get("draw_order").is_some(){ui.label(format!("Before draw order: {}",before["draw_order"]));ui.label(format!("After draw order: {}",after["draw_order"]));}
                         else if before["type"]=="mesh" {
                             ui.label(format!("{} / {} / {} — weighted mesh",before["skin"],before["slot"],before["attachment"]));
                             ui.label(format!("{} selected vertices; existing influences preserved",before["affected_vertices"]));

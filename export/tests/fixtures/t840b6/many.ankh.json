@@ -1,0 +1,4864 @@
+{
+  "version": 1,
+  "name": "B6 many",
+  "fps": 60,
+  "assets": [],
+  "bones": [
+    {
+      "name": "root",
+      "parent": "",
+      "length": 1.0,
+      "tx": 0.0,
+      "ty": 0.0,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "torso",
+      "parent": "root",
+      "length": 1.0,
+      "tx": 0.0,
+      "ty": 20.0,
+      "rotation": 22.918312,
+      "sx": 1.75,
+      "sy": 0.6,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "A",
+      "parent": "torso",
+      "length": 300.0,
+      "tx": 10.0,
+      "ty": 0.0,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "pivot-B",
+      "parent": "torso",
+      "length": 1.0,
+      "tx": 3,
+      "ty": 2,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "B",
+      "parent": "pivot-B",
+      "length": 300.0,
+      "tx": 20.0,
+      "ty": 0.0,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "C",
+      "parent": "torso",
+      "length": 300.0,
+      "tx": 30.0,
+      "ty": 0.0,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-006",
+      "parent": "torso",
+      "length": 10,
+      "tx": 0.6,
+      "ty": 0.3,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-007",
+      "parent": "torso",
+      "length": 10,
+      "tx": 0.7,
+      "ty": 0.35,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-008",
+      "parent": "torso",
+      "length": 10,
+      "tx": 0.8,
+      "ty": 0.4,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-009",
+      "parent": "torso",
+      "length": 10,
+      "tx": 0.9,
+      "ty": 0.45,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-010",
+      "parent": "torso",
+      "length": 10,
+      "tx": 1.0,
+      "ty": 0.5,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-011",
+      "parent": "torso",
+      "length": 10,
+      "tx": 1.1,
+      "ty": 0.55,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-012",
+      "parent": "torso",
+      "length": 10,
+      "tx": 1.2,
+      "ty": 0.6,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-013",
+      "parent": "torso",
+      "length": 10,
+      "tx": 1.3,
+      "ty": 0.65,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-014",
+      "parent": "torso",
+      "length": 10,
+      "tx": 1.4,
+      "ty": 0.7,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-015",
+      "parent": "torso",
+      "length": 10,
+      "tx": 1.5,
+      "ty": 0.75,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-016",
+      "parent": "torso",
+      "length": 10,
+      "tx": 1.6,
+      "ty": 0.8,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-017",
+      "parent": "torso",
+      "length": 10,
+      "tx": 1.7,
+      "ty": 0.85,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-018",
+      "parent": "torso",
+      "length": 10,
+      "tx": 1.8,
+      "ty": 0.9,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-019",
+      "parent": "torso",
+      "length": 10,
+      "tx": 1.9,
+      "ty": 0.95,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-020",
+      "parent": "torso",
+      "length": 10,
+      "tx": 2.0,
+      "ty": 1.0,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-021",
+      "parent": "torso",
+      "length": 10,
+      "tx": 2.1,
+      "ty": 1.05,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-022",
+      "parent": "torso",
+      "length": 10,
+      "tx": 2.2,
+      "ty": 1.1,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-023",
+      "parent": "torso",
+      "length": 10,
+      "tx": 2.3,
+      "ty": 1.15,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-024",
+      "parent": "torso",
+      "length": 10,
+      "tx": 2.4,
+      "ty": 1.2,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-025",
+      "parent": "torso",
+      "length": 10,
+      "tx": 2.5,
+      "ty": 1.25,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-026",
+      "parent": "torso",
+      "length": 10,
+      "tx": 2.6,
+      "ty": 1.3,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-027",
+      "parent": "torso",
+      "length": 10,
+      "tx": 2.7,
+      "ty": 1.35,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-028",
+      "parent": "torso",
+      "length": 10,
+      "tx": 2.8,
+      "ty": 1.4,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-029",
+      "parent": "torso",
+      "length": 10,
+      "tx": 2.9,
+      "ty": 1.45,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-030",
+      "parent": "torso",
+      "length": 10,
+      "tx": 3.0,
+      "ty": 1.5,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-031",
+      "parent": "torso",
+      "length": 10,
+      "tx": 3.1,
+      "ty": 1.55,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-032",
+      "parent": "torso",
+      "length": 10,
+      "tx": 3.2,
+      "ty": 1.6,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-033",
+      "parent": "torso",
+      "length": 10,
+      "tx": 3.3,
+      "ty": 1.65,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-034",
+      "parent": "torso",
+      "length": 10,
+      "tx": 3.4,
+      "ty": 1.7,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-035",
+      "parent": "torso",
+      "length": 10,
+      "tx": 3.5,
+      "ty": 1.75,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-036",
+      "parent": "torso",
+      "length": 10,
+      "tx": 3.6,
+      "ty": 1.8,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-037",
+      "parent": "torso",
+      "length": 10,
+      "tx": 3.7,
+      "ty": 1.85,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-038",
+      "parent": "torso",
+      "length": 10,
+      "tx": 3.8,
+      "ty": 1.9,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-039",
+      "parent": "torso",
+      "length": 10,
+      "tx": 3.9,
+      "ty": 1.95,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-040",
+      "parent": "torso",
+      "length": 10,
+      "tx": 4.0,
+      "ty": 2.0,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-041",
+      "parent": "torso",
+      "length": 10,
+      "tx": 4.1,
+      "ty": 2.05,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-042",
+      "parent": "torso",
+      "length": 10,
+      "tx": 4.2,
+      "ty": 2.1,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-043",
+      "parent": "torso",
+      "length": 10,
+      "tx": 4.3,
+      "ty": 2.15,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-044",
+      "parent": "torso",
+      "length": 10,
+      "tx": 4.4,
+      "ty": 2.2,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-045",
+      "parent": "torso",
+      "length": 10,
+      "tx": 4.5,
+      "ty": 2.25,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-046",
+      "parent": "torso",
+      "length": 10,
+      "tx": 4.6,
+      "ty": 2.3,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-047",
+      "parent": "torso",
+      "length": 10,
+      "tx": 4.7,
+      "ty": 2.35,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-048",
+      "parent": "torso",
+      "length": 10,
+      "tx": 4.8,
+      "ty": 2.4,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-049",
+      "parent": "torso",
+      "length": 10,
+      "tx": 4.9,
+      "ty": 2.45,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-050",
+      "parent": "torso",
+      "length": 10,
+      "tx": 5.0,
+      "ty": 2.5,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-051",
+      "parent": "torso",
+      "length": 10,
+      "tx": 5.1,
+      "ty": 2.55,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-052",
+      "parent": "torso",
+      "length": 10,
+      "tx": 5.2,
+      "ty": 2.6,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-053",
+      "parent": "torso",
+      "length": 10,
+      "tx": 5.3,
+      "ty": 2.65,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-054",
+      "parent": "torso",
+      "length": 10,
+      "tx": 5.4,
+      "ty": 2.7,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-055",
+      "parent": "torso",
+      "length": 10,
+      "tx": 5.5,
+      "ty": 2.75,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-056",
+      "parent": "torso",
+      "length": 10,
+      "tx": 5.6,
+      "ty": 2.8,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-057",
+      "parent": "torso",
+      "length": 10,
+      "tx": 5.7,
+      "ty": 2.85,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-058",
+      "parent": "torso",
+      "length": 10,
+      "tx": 5.8,
+      "ty": 2.9,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-059",
+      "parent": "torso",
+      "length": 10,
+      "tx": 5.9,
+      "ty": 2.95,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-060",
+      "parent": "torso",
+      "length": 10,
+      "tx": 6.0,
+      "ty": 3.0,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-061",
+      "parent": "torso",
+      "length": 10,
+      "tx": 6.1,
+      "ty": 3.05,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-062",
+      "parent": "torso",
+      "length": 10,
+      "tx": 6.2,
+      "ty": 3.1,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-063",
+      "parent": "torso",
+      "length": 10,
+      "tx": 6.3,
+      "ty": 3.15,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-064",
+      "parent": "torso",
+      "length": 10,
+      "tx": 6.4,
+      "ty": 3.2,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-065",
+      "parent": "torso",
+      "length": 10,
+      "tx": 6.5,
+      "ty": 3.25,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-066",
+      "parent": "torso",
+      "length": 10,
+      "tx": 6.6,
+      "ty": 3.3,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-067",
+      "parent": "torso",
+      "length": 10,
+      "tx": 6.7,
+      "ty": 3.35,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-068",
+      "parent": "torso",
+      "length": 10,
+      "tx": 6.8,
+      "ty": 3.4,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-069",
+      "parent": "torso",
+      "length": 10,
+      "tx": 6.9,
+      "ty": 3.45,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-070",
+      "parent": "torso",
+      "length": 10,
+      "tx": 7.0,
+      "ty": 3.5,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-071",
+      "parent": "torso",
+      "length": 10,
+      "tx": 7.1,
+      "ty": 3.55,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-072",
+      "parent": "torso",
+      "length": 10,
+      "tx": 7.2,
+      "ty": 3.6,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-073",
+      "parent": "torso",
+      "length": 10,
+      "tx": 7.3,
+      "ty": 3.65,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-074",
+      "parent": "torso",
+      "length": 10,
+      "tx": 7.4,
+      "ty": 3.7,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-075",
+      "parent": "torso",
+      "length": 10,
+      "tx": 7.5,
+      "ty": 3.75,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-076",
+      "parent": "torso",
+      "length": 10,
+      "tx": 7.6,
+      "ty": 3.8,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-077",
+      "parent": "torso",
+      "length": 10,
+      "tx": 7.7,
+      "ty": 3.85,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-078",
+      "parent": "torso",
+      "length": 10,
+      "tx": 7.8,
+      "ty": 3.9,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-079",
+      "parent": "torso",
+      "length": 10,
+      "tx": 7.9,
+      "ty": 3.95,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-080",
+      "parent": "torso",
+      "length": 10,
+      "tx": 8.0,
+      "ty": 4.0,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-081",
+      "parent": "torso",
+      "length": 10,
+      "tx": 8.1,
+      "ty": 4.05,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-082",
+      "parent": "torso",
+      "length": 10,
+      "tx": 8.2,
+      "ty": 4.1,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-083",
+      "parent": "torso",
+      "length": 10,
+      "tx": 8.3,
+      "ty": 4.15,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-084",
+      "parent": "torso",
+      "length": 10,
+      "tx": 8.4,
+      "ty": 4.2,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-085",
+      "parent": "torso",
+      "length": 10,
+      "tx": 8.5,
+      "ty": 4.25,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-086",
+      "parent": "torso",
+      "length": 10,
+      "tx": 8.6,
+      "ty": 4.3,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-087",
+      "parent": "torso",
+      "length": 10,
+      "tx": 8.7,
+      "ty": 4.35,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-088",
+      "parent": "torso",
+      "length": 10,
+      "tx": 8.8,
+      "ty": 4.4,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-089",
+      "parent": "torso",
+      "length": 10,
+      "tx": 8.9,
+      "ty": 4.45,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-090",
+      "parent": "torso",
+      "length": 10,
+      "tx": 9.0,
+      "ty": 4.5,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-091",
+      "parent": "torso",
+      "length": 10,
+      "tx": 9.1,
+      "ty": 4.55,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-092",
+      "parent": "torso",
+      "length": 10,
+      "tx": 9.2,
+      "ty": 4.6,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-093",
+      "parent": "torso",
+      "length": 10,
+      "tx": 9.3,
+      "ty": 4.65,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-094",
+      "parent": "torso",
+      "length": 10,
+      "tx": 9.4,
+      "ty": 4.7,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-095",
+      "parent": "torso",
+      "length": 10,
+      "tx": 9.5,
+      "ty": 4.75,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-096",
+      "parent": "torso",
+      "length": 10,
+      "tx": 9.6,
+      "ty": 4.8,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-097",
+      "parent": "torso",
+      "length": 10,
+      "tx": 9.7,
+      "ty": 4.85,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-098",
+      "parent": "torso",
+      "length": 10,
+      "tx": 9.8,
+      "ty": 4.9,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-099",
+      "parent": "torso",
+      "length": 10,
+      "tx": 9.9,
+      "ty": 4.95,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-100",
+      "parent": "torso",
+      "length": 10,
+      "tx": 10.0,
+      "ty": 5.0,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-101",
+      "parent": "torso",
+      "length": 10,
+      "tx": 10.1,
+      "ty": 5.05,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-102",
+      "parent": "torso",
+      "length": 10,
+      "tx": 10.2,
+      "ty": 5.1,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-103",
+      "parent": "torso",
+      "length": 10,
+      "tx": 10.3,
+      "ty": 5.15,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-104",
+      "parent": "torso",
+      "length": 10,
+      "tx": 10.4,
+      "ty": 5.2,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-105",
+      "parent": "torso",
+      "length": 10,
+      "tx": 10.5,
+      "ty": 5.25,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-106",
+      "parent": "torso",
+      "length": 10,
+      "tx": 10.6,
+      "ty": 5.3,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-107",
+      "parent": "torso",
+      "length": 10,
+      "tx": 10.7,
+      "ty": 5.35,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-108",
+      "parent": "torso",
+      "length": 10,
+      "tx": 10.8,
+      "ty": 5.4,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-109",
+      "parent": "torso",
+      "length": 10,
+      "tx": 10.9,
+      "ty": 5.45,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-110",
+      "parent": "torso",
+      "length": 10,
+      "tx": 11.0,
+      "ty": 5.5,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-111",
+      "parent": "torso",
+      "length": 10,
+      "tx": 11.1,
+      "ty": 5.55,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-112",
+      "parent": "torso",
+      "length": 10,
+      "tx": 11.2,
+      "ty": 5.6,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-113",
+      "parent": "torso",
+      "length": 10,
+      "tx": 11.3,
+      "ty": 5.65,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-114",
+      "parent": "torso",
+      "length": 10,
+      "tx": 11.4,
+      "ty": 5.7,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-115",
+      "parent": "torso",
+      "length": 10,
+      "tx": 11.5,
+      "ty": 5.75,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-116",
+      "parent": "torso",
+      "length": 10,
+      "tx": 11.6,
+      "ty": 5.8,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-117",
+      "parent": "torso",
+      "length": 10,
+      "tx": 11.7,
+      "ty": 5.85,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-118",
+      "parent": "torso",
+      "length": 10,
+      "tx": 11.8,
+      "ty": 5.9,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-119",
+      "parent": "torso",
+      "length": 10,
+      "tx": 11.9,
+      "ty": 5.95,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-120",
+      "parent": "torso",
+      "length": 10,
+      "tx": 12.0,
+      "ty": 6.0,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-121",
+      "parent": "torso",
+      "length": 10,
+      "tx": 12.1,
+      "ty": 6.05,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-122",
+      "parent": "torso",
+      "length": 10,
+      "tx": 12.2,
+      "ty": 6.1,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-123",
+      "parent": "torso",
+      "length": 10,
+      "tx": 12.3,
+      "ty": 6.15,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-124",
+      "parent": "torso",
+      "length": 10,
+      "tx": 12.4,
+      "ty": 6.2,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-125",
+      "parent": "torso",
+      "length": 10,
+      "tx": 12.5,
+      "ty": 6.25,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-126",
+      "parent": "torso",
+      "length": 10,
+      "tx": 12.6,
+      "ty": 6.3,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "extra-127",
+      "parent": "torso",
+      "length": 10,
+      "tx": 12.7,
+      "ty": 6.35,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    }
+  ],
+  "slots": [
+    {
+      "name": "costume",
+      "bone": "torso",
+      "attachment": "shape",
+      "color": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "blend_mode": "normal"
+    }
+  ],
+  "draw_order": [],
+  "skins": [
+    {
+      "name": "default",
+      "entries": [],
+      "bones": [],
+      "constraints": [
+        "spring-A",
+        "spring-B",
+        "spring-C"
+      ]
+    },
+    {
+      "name": "on",
+      "entries": [
+        {
+          "slot": "costume",
+          "name": "shape",
+          "attachment": {
+            "type": "clipping",
+            "vertices": [
+              0,
+              0,
+              11,
+              0,
+              0,
+              11
+            ],
+            "end_slot": null
+          }
+        }
+      ],
+      "bones": [
+        "A",
+        "C"
+      ],
+      "constraints": [
+        "spring-A",
+        "spring-B",
+        "spring-C"
+      ]
+    },
+    {
+      "name": "visual",
+      "entries": [
+        {
+          "slot": "costume",
+          "name": "shape",
+          "attachment": {
+            "type": "clipping",
+            "vertices": [
+              0,
+              0,
+              12,
+              0,
+              0,
+              12
+            ],
+            "end_slot": null
+          }
+        }
+      ],
+      "bones": [
+        "A",
+        "C"
+      ],
+      "constraints": [
+        "spring-A",
+        "spring-B",
+        "spring-C"
+      ]
+    },
+    {
+      "name": "off",
+      "entries": [],
+      "bones": [],
+      "constraints": [
+        "spring-B"
+      ]
+    },
+    {
+      "name": "partial",
+      "entries": [],
+      "bones": [
+        "A"
+      ],
+      "constraints": [
+        "spring-A",
+        "spring-B"
+      ]
+    }
+  ],
+  "default_skin": "default",
+  "constraints": [
+    {
+      "name": "spring-A",
+      "type": "physics",
+      "target": "A",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "spring-B",
+      "type": "physics",
+      "target": "B",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "spring-C",
+      "type": "physics",
+      "target": "C",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-000",
+      "type": "physics",
+      "target": "extra-006",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-001",
+      "type": "physics",
+      "target": "extra-007",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-002",
+      "type": "physics",
+      "target": "extra-008",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-003",
+      "type": "physics",
+      "target": "extra-009",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-004",
+      "type": "physics",
+      "target": "extra-010",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-005",
+      "type": "physics",
+      "target": "extra-011",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-006",
+      "type": "physics",
+      "target": "extra-012",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-007",
+      "type": "physics",
+      "target": "extra-013",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-008",
+      "type": "physics",
+      "target": "extra-014",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-009",
+      "type": "physics",
+      "target": "extra-015",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-010",
+      "type": "physics",
+      "target": "extra-016",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-011",
+      "type": "physics",
+      "target": "extra-017",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-012",
+      "type": "physics",
+      "target": "extra-018",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-013",
+      "type": "physics",
+      "target": "extra-019",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-014",
+      "type": "physics",
+      "target": "extra-020",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-015",
+      "type": "physics",
+      "target": "extra-021",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-016",
+      "type": "physics",
+      "target": "extra-022",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-017",
+      "type": "physics",
+      "target": "extra-023",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-018",
+      "type": "physics",
+      "target": "extra-024",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-019",
+      "type": "physics",
+      "target": "extra-025",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-020",
+      "type": "physics",
+      "target": "extra-026",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-021",
+      "type": "physics",
+      "target": "extra-027",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-022",
+      "type": "physics",
+      "target": "extra-028",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-023",
+      "type": "physics",
+      "target": "extra-029",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-024",
+      "type": "physics",
+      "target": "extra-030",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-025",
+      "type": "physics",
+      "target": "extra-031",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-026",
+      "type": "physics",
+      "target": "extra-032",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-027",
+      "type": "physics",
+      "target": "extra-033",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-028",
+      "type": "physics",
+      "target": "extra-034",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-029",
+      "type": "physics",
+      "target": "extra-035",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-030",
+      "type": "physics",
+      "target": "extra-036",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-031",
+      "type": "physics",
+      "target": "extra-037",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-032",
+      "type": "physics",
+      "target": "extra-038",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-033",
+      "type": "physics",
+      "target": "extra-039",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-034",
+      "type": "physics",
+      "target": "extra-040",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-035",
+      "type": "physics",
+      "target": "extra-041",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-036",
+      "type": "physics",
+      "target": "extra-042",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-037",
+      "type": "physics",
+      "target": "extra-043",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-038",
+      "type": "physics",
+      "target": "extra-044",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-039",
+      "type": "physics",
+      "target": "extra-045",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-040",
+      "type": "physics",
+      "target": "extra-046",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-041",
+      "type": "physics",
+      "target": "extra-047",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-042",
+      "type": "physics",
+      "target": "extra-048",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-043",
+      "type": "physics",
+      "target": "extra-049",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-044",
+      "type": "physics",
+      "target": "extra-050",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-045",
+      "type": "physics",
+      "target": "extra-051",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-046",
+      "type": "physics",
+      "target": "extra-052",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-047",
+      "type": "physics",
+      "target": "extra-053",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-048",
+      "type": "physics",
+      "target": "extra-054",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-049",
+      "type": "physics",
+      "target": "extra-055",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-050",
+      "type": "physics",
+      "target": "extra-056",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-051",
+      "type": "physics",
+      "target": "extra-057",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-052",
+      "type": "physics",
+      "target": "extra-058",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-053",
+      "type": "physics",
+      "target": "extra-059",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-054",
+      "type": "physics",
+      "target": "extra-060",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-055",
+      "type": "physics",
+      "target": "extra-061",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-056",
+      "type": "physics",
+      "target": "extra-062",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-057",
+      "type": "physics",
+      "target": "extra-063",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-058",
+      "type": "physics",
+      "target": "extra-064",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-059",
+      "type": "physics",
+      "target": "extra-065",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    },
+    {
+      "name": "extra-spring-060",
+      "type": "physics",
+      "target": "extra-066",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    }
+  ],
+  "constraint_order": [
+    "spring-A",
+    "spring-B",
+    "spring-C",
+    "extra-spring-000",
+    "extra-spring-001",
+    "extra-spring-002",
+    "extra-spring-003",
+    "extra-spring-004",
+    "extra-spring-005",
+    "extra-spring-006",
+    "extra-spring-007",
+    "extra-spring-008",
+    "extra-spring-009",
+    "extra-spring-010",
+    "extra-spring-011",
+    "extra-spring-012",
+    "extra-spring-013",
+    "extra-spring-014",
+    "extra-spring-015",
+    "extra-spring-016",
+    "extra-spring-017",
+    "extra-spring-018",
+    "extra-spring-019",
+    "extra-spring-020",
+    "extra-spring-021",
+    "extra-spring-022",
+    "extra-spring-023",
+    "extra-spring-024",
+    "extra-spring-025",
+    "extra-spring-026",
+    "extra-spring-027",
+    "extra-spring-028",
+    "extra-spring-029",
+    "extra-spring-030",
+    "extra-spring-031",
+    "extra-spring-032",
+    "extra-spring-033",
+    "extra-spring-034",
+    "extra-spring-035",
+    "extra-spring-036",
+    "extra-spring-037",
+    "extra-spring-038",
+    "extra-spring-039",
+    "extra-spring-040",
+    "extra-spring-041",
+    "extra-spring-042",
+    "extra-spring-043",
+    "extra-spring-044",
+    "extra-spring-045",
+    "extra-spring-046",
+    "extra-spring-047",
+    "extra-spring-048",
+    "extra-spring-049",
+    "extra-spring-050",
+    "extra-spring-051",
+    "extra-spring-052",
+    "extra-spring-053",
+    "extra-spring-054",
+    "extra-spring-055",
+    "extra-spring-056",
+    "extra-spring-057",
+    "extra-spring-058",
+    "extra-spring-059",
+    "extra-spring-060"
+  ],
+  "animations": [
+    {
+      "name": "breathing",
+      "duration": 1.0,
+      "looping": true,
+      "timelines": [
+        {
+          "kind": "bone_translate",
+          "bone": "torso",
+          "axis": "x",
+          "keys": [
+            {
+              "time": 0.0,
+              "value": 0.0,
+              "curve": "linear"
+            },
+            {
+              "time": 0.25,
+              "value": 1.5,
+              "curve": "bezier",
+              "handles": [
+                0.25,
+                -0.2,
+                0.75,
+                1.2
+              ]
+            },
+            {
+              "time": 0.75,
+              "value": -0.5,
+              "curve": "linear"
+            },
+            {
+              "time": 1.0,
+              "value": 0.0,
+              "curve": "linear"
+            }
+          ]
+        },
+        {
+          "kind": "bone_translate",
+          "bone": "torso",
+          "axis": "y",
+          "keys": [
+            {
+              "time": 0.0,
+              "value": 0.0,
+              "curve": "linear"
+            },
+            {
+              "time": 0.5,
+              "value": 0.4,
+              "curve": "stepped"
+            },
+            {
+              "time": 0.8,
+              "value": -0.2,
+              "curve": "stepped"
+            },
+            {
+              "time": 1.0,
+              "value": 0.0,
+              "curve": "linear"
+            }
+          ]
+        },
+        {
+          "kind": "bone_rotate",
+          "bone": "torso",
+          "keys": [
+            {
+              "time": 0.0,
+              "value": 0.0,
+              "curve": "linear"
+            },
+            {
+              "time": 0.5,
+              "value": 3.0,
+              "curve": "linear"
+            },
+            {
+              "time": 1.0,
+              "value": 0.0,
+              "curve": "linear"
+            }
+          ]
+        },
+        {
+          "kind": "bone_scale",
+          "bone": "torso",
+          "axis": "x",
+          "keys": [
+            {
+              "time": 0.1,
+              "value": 1.0,
+              "curve": "linear"
+            },
+            {
+              "time": 0.6,
+              "value": 1.02,
+              "curve": "linear"
+            }
+          ]
+        },
+        {
+          "kind": "bone_scale",
+          "bone": "torso",
+          "axis": "y",
+          "keys": [
+            {
+              "time": 0.0,
+              "value": 1.0,
+              "curve": "linear"
+            },
+            {
+              "time": 0.7,
+              "value": 0.98,
+              "curve": "linear"
+            }
+          ]
+        },
+        {
+          "kind": "bone_shear",
+          "bone": "torso",
+          "axis": "x",
+          "keys": [
+            {
+              "time": 0.0,
+              "value": 0.0,
+              "curve": "linear"
+            },
+            {
+              "time": 0.75,
+              "value": 1.0,
+              "curve": "linear"
+            }
+          ]
+        },
+        {
+          "kind": "bone_shear",
+          "bone": "torso",
+          "axis": "y",
+          "keys": [
+            {
+              "time": 0.0,
+              "value": 0.0,
+              "curve": "linear"
+            },
+            {
+              "time": 0.9,
+              "value": -1.0,
+              "curve": "linear"
+            }
+          ]
+        },
+        {
+          "kind": "bone_translate",
+          "bone": "root",
+          "axis": "x",
+          "keys": [
+            {
+              "time": 0.0,
+              "value": 50.0,
+              "curve": "linear"
+            },
+            {
+              "time": 0.5,
+              "value": 52.0,
+              "curve": "linear"
+            },
+            {
+              "time": 1.0,
+              "value": 50.0,
+              "curve": "linear"
+            }
+          ]
+        },
+        {
+          "kind": "bone_rotate",
+          "bone": "root",
+          "keys": [
+            {
+              "time": 0.0,
+              "value": 0.0,
+              "curve": "linear"
+            },
+            {
+              "time": 0.5,
+              "value": 5.0,
+              "curve": "linear"
+            },
+            {
+              "time": 1.0,
+              "value": 0.0,
+              "curve": "linear"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

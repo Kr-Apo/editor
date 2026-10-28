@@ -1,2 +1,12 @@
 # Generated documentation is compared byte-for-byte by xtask on every platform.
 docs/reference/*.md text eol=lf
+
+# B4 author fixtures are compared with freshly serialized native author bytes.
+export/tests/fixtures/t840b4/** -text
+export/tests/fixtures/t840b5a/** -text
+
+/export/tests/fixtures/t840b5b1/*.json -text
+
+/export/tests/fixtures/t840b5b2/*.json -text
+
+/export/tests/fixtures/t840b6/*.json -text

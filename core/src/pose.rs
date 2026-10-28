@@ -356,6 +356,17 @@ pub fn selection_bounds(
     any.then_some((min, max))
 }
 
+/// Internal bone-only sampling seam. Caller validates the clip's channel domain.
+/// Uses the very same animation stage, without building unused slot state or FK.
+pub(crate) fn animation_locals(skel: &Skeleton, anim: &Animation, time: f32) -> Pose {
+    let mut out = Pose::new();
+    for (id, bone) in skel.bones.iter() {
+        out.locals.insert(id, bone.local_transform);
+    }
+    apply_animations(skel, &[(anim, time, 1.0)], &mut out);
+    out
+}
+
 fn apply_animations(skel: &Skeleton, anims: &[(&Animation, f32, f32)], out: &mut Pose) {
     // Winner-takes-all bookkeeping for the non-blendable timelines.
     let mut attachment_winner: SecondaryMap<SlotId, f32> = SecondaryMap::new();
@@ -613,7 +624,7 @@ fn apply_draw_order_offsets(order: &mut [SlotId], offsets: &[(SlotId, i32)]) {
 }
 
 /// Stage 4 — compose world affines for every bone along `update_order`.
-fn update_worlds(skel: &Skeleton, out: &mut Pose) {
+pub(crate) fn update_worlds(skel: &Skeleton, out: &mut Pose) {
     for &id in &skel.update_order {
         update_world_of(skel, out, id);
     }
@@ -863,6 +874,17 @@ fn apply_physics(
         constraint.mass,
     );
 
+    apply_physics_offsets(skel, out, constraint, rotation, position);
+}
+
+pub(crate) fn apply_physics_offsets(
+    skel: &Skeleton,
+    out: &mut Pose,
+    constraint: &crate::constraints::PhysicsConstraint,
+    rotation: f32,
+    position: glam::Vec2,
+) {
+    let bone = constraint.bone;
     let mix = constraint.mix.clamp(0.0, 1.0);
     if mix <= 0.0 {
         return;
