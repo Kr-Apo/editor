@@ -1,118 +1,93 @@
-> **P01-RC1 local candidate — 28 October 2026.** Read the [current contracts and qualification boundary](docs/p01-rc1-workflow.md) before the historical notes below. Proposed Classic v0.1.6 is not tagged/released here. Runtime package versions are unchanged; ReplayV1 A17 is explicit and separate from Legacy playback.
-
 # Ankhimate
 
-**A native 2D skeletal animation editor written in Rust** — bones, skins, meshes, weights, keyframes and an extensible export pipeline.
+**A native 2D skeletal animation editor built with Rust.** Rig illustrated characters, animate with bones and weighted meshes, refine free-form deformations, and export your work for video or compatible game runtimes.
 
-Rig image parts into a skeleton, animate them on a timeline, and export rendered frames or data for game runtimes. Ankhimate is free and open source under **MIT OR Apache-2.0**.
+**[Download v0.1.6 — Windows x64](https://github.com/Kr-Apo/editor/releases/tag/v0.1.6)** · **[Getting Started](docs/GETTING-STARTED.md)** · **[PixiJS / Phaser runtimes](https://github.com/Kr-Apo/runtime)**
 
-> **Status: v0.1.5 early public pre-release — Windows x64.** The editor works, but file compatibility, advanced workflows and hardware qualification are still evolving. This is not a production-stability guarantee. See [Known Limitations](docs/KNOWN-LIMITATIONS.md) and [current tasks](docs/TASKS.md).
+> **Status:** v0.1.6 public **pre-release**. The Windows executable is unsigned. Advanced workflows, hardware coverage and runtime compatibility are still evolving.
 
-![Ankhimate editor — native animation workspace](https://github.com/user-attachments/assets/34d2ad47-68e5-4218-ab15-415cb7d00a5a)
+<img width="2559" height="1390" alt="frog-knight-editor" src="https://github.com/user-attachments/assets/13d147de-3a85-49b7-af7e-c374050f0a23" />
 
 ## Download & install
 
-**[Download Ankhimate v0.1.5 for Windows](https://github.com/Kr-Apo/editor/releases/tag/v0.1.5)**
+1. Download the Windows ZIP from the **[v0.1.6 release](https://github.com/Kr-Apo/editor/releases/tag/v0.1.6)**.
+2. Extract the complete ZIP to a writable folder and run `Ankhimate.exe`. No Rust installation is needed.
+3. Open `Examples/Jade-Sentinel/Sentinelle.ankh` via **File > Open…**. Keep `Sentinelle.assets` alongside the project.
+4. Use **File > Save As…** before editing the sample.
 
-1. Download `Ankhimate-v0.1.5-Windows-Candidate.zip` from the release assets.
-2. Extract the entire ZIP into a folder.
-3. Double-click `Ankhimate.exe`. No Rust toolchain or launcher script is required.
-4. To explore a sample, choose **File > Open…** and select `Examples/Jade-Sentinel/Sentinelle.ankh`. Keep its `Sentinelle.assets` folder next to the project.
+The installer-free archive contains no AI model or FFmpeg executable. See [Getting Started](docs/GETTING-STARTED.md) and [Known Limitations](docs/KNOWN-LIMITATIONS.md).
 
-The published v0.1.5 Windows executable is **unsigned**; its About dialog identifies that version. The P01-RC1 candidate instead reports **0.1.6** and its exact source commit. No v0.1.6 download or tag is announced before final approval.
+## Features
 
-The release is tagged at **[`f436474ace8580742113bf3447b430bbbd74153f`](https://github.com/Kr-Apo/editor/tree/v0.1.5)**. That tag preserves the corresponding source even when the `main` branch receives further documentation changes.
+- **Skeletal rigging:** bones, hierarchies, skins, slots, attachments, supported IK/Transform/Path constraints and Physics workflows.
+- **Meshes & weights:** UVs, mesh tracing, weighted skinning, manual weight painting and guarded Auto Weight.
+- **Animation:** Dopesheet, Graph Editor, Linear/Stepped/Bézier interpolation, onion skinning, events and timeline editing.
+- **Free-form deformation (FFD):** compatible animated mesh deformations, full-pose/rest keys, Undo/Redo and Save/Reopen.
+- **Artwork import:** PNG, JPEG, WebP and supported layered PSD workflows.
+- **Export:** native v2 data/atlas, PNG/JPEG/WebP frames, spritesheets and MP4/GIF with a separate FFmpeg installation.
+- **Project recovery:** `.ankh` projects with accompanying `.assets`, autosave and recovery-copy review.
 
-## What works today
+Read the [full feature guide](docs/FEATURES.md), [rigging walkthrough](docs/rigging-walkthrough.md) and [FFD/weights guide](docs/p01-rc1-workflow.md).
 
-- **Setup and Animate modes** — separate structural rigging edits from animated poses.
-- **Bones and constraints** — hierarchy, FK transforms, multibone IK, Transform and Path constraints, plus bounded physics workflows.
-- **Slots, attachments and skins** — assign visuals through slots, manage variations, draw order, clipping and supported attachment types.
-- **Meshes and weights** — vertex and UV editing, alpha-silhouette tracing, weighted meshes, weight painting and validated mesh operations.
-- **Animation** — Dopesheet, Graph Editor, Linear/Stepped/Bezier interpolation, onion skinning, events, clip reordering and retiming.
-- **Free-form deformation (FFD)** — edit compatible mesh deformation keys with native Undo/Redo.
-- **Import** — PNG, JPEG and WebP images; layered PSD files and supported PSD update/relink workflows; atlas-related tools.
-- **Editing workflows** — hierarchy tools, selection, numeric editing, document commands and undoable operations.
-- **Save and recovery** — `.ankh` author project profiles, sidecar assets, Save As, autosave/recovery review, and persistent **Ignore** for unchanged recovery copies.
-- **Export** — native data/atlas, CPU-rendered PNG/JPEG/WebP sequences and Ankhimate spritesheets; MP4/GIF through **separately installed FFmpeg**.
-- **Optional AI Assistant** — provider profiles for OpenAI, Anthropic, DeepSeek, Ollama, LM Studio and NInfer; native edits require explicit review and approval. No model is bundled.
+## Optional native AI Assistant
 
-See [Features](docs/FEATURES.md) for detailed capabilities and scope.
+Ankhimate supports configurable **OpenAI, Anthropic, DeepSeek, Ollama, LM Studio and NInfer** provider profiles, including local AI servers. It can inspect supported project data and propose reviewed native edits, including selected animation, weight, FFD and event operations. **Every native modification requires explicit approval and validation**, with Undo/Redo support. No model is bundled, and artistic quality is not guaranteed.
 
-## Not there yet
+See the [AI artistic tools](docs/ai/ARTISTIC.md) and [command contracts](docs/ai/TOOLS.md).
 
-The published v0.1.5 and proposed v0.1.6 remain early builds with important limits:
+## PixiJS & Phaser runtimes
 
-- **Runtime compatibility:** the separate TypeScript core and PixiJS/Phaser adapters support selected exported features, not every editor constraint, attachment, blend mode or deformation. **PathPosition is not supported in current game-runtime exports.**
-- **CPU-rendered export:** currently uses the default skin and Normal blending, with no physics. Ankhimate spritesheet JSON is not a native Phaser atlas format.
-- **Advanced editing:** vector Graph operations, linked/shared-mesh or arbitrary FFD migration, and some animation-manager interactions remain scoped or incomplete.
-- **Project safety:** save backups with their `.assets` directories. Multi-file writes are not guaranteed power-loss atomic; recovery cannot restore every session detail.
-- **Qualification:** broad Windows GPU/DPI checks, independent browser/adapter conformance and real AI-provider workflows remain pending. Automated test results are not full production certification.
+The separate **[Ankhimate runtime repository](https://github.com/Kr-Apo/runtime)** provides a TypeScript animation core with **PixiJS 8** and **Phaser 3** adapters. Export compatible characters using the **Data / atlas** preset; the runtime consumes native export data, **not `.ankh` author files**.
 
-Consult [Compatibility](docs/COMPATIBILITY.md), [Known Limitations](docs/KNOWN-LIMITATIONS.md), and [Tasks](docs/TASKS.md).
+Experimental opt-in **ReplayV1** has a qualified **A17** pilot combining bones, weighted FFD, animated slots, events, crossfades, interruptions and continuous Physics under **strict admission limits**. It is not a general guarantee for every rig and does not extend automatically to Legacy playback.
 
-## Workspace
+**[ReplayV1 contract & limits](https://github.com/Kr-Apo/runtime/blob/main/docs/replay-v1.md)** · **[Editor/runtime compatibility](docs/editor-runtime-compatibility.md)**
 
-| Crate | Responsibility |
-|---|---|
-| [`core`](core) — `ankhimate-core` | Framework-independent skeleton, constraints, animation and pose evaluation; WASM-compatible core. |
-| [`document`](document) — `ankhimate-document` | Document state, validation, native editing commands and Undo/Redo history. |
-| [`editor`](editor) — `ankhimate-editor` | Desktop app using egui/eframe and a wgpu viewport. |
-| [`formats`](formats) — `ankhimate-formats` | `.ankh` formats, supported conversions, image and PSD import. |
-| [`plugins`](plugins) — `ankhimate-plugins` | Plugin and guarded extension interfaces. |
-| [`render`](render) — `ankhimate-render` | Headless CPU rendering and compatible exports/tests. |
-| [`export`](export) — `ankhimate-export` | Data/atlas export, templates, preflight and rendered output. |
-| [`mcp`](mcp) — `ankhimate-mcp` | Headless tooling over supported document and rendering operations. |
-| [`xtask`](xtask) | Development, documentation and validation helpers. |
+The integrated A17 pilot uses a fixed default skin, one stable weighted FFD owner, exactly `Idle`/`Attack`/`Hit`/`Death` and bounded transition/event queues. Linked FFD, composed clipping and dynamic skins are not part of that integrated scope. No new npm package publication is implied.
 
-Game-side code lives in the separate **[Kr-Apo/runtime](https://github.com/Kr-Apo/runtime)** fork (TypeScript core and PixiJS/Phaser adapters), derived from [Ankhimate/runtime](https://github.com/Ankhimate/runtime). **Editor v0.1.5 does not imply runtime npm package version 0.1.5.** Check the [editor/runtime compatibility contract](docs/editor-runtime-compatibility.md).
+## What’s new in v0.1.6
 
-## Build & run
+- Auto Weight now **refuses incomplete results** on disconnected geometry without changing existing hand-painted weights.
+- Export preflight identifies faulty weighted vertices and their reasons.
+- **Animate** exposes FFD vertex editing and explicit **Key FFD pose / Key setup FFD** controls.
+- Native AI commands gain paged FFD reads, supported FFD key write/delete, exact bone-key deletion and default-payload animation events.
+- Updated Classic/ReplayV1 compatibility documentation.
 
-Requirements: **Rust 1.95** (pinned in `rust-toolchain.toml`), Git and its submodules, and a compatible graphics backend. Windows builds require MSVC C++ build tools and the Windows SDK.
+The reported Trace Mesh triangulation failure was **not reproduced**; diagnostics improved, but a general fix is **not claimed**. See the [v0.1.6 release notes](https://github.com/Kr-Apo/editor/releases/tag/v0.1.6).
+
+## Important limitations
+
+- This is an **early public pre-release**, not a general production or mobile certification.
+- CPU-rendered exports use the **default skin**, **Normal** blending and **no Physics**. Native spritesheet metadata is not directly a Phaser atlas.
+- Some advanced editing, linked/shared FFD, topology migration, constraints and runtime combinations remain unqualified.
+- **PathPosition** is not supported by current game-runtime exports.
+- Keep backups of each `.ankh` project **and its `.assets` folder**; autosave is not a full backup.
+
+See [Compatibility](docs/COMPATIBILITY.md) and [Known Limitations](docs/KNOWN-LIMITATIONS.md).
+
+## Build from source
+
+Requires Rust **1.95** (pinned in `rust-toolchain.toml`), Git with submodules and supported graphics/build tools. Windows requires MSVC and the Windows SDK.
 
 ```bash
 git clone --recurse-submodules https://github.com/Kr-Apo/editor.git
 cd editor
 cargo run --locked -p ankhimate-editor
-cargo run --locked -p ankhimate-mcp
 cargo test --workspace --locked --all-targets
 cargo fmt --all -- --check
 cargo clippy --workspace --locked --all-targets
 cargo run --locked -p xtask -- docs-check
 ```
 
-To reproduce the **exact release source**, check out `v0.1.5` before building and update submodules for that tag. See [build instructions](docs/CANDIDATE_BUILD.md) for release-specific settings.
+To inspect the exact tagged source, check out [`v0.1.6`](https://github.com/Kr-Apo/editor/tree/v0.1.6). The Windows binary was built from an **identical-tree local source checkpoint**, not rebuilt from the public merge SHA; the [release page](https://github.com/Kr-Apo/editor/releases/tag/v0.1.6) records its provenance.
 
-## Try it
+## Documentation & contributing
 
-The Windows package includes **Jade Sentinel**, a sample project with five image assets and `idle`/`attack` animation clips. Open it via **File > Open…**, explore its timeline and hierarchy, and use **File > Save As…** before editing.
+[Getting Started](docs/GETTING-STARTED.md) · [Features](docs/FEATURES.md) · [Graph Editor](docs/graph-editor.md) · [Export compatibility](docs/COMPATIBILITY.md) · [AI Assistant](docs/ai/ARTISTIC.md) · [Tasks](docs/TASKS.md) · [Contributing](CONTRIBUTING.md)
 
-More examples and guidance: [Rigging Walkthrough](docs/rigging-walkthrough.md) and [Jade Sentinel](docs/jade-sentinel.md).
-
-## Contributing
-
-Contributions and focused bug reports are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/TASKS.md](docs/TASKS.md). Include the version, commit, steps to reproduce and relevant logs, but never share private projects or credentials.
-
-**Clean-room policy:** implement observed behavior independently; do not copy source code from other animation editors. Preserve upstream credit and third-party licenses.
+Bug reports and focused contributions are welcome. Include version, reproduction steps and error messages without posting private artwork or credentials.
 
 ## License & origin
 
-This is the **unofficial Kr-Apo community fork** of [Ankhimate/editor](https://github.com/Ankhimate/editor). It is not endorsed by upstream maintainers.
+Ankhimate is open source under **[MIT](LICENSE-MIT) OR [Apache-2.0](LICENSE-APACHE)**. This is the **unofficial Kr-Apo community fork** of [Ankhimate/editor](https://github.com/Ankhimate/editor), not endorsed by upstream maintainers. Original credits and third-party notices are preserved in [the source notices](docs/THIRD_PARTY_SOURCE_NOTICE.md).<img width="512" height="512" alt="frog-knight-demo" src="https://github.com/user-attachments/assets/fee7498d-7a3c-406f-b2fb-a2b620a8d640" />
 
-The editor is dual-licensed, at your option, under [MIT](LICENSE-MIT) **OR** [Apache-2.0](LICENSE-APACHE). Bundled assets and dependencies have their own requirements. See [third-party source information](docs/THIRD_PARTY_SOURCE_NOTICE.md) and [Jade Sentinel's asset license](samples/jade-sentinel/ASSET-LICENSE.txt).
-
-## Documentation
-
-- [Getting Started](docs/GETTING-STARTED.md) — installation, Jade, Save As, recovery.
-- [Features](docs/FEATURES.md) — supported authoring workflows.
-- [Compatibility](docs/COMPATIBILITY.md) — project formats and game-runtime boundaries.
-- [Known Limitations](docs/KNOWN-LIMITATIONS.md) — restrictions and risk areas.
-- [Project Recovery](docs/project-recovery.md) — recover/Ignore behavior.
-- [Graph Editor](docs/graph-editor.md) — editing curves and keys.
-- [Export Context](docs/export-context.md) — templates and export data.
-- [Rigging Walkthrough](docs/rigging-walkthrough.md) — building a rig.
-- [Tasks](docs/TASKS.md) — history and outstanding acceptance criteria.
-- [v0.1.5 Release](https://github.com/Kr-Apo/editor/releases/tag/v0.1.5) — download and checksum.
-
-> **Versioning:** `v0.1.5` is intentionally numerically lower than historical `v0.2.0-alpha.1` candidates. The editor product version, author project schema, game-runtime format and npm package versions are separate identifiers.
