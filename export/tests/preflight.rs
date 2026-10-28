@@ -36,6 +36,39 @@ fn valid_runtime_has_no_unjustified_warning_and_preserves_its_input() {
 }
 
 #[test]
+fn p01_weight_failure_identifies_every_vertex_and_its_influences() {
+    let (mut project, assets) = fixture();
+    project.skins[0].entries[0].attachment = serde_json::from_value(json!({
+        "type":"mesh", "texture":"art", "vertices":[0,0,1,0,0,1],
+        "uvs":[0,0,1,0,0,1], "triangles":[0,1,2],
+        "weights":[[],[["missing",-0.5]],[["root",1]]]
+    }))
+    .unwrap();
+    let report = preflight::inspect(&project, &assets, Target::Runtime, None);
+    let errors = report
+        .items
+        .iter()
+        .filter(|d| d.code == "invalid-weights")
+        .collect::<Vec<_>>();
+    assert_eq!(
+        errors.len(),
+        2,
+        "report each faulty vertex, not only the first row"
+    );
+    for (vertex, d) in errors.iter().enumerate() {
+        assert!(
+            d.subject.contains("default")
+                && d.subject.contains("slot")
+                && d.subject.contains("art")
+        );
+        assert!(d.message.contains(&format!("vertex {vertex}")));
+        assert!(d.message.contains("influences") && d.message.contains("Correct"));
+    }
+    assert!(errors[1].message.contains("missing") && errors[1].message.contains("-0.5"));
+    assert!(!report.allowed(true));
+}
+
+#[test]
 fn alpha_diagnostics_describe_qualified_dark_tint_without_trusting_package_labels() {
     let (mut project, assets) = fixture();
     project.slots[0].dark_color = Some([0.2, 0.3, 0.4, 1.0]);
@@ -64,7 +97,7 @@ fn alpha_diagnostics_describe_qualified_dark_tint_without_trusting_package_label
 }
 
 #[test]
-fn native_physics_diagnostic_identifies_real_incompatibility_and_keeps_rendered_refusal() {
+fn native_physics_diagnostic_requires_consumer_qualification_and_keeps_rendered_refusal() {
     let (mut project, assets) = fixture();
     project.constraints.push(
         serde_json::from_value(
@@ -76,10 +109,12 @@ fn native_physics_diagnostic_identifies_real_incompatibility_and_keeps_rendered_
     let warning = report
         .items
         .iter()
-        .find(|d| d.code == "runtime-physics-incompatible")
-        .expect("native physics is incompatible, not merely unqualified");
+        .find(|d| d.code == "runtime-physics-unqualified")
+        .expect("activation is repaired in T839, but simulation parity is not qualified");
     assert_eq!(warning.severity, Severity::Warning);
-    assert!(warning.message.contains("does not activate"));
+    assert!(warning.message.contains("before T839"));
+    assert!(warning.message.contains("accumulator"));
+    assert!(warning.message.contains("PixiJS"));
     assert!(warning.message.contains("target"));
     assert!(warning.message.contains("bones"));
     assert!(!report.allowed(false));

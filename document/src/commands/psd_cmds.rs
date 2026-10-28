@@ -38,6 +38,10 @@ impl ImportPsd {
 }
 
 impl EditCommand for ImportPsd {
+    fn replaces_rig(&self) -> bool {
+        self.replace
+    }
+
     fn apply(&mut self, doc: &mut Document) {
         if let Some(other) = self.other.as_mut() {
             std::mem::swap(doc, other);

@@ -12,6 +12,67 @@ use ankhimate_document::{
     ffd_keys::{Action, Capture},
 };
 use eframe::egui;
+
+/// Explicit full pose/rest key; no topology edits and no implicit sparse keys.
+pub fn key_pose(s: &mut AppState, addr: &TimelineAddr, rest: bool) -> Result<(), String> {
+    editable_addr(s, addr)?;
+    let TimelineAddr::Deform {
+        slot,
+        attachment,
+        owner: Some(skin),
+    } = addr
+    else {
+        return Err("Unresolved mesh owner".into());
+    };
+    if ankhimate_document::ffd_keys::owner(&s.doc, *slot, attachment)? != *skin {
+        return Err("Ambiguous FFD owner".into());
+    }
+    let anim = s.session.active_animation.ok_or("Select an animation")?;
+    let time = s.session.playhead;
+    if !time.is_finite() || time < 0. || time > s.doc.animations[anim].duration {
+        return Err("FFD key time is outside the clip".into());
+    }
+    let Some(Attachment::Mesh(m)) = s.doc.skeleton.skins[*skin].get(*slot, attachment) else {
+        return Err("Not a mesh".into());
+    };
+    if m.linked.is_some() || !m.ffd_keyframes.is_empty() || s.doc.skeleton.skins.values().flat_map(|sk|sk.entries.values()).any(|a|matches!(a,Attachment::Mesh(other) if other.linked.as_ref().is_some_and(|l|l.slot==s.doc.skeleton.slots[*slot].name&&l.attachment==*attachment))) {return Err("Linked/shared/inline FFD ownership is not editable here".into())}
+    let count = if m.weights.is_empty() {
+        m.setup_vertices.len()
+    } else {
+        m.influence_count()
+    };
+    if count == 0
+        || (!m.weights.is_empty()
+            && (m.weights.len() != m.setup_vertices.len()
+                || m.weights.iter().any(|r| r.is_empty())))
+    {
+        return Err("Bind every weighted vertex before keying FFD".into());
+    }
+    let offsets = if rest {
+        vec![glam::Vec2::ZERO; count]
+    } else {
+        let values = s
+            .pose
+            .deforms
+            .get(&(*slot, attachment.clone()))
+            .cloned()
+            .unwrap_or_else(|| vec![glam::Vec2::ZERO; count]);
+        if values.len() != count || values.iter().any(|v| !v.is_finite()) {
+            return Err("Current deform is sparse or invalid; no implicit conversion".into());
+        }
+        values
+    };
+    let command = ankhimate_document::commands::key_cmds::AddDeformKey::new(
+        anim, *slot, attachment, time, offsets,
+    );
+    if !s.dispatch(Box::new(ankhimate_document::commands::Group::new(
+        vec![Box::new(command)],
+        "Key FFD pose",
+    ))) {
+        return Err("Native FFD key refused".into());
+    }
+    Ok(())
+}
 #[derive(Clone, Debug)]
 pub struct Lease {
     pub capture: Capture,

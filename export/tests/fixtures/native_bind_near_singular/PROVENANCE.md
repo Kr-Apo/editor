@@ -1,0 +1,1 @@
+Copied byte-for-byte from the saved C7B near-singular author project. Original primitive artwork; no user character. Source and old bad export preserved in the C7B delivery. Tests save only into isolated temporary directories.

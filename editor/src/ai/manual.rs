@@ -5,6 +5,7 @@ pub const MAX_BYTES: usize = 6144;
 pub const MAIN: &str = include_str!("../../../docs/ai/ANKHIMATE-AI.md");
 pub const TOOLS: &str = include_str!("../../../docs/ai/TOOLS.md");
 pub const PROJECT: &str = include_str!("../../../docs/ai/PROJECT.md");
+pub const ARTISTIC: &str = include_str!("../../../docs/ai/ARTISTIC.md");
 pub const ANIMATION: &str = include_str!("../../../docs/ai/ANIMATION.md");
 pub const VISION: &str = include_str!("../../../docs/ai/VISION.md");
 pub const RIGGING: &str = include_str!("../../../docs/ai/RIGGING.md");
@@ -45,6 +46,23 @@ pub fn select_with_budget(prompt: &str, tools: bool, budget: usize) -> Guidance 
         "influence",
         "normalis",
     ]);
+    if has(&[
+        "ffd",
+        "deform",
+        "déform",
+        "event",
+        "événement",
+        "supprimer une clé",
+        "delete key",
+    ]) {
+        add(
+            "ARTISTIC",
+            ARTISTIC
+                .split("\n## Detailed reference")
+                .next()
+                .unwrap_or(ARTISTIC),
+        );
+    }
     if weights {
         add("WEIGHTS", WEIGHTS);
     }

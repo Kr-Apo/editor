@@ -1,0 +1,313 @@
+{
+  "version": 1,
+  "name": "B4 idle",
+  "fps": 60,
+  "assets": [],
+  "bones": [
+    {
+      "name": "root",
+      "parent": "",
+      "length": 1.0,
+      "tx": 0.0,
+      "ty": 0.0,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "torso",
+      "parent": "root",
+      "length": 1.0,
+      "tx": 0.0,
+      "ty": 20.0,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "A",
+      "parent": "torso",
+      "length": 300.0,
+      "tx": 10.0,
+      "ty": 0.0,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "B",
+      "parent": "torso",
+      "length": 300.0,
+      "tx": 20.0,
+      "ty": 0.0,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "C",
+      "parent": "torso",
+      "length": 300.0,
+      "tx": 30.0,
+      "ty": 0.0,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    }
+  ],
+  "slots": [],
+  "draw_order": [],
+  "skins": [
+    {
+      "name": "default",
+      "entries": []
+    }
+  ],
+  "default_skin": "default",
+  "constraints": [
+    {
+      "name": "spring-A",
+      "type": "physics",
+      "target": "A",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    }
+  ],
+  "constraint_order": [
+    "spring-A"
+  ],
+  "animations": [
+    {
+      "name": "breathing",
+      "duration": 1.0,
+      "looping": true,
+      "timelines": [
+        {
+          "kind": "bone_translate",
+          "bone": "torso",
+          "axis": "x",
+          "keys": [
+            {
+              "time": 0.0,
+              "value": 0.0,
+              "curve": "linear"
+            },
+            {
+              "time": 0.25,
+              "value": 1.5,
+              "curve": "bezier",
+              "handles": [
+                0.25,
+                -0.2,
+                0.75,
+                1.2
+              ]
+            },
+            {
+              "time": 0.75,
+              "value": -0.5,
+              "curve": "linear"
+            },
+            {
+              "time": 1.0,
+              "value": 0.0,
+              "curve": "linear"
+            }
+          ]
+        },
+        {
+          "kind": "bone_translate",
+          "bone": "torso",
+          "axis": "y",
+          "keys": [
+            {
+              "time": 0.0,
+              "value": 0.0,
+              "curve": "linear"
+            },
+            {
+              "time": 0.5,
+              "value": 0.4,
+              "curve": "stepped"
+            },
+            {
+              "time": 0.8,
+              "value": -0.2,
+              "curve": "stepped"
+            },
+            {
+              "time": 1.0,
+              "value": 0.0,
+              "curve": "linear"
+            }
+          ]
+        },
+        {
+          "kind": "bone_rotate",
+          "bone": "torso",
+          "keys": [
+            {
+              "time": 0.0,
+              "value": 0.0,
+              "curve": "linear"
+            },
+            {
+              "time": 0.5,
+              "value": 3.0,
+              "curve": "linear"
+            },
+            {
+              "time": 1.0,
+              "value": 0.0,
+              "curve": "linear"
+            }
+          ]
+        },
+        {
+          "kind": "bone_scale",
+          "bone": "torso",
+          "axis": "x",
+          "keys": [
+            {
+              "time": 0.1,
+              "value": 1.0,
+              "curve": "linear"
+            },
+            {
+              "time": 0.6,
+              "value": 1.02,
+              "curve": "linear"
+            }
+          ]
+        },
+        {
+          "kind": "bone_scale",
+          "bone": "torso",
+          "axis": "y",
+          "keys": [
+            {
+              "time": 0.0,
+              "value": 1.0,
+              "curve": "linear"
+            },
+            {
+              "time": 0.7,
+              "value": 0.98,
+              "curve": "linear"
+            }
+          ]
+        },
+        {
+          "kind": "bone_shear",
+          "bone": "torso",
+          "axis": "x",
+          "keys": [
+            {
+              "time": 0.0,
+              "value": 0.0,
+              "curve": "linear"
+            },
+            {
+              "time": 0.75,
+              "value": 1.0,
+              "curve": "linear"
+            }
+          ]
+        },
+        {
+          "kind": "bone_shear",
+          "bone": "torso",
+          "axis": "y",
+          "keys": [
+            {
+              "time": 0.0,
+              "value": 0.0,
+              "curve": "linear"
+            },
+            {
+              "time": 0.9,
+              "value": -1.0,
+              "curve": "linear"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

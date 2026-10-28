@@ -20,6 +20,8 @@ const KEY_AREA_W: f32 = 62.0;
 #[cfg(test)]
 mod key_control_tests;
 mod key_controls;
+#[cfg(test)]
+mod p01_tests;
 pub(crate) mod tangents;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -2423,16 +2425,29 @@ fn attachment_inspector(
 
         let mut editing = state.session.mesh_edit;
         if ui
-            .add_enabled(setup, egui::Checkbox::new(&mut editing, "Edit vertices"))
+            .checkbox(&mut editing, "Edit vertices")
             .on_hover_text(
-                "Drag vertices · Ctrl+drag to box-select · shift-click to toggle\n\
-                 Click an edge to add a vertex · X deletes · Esc leaves\n\
-                 C pins the edge between two selected vertices, or releases it",
+                if setup {
+                    "Setup: edit mesh geometry. Drag vertices · Ctrl+drag to box-select · shift-click to toggle. Click edges to insert · X deletes · C pins edges · Esc leaves."
+                } else {
+                    "Animate: drag selected vertices to key FFD offsets at the playhead. Topology, UVs and weights remain unchanged. Ctrl+drag selects · shift-click toggles · Esc leaves."
+                },
             )
             .changed()
         {
             state.session.mesh_edit = editing;
             state.session.selected_vertices.clear();
+        }
+        if !setup {
+            ui.horizontal(|ui| {
+                let addr=TimelineAddr::Deform {slot:slot_id,attachment:name.clone(),owner:Some(skin)};
+                for (label,rest) in [("Key FFD pose",false),("Key setup FFD",true)] {
+                    if ui.button(label).on_hover_text("Create or replace a full FFD key at the playhead. Setup FFD means explicit zero offsets; it does not change the rig Setup pose.").clicked()
+                        && let Err(error)=crate::ffd_keys::key_pose(state,&addr,rest) {
+                            state.session.set_status(error);
+                        }
+                }
+            });
         }
         ui.horizontal(|ui| {
             if ui

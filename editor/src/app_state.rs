@@ -106,6 +106,7 @@ impl AppState {
     pub fn dispatch(&mut self, cmd: Box<dyn EditCommand>) -> bool {
         let preview = crate::key_clipboard::preview_before(self, cmd.as_ref());
         let required = cmd.requires_mode();
+        let replaces_rig = cmd.replaces_rig();
         if !self
             .history
             .push_in_mode(cmd, &mut self.doc, self.session.work_mode)
@@ -118,6 +119,9 @@ impl AppState {
             return false;
         }
         crate::key_clipboard::rebase_preview(self, preview);
+        if replaces_rig {
+            self.physics = ankhimate_core::physics::PhysicsState::new();
+        }
         self.after_document_change();
         true
     }
@@ -137,16 +141,26 @@ impl AppState {
     /// Record a command whose effect is already in the document, then refresh.
     /// For interactions that computed their result from live state.
     pub fn dispatch_applied(&mut self, cmd: Box<dyn EditCommand>) {
+        if cmd.replaces_rig() {
+            self.physics = ankhimate_core::physics::PhysicsState::new();
+        }
         self.history.push_applied(cmd);
         self.after_document_change();
     }
 
     pub fn undo(&mut self) {
+        let replaces_rig = self
+            .history
+            .undo_command()
+            .is_some_and(|cmd| cmd.replaces_rig());
         let preview = self
             .history
             .undo_command()
             .and_then(|cmd| crate::key_clipboard::preview_before(self, cmd));
         if self.history.undo(&mut self.doc) {
+            if replaces_rig {
+                self.physics = ankhimate_core::physics::PhysicsState::new();
+            }
             self.invalidate_asset_caches();
             crate::key_clipboard::rebase_preview(self, preview);
             self.after_document_change();
@@ -154,11 +168,18 @@ impl AppState {
     }
 
     pub fn redo(&mut self) {
+        let replaces_rig = self
+            .history
+            .redo_command()
+            .is_some_and(|cmd| cmd.replaces_rig());
         let preview = self
             .history
             .redo_command()
             .and_then(|cmd| crate::key_clipboard::preview_before(self, cmd));
         if self.history.redo(&mut self.doc) {
+            if replaces_rig {
+                self.physics = ankhimate_core::physics::PhysicsState::new();
+            }
             self.invalidate_asset_caches();
             crate::key_clipboard::rebase_preview(self, preview);
             self.after_document_change();
@@ -190,6 +211,9 @@ impl AppState {
     /// while retaining a cancelled export until its transaction has unwound.
     /// PSD replacement uses this without clearing its undoable import command.
     pub(crate) fn reset_rig_session(&mut self) {
+        // IDs are scoped to a rig. Recreate rather than reset: pause also belongs
+        // to the previous context, alongside velocities, anchors and remainder.
+        self.physics = ankhimate_core::physics::PhysicsState::new();
         self.transfer = Default::default();
         self.diagnostics = Default::default();
         self.ai.project_changed();

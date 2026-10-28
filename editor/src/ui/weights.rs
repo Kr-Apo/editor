@@ -885,6 +885,31 @@ fn auto_weight_mesh(
     }
 
     let weights = auto_weight(mesh, &bones, 2.0, only_vertices);
+    // Geodesic weighting deliberately does not jump between disconnected
+    // islands. An unreachable row is not a successful binding: reject the whole
+    // button operation before dispatch, preserving hand weights and Redo.
+    let unresolved: Vec<_> = weights
+        .iter()
+        .enumerate()
+        .filter(|(i, row)| {
+            (only_vertices.is_empty() || only_vertices.contains(i))
+                && (row.is_empty()
+                    || row.iter().any(|w| !w.weight.is_finite() || w.weight < 0.0)
+                    || !row.iter().map(|w| w.weight).sum::<f32>().is_finite()
+                    || row.iter().map(|w| w.weight).sum::<f32>() <= 0.0)
+        })
+        .map(|(i, _)| i)
+        .collect();
+    if !unresolved.is_empty() {
+        state.session.set_status(format!(
+            "Auto Weight refused; no changes. Skin {:?}, slot {:?}, mesh {:?}: vertices {:?} have no usable reachable influence. Paint an explicitly chosen influence on each disconnected island, or repair its topology; no anatomical bone was guessed.",
+            state.doc.skeleton.skins[target.skin].name,
+            state.doc.skeleton.slots[target.slot].name,
+            target.name,
+            unresolved
+        ));
+        return;
+    }
     let touched = if only_vertices.is_empty() {
         weights.len()
     } else {
@@ -918,3 +943,6 @@ fn dispatch(
 
 #[cfg(test)]
 mod t816_tests;
+
+#[cfg(test)]
+mod p01_tests;

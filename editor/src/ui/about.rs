@@ -95,12 +95,12 @@ mod tests {
 
     #[test]
     fn t838_about_keeps_version_provenance_and_licenses_visible() {
-        assert_eq!(VERSION, "0.1.5");
+        assert_eq!(VERSION, env!("CARGO_PKG_VERSION"));
         let ctx = egui::Context::default();
         let mut open = true;
         let _ = ctx.run_ui(Default::default(), |ui| show(ui.ctx(), &mut open));
         let output = ctx.run_ui(Default::default(), |ui| show(ui.ctx(), &mut open));
-        text(&output, "Version: 0.1.5");
+        text(&output, &format!("Version: {VERSION}"));
         text(&output, SOURCE_COMMIT);
         text(
             &output,

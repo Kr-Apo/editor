@@ -16,6 +16,10 @@ impl ReplaceDocument {
 }
 
 impl EditCommand for ReplaceDocument {
+    fn replaces_rig(&self) -> bool {
+        true
+    }
+
     fn apply(&mut self, doc: &mut Document) {
         std::mem::swap(doc, &mut self.other);
     }

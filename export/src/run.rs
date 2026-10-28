@@ -253,6 +253,13 @@ pub fn plan_with(
             atlas_stem: preset.atlas.stem.clone(),
         };
         let context = Context::build(project, baked.as_ref(), info);
+        if !context.binding_errors.is_empty() {
+            return Err(TemplateError::Render {
+                template: template.name.clone(),
+                reason: context.binding_errors.join("; "),
+            }
+            .into());
+        }
 
         let renders: Vec<serde_json::Value> = match template.per {
             Cadence::Once => vec![context.to_value()],
@@ -276,6 +283,17 @@ pub fn plan_with(
             claimed.push((path.clone(), template.name.clone()));
 
             let contents = engine.render(&template.name, &template.body, &value)?;
+            if matches!(
+                crate::preflight::Target::for_preset(preset),
+                crate::preflight::Target::Runtime | crate::preflight::Target::LegacyRuntime
+            ) {
+                crate::context::verify_native_bindings(project, &contents).map_err(|reason| {
+                    TemplateError::Render {
+                        template: template.name.clone(),
+                        reason,
+                    }
+                })?;
+            }
             plan.files.push(RenderedFile { path, contents });
         }
     }

@@ -62,17 +62,23 @@ pub(crate) fn topology(
     {
         return Err("Invalid mesh vertices/UVs/triangles".into());
     }
-    for t in triangles {
+    for (triangle, t) in triangles.iter().enumerate() {
         if t.iter().any(|i| *i as usize >= vertices.len())
             || t[0] == t[1]
             || t[1] == t[2]
             || t[0] == t[2]
         {
-            return Err("Invalid triangle indices".into());
+            return Err(format!(
+                "Invalid triangle indices: triangle {triangle}, indices {t:?}, {} vertices",
+                vertices.len()
+            ));
         }
         let [a, b, c] = t.map(|i| vertices[i as usize].as_dvec2());
-        if (b - a).perp_dot(c - a).abs() <= 1e-12 {
-            return Err("Degenerate mesh triangle".into());
+        let area = (b - a).perp_dot(c - a).abs();
+        if area <= 1e-12 {
+            return Err(format!(
+                "Degenerate mesh triangle {triangle}: indices {t:?}, Setup points {a:?}, {b:?}, {c:?}; doubled area {area} <= 1e-12. Adjust Trace/Refine settings or repair the source geometry. No topology was applied."
+            ));
         }
     }
     Ok(())
@@ -320,5 +326,22 @@ impl Plan {
         Ok(Some(TraceMesh::prepared(
             self.skin, self.slot, self.name, self.old, self.after,
         )))
+    }
+}
+
+#[cfg(test)]
+mod p01_tests {
+    use super::*;
+    #[test]
+    fn p01_degenerate_trace_identifies_triangle_and_setup_points() {
+        let vertices = vec![Vec2::ZERO, Vec2::X, Vec2::new(2., 0.)];
+        let error = topology(&vertices, &vertices, &[[0, 1, 2]]).unwrap_err();
+        assert!(
+            error.contains("triangle 0")
+                && error.contains("[0, 1, 2]")
+                && error.contains("area")
+                && error.contains("Setup"),
+            "{error}"
+        );
     }
 }

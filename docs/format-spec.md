@@ -728,3 +728,8 @@ The T-831 Context source digest was reviewed for its exhaustive PathPosition arm
 No native-v2 field is added: `run::plan_with` and plugin planning reject the track
 before building outputs. Existing native preset bytes and projection tables remain
 unchanged; regression tests cover refusal and the static-project witness.
+
+
+### Native weighted binding numeric fidelity (T-840C7B-E1)
+
+Runtime v2 retains the same objects and fields. Influence x/y and weighted flat_vertices are finite bone-local JSON numbers derived with f64 arithmetic from the native f32 bind matrices. Source project coordinates/weights remain f32. The current preset retains full authored bone parameter precision for weighted rigs instead of four-decimal rounding; nonweighted outputs retain their historical formatting. No new native field, version, Physics rule or reader is introduced. Native-rejected or unfaithfully reconstructable binds fail export explicitly. Old saved native templates remain unchanged and recognized, but publication is refused when their serialized bone rounding would lose more than 0.01 unit at bind. This is export fidelity, not new weighted ReplayV1 graphics support.

@@ -46,14 +46,14 @@ pub const SETTLED_SPEED: f32 = 0.01;
 
 /// One simulated bone.
 #[derive(Debug, Clone, Copy, Default)]
-struct BoneSim {
+pub(crate) struct BoneSim {
     /// Rotation offset from the rest pose, radians.
-    rotation: f32,
+    pub(crate) rotation: f32,
     /// Its rate of change, radians per second.
-    rotation_velocity: f32,
+    pub(crate) rotation_velocity: f32,
     /// Translation offset from the rest pose, local units.
-    position: Vec2,
-    position_velocity: Vec2,
+    pub(crate) position: Vec2,
+    pub(crate) position_velocity: Vec2,
 }
 
 /// Caller-owned physics state (ADR 0007).
@@ -177,16 +177,12 @@ impl PhysicsState {
             // Semi-implicit Euler: velocity first, then position from the new
             // velocity. It is stable for springs at these step sizes, where
             // explicit Euler gains energy and eventually throws the bone off.
-            sim.position_velocity += (force - sim.position * spring) * PHYSICS_STEP;
-            sim.position_velocity *= decay;
-            sim.position += sim.position_velocity * PHYSICS_STEP;
-
-            // Rotation swings on the same spring, driven by the sideways part of
-            // the displacement — a bone dragged sideways rotates.
-            let torque = push.x / mass + impulse.x * spring;
-            sim.rotation_velocity += (torque - sim.rotation * spring) * PHYSICS_STEP;
-            sim.rotation_velocity *= decay;
-            sim.rotation += sim.rotation_velocity * PHYSICS_STEP;
+            sim.step(
+                force,
+                torque_for(push, mass, impulse, spring),
+                spring,
+                decay,
+            );
 
             // A simulation that has gone non-finite cannot recover, and its NaN
             // would spread through every child. Reset instead.
@@ -196,6 +192,49 @@ impl PhysicsState {
             }
         }
         (sim.rotation, sim.position)
+    }
+}
+
+fn torque_for(push: Vec2, mass: f32, impulse: Vec2, spring: f32) -> f32 {
+    push.x / mass + impulse.x * spring
+}
+impl BoneSim {
+    pub(crate) fn step(&mut self, force: Vec2, torque: f32, spring: f32, decay: f32) {
+        self.position_velocity += (force - self.position * spring) * PHYSICS_STEP;
+        self.position_velocity *= decay;
+        self.position += self.position_velocity * PHYSICS_STEP;
+
+        // Rotation swings on the same spring, driven by the sideways part of
+        // the displacement — a bone dragged sideways rotates.
+        self.rotation_velocity += (torque - self.rotation * spring) * PHYSICS_STEP;
+        self.rotation_velocity *= decay;
+        self.rotation += self.rotation_velocity * PHYSICS_STEP;
+    }
+    pub(crate) fn replay_step(
+        &mut self,
+        delta: Vec2,
+        push: Vec2,
+        inertia: f32,
+        strength: f32,
+        damping: f32,
+        mass: f32,
+    ) {
+        let mass = mass.max(0.01);
+        let impulse = -delta * inertia.clamp(0.0, 1.0);
+        let spring = strength / mass;
+        let decay = (-damping.clamp(0.0, 1.0) * DAMPING_RATE * PHYSICS_STEP).exp();
+        self.step(
+            push / mass + impulse * spring,
+            torque_for(push, mass, impulse, spring),
+            spring,
+            decay,
+        );
+    }
+    pub(crate) fn finite(&self) -> bool {
+        self.rotation.is_finite()
+            && self.rotation_velocity.is_finite()
+            && self.position.is_finite()
+            && self.position_velocity.is_finite()
     }
 }
 

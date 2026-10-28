@@ -146,6 +146,29 @@ pub fn bone_gizmo_vertices(
 /// Called before rendering because it needs `&mut` (to memoize the hash), while
 /// the render pass reads an immutable state.
 pub fn prepare_textures(state: &mut AppState) -> Vec<SpriteUpload> {
+    // Painting is read-only; report rejected linked geometry during the existing
+    // mutable preparation pass, before either sprites or selection outlines draw.
+    for (slot, _) in &state.doc.skeleton.slots {
+        if let Some(name) = state.pose.attachment_name(&state.doc.skeleton, slot)
+            && let Some(Attachment::Mesh(mesh)) =
+                state
+                    .doc
+                    .skeleton
+                    .resolve_many(&state.session.skin_stack(), slot, name)
+            && mesh.linked.is_some()
+        {
+            let result = state
+                .doc
+                .skeleton
+                .resolve_mesh_pose(&state.session.skin_stack(), &state.pose, slot, name)
+                .and_then(|v| v.vertices(&state.pose));
+            if let Err(error) = result {
+                state.session.set_status(error.to_string());
+                break;
+            }
+        }
+    }
+
     use std::hash::{Hash, Hasher};
 
     let mut uploads = Vec::new();
@@ -236,12 +259,6 @@ fn region_corners(
         .map(|corner| bone_world.transform_point(corner))
 }
 
-/// The animated deform offsets for a slot's attachment, if the clip has any.
-fn mesh_deform<'a>(state: &AppState, pose: &'a Pose, slot: SlotId) -> Option<&'a Vec<glam::Vec2>> {
-    let name = pose.attachment_name(&state.doc.skeleton, slot)?;
-    pose.deforms.get(&(slot, name.to_string()))
-}
-
 /// Build the textured draw for a slot — a quad for a region, a triangle list for
 /// a mesh — or `None` if anything it needs is missing.
 fn sprite_for_slot(
@@ -321,48 +338,36 @@ fn sprite_for_slot(
         // space, so the bone affine is all that is needed — weight skinning
         // (T-403) and deform offsets (T-404) slot in here later.
         Attachment::Mesh(mesh) => {
-            // A linked mesh draws the source's geometry under its own texture.
-            let geometry = state
-                .doc
-                .skeleton
-                .resolve_linked_mesh(&state.session.skin_stack(), mesh);
-            let texture = sequence_frame(&mesh.sequence).unwrap_or_else(|| mesh.texture.clone());
-            let mesh = geometry;
+            let name = pose.attachment_name(&state.doc.skeleton, slot_id)?;
+            let resolved = match state.doc.skeleton.resolve_mesh_pose(
+                &state.session.skin_stack(),
+                pose,
+                slot_id,
+                name,
+            ) {
+                Ok(value) => value,
+                Err(_) => return None,
+            };
+            let texture =
+                sequence_frame(&mesh.sequence).unwrap_or_else(|| resolved.texture.to_owned());
+            let mesh = resolved.geometry;
             let asset_id = state.doc.assets.by_name(&texture)?;
             let key = *state.session.texture_keys.get(asset_id)?;
             if mesh.triangles.is_empty() {
                 return None;
             }
-            // A weighted vertex follows its bones (T-403); an unweighted one
-            // rides its slot's bone rigidly. Both paths land in the same buffer.
-            // Deform offsets are applied to the setup vertex *before* skinning
-            // (T-404): the shape is authored in local space, then the bones move
-            // it. Skinning first would rotate the offsets with the bone.
-            //
-            // No rigid/skinned branch here: `skin_vertex_with_ffd` falls back to
-            // `bone_world` per vertex, so a mesh with no weights and a vertex
-            // with no weights are handled by the same path.
-            let deform = mesh_deform(state, pose, slot_id);
-            let weighted = !mesh.weights.is_empty();
-            let vertices = (0..mesh.setup_vertices.len())
-                .map(|i| {
-                    // A weighted mesh deforms per influence, so a vertex takes
-                    // its slice of the key; a rigid one takes its single entry.
-                    let offsets: Vec<glam::Vec2> = match deform {
-                        Some(d) if weighted => {
-                            d.get(mesh.influence_range(i)).unwrap_or_default().to_vec()
-                        }
-                        Some(d) => vec![d.get(i).copied().unwrap_or_default()],
-                        None => Vec::new(),
-                    };
-                    let world = mesh.skin_vertex_with_deform(i, &offsets, pose, bone_world);
-                    let uv = mesh.uvs.get(i).copied().unwrap_or(glam::Vec2::ZERO);
-                    MeshVertex {
-                        position: [world.x, world.y],
-                        uv: [uv.x, uv.y],
-                        color,
-                        dark,
-                    }
+            let positions = match resolved.vertices(pose) {
+                Ok(v) => v,
+                Err(_) => return None,
+            };
+            let vertices = positions
+                .into_iter()
+                .enumerate()
+                .map(|(i, world)| MeshVertex {
+                    position: [world.x, world.y],
+                    uv: mesh.uvs.get(i).copied().unwrap_or_default().to_array(),
+                    color,
+                    dark,
                 })
                 .collect();
             let indices = mesh.triangles.iter().flat_map(|t| *t).collect();
@@ -2057,3 +2062,6 @@ mod t824_tests;
 
 #[cfg(test)]
 mod t828_tests;
+
+#[cfg(test)]
+mod a10_tests;

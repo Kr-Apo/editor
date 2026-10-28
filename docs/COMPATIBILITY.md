@@ -1,6 +1,8 @@
-# Compatibility — v0.1.5 Local Candidate (T838)
+> **P01-RC1 local candidate — 28 October 2026.** Read the [current contracts and qualification boundary](p01-rc1-workflow.md) before the historical notes below. Proposed Classic v0.1.6 is not tagged/released here. Runtime package versions are unchanged; ReplayV1 A17 is explicit and separate from Legacy playback.
 
-This candidate is neither RC2 nor the historical v0.2.0-alpha.1 release. Its internal product version is 0.1.5; identify the exact build using its checksum and delivery checkpoint. This deliberately resets numbering below the former 0.2.0-alpha.1; version comparators may treat it as older. Author schema/envelope 1 and runtime format v2 do not change.
+# Compatibility — v0.1.6 Corrective Candidate (P01-RC1)
+
+This candidate is neither RC2 nor the historical v0.2.0-alpha.1 release. Its internal product version is 0.1.6; identify the exact build using its checksum and delivery checkpoint. This deliberately resets numbering below the former 0.2.0-alpha.1; version comparators may treat it as older. Author schema/envelope 1 and runtime format v2 do not change.
 
 | Area | Compatibility contract |
 |---|---|

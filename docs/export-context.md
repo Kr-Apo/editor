@@ -350,6 +350,22 @@ tracks keep their original lengths; key times and flat offsets are unchanged,
 including the per-influence ordering of weighted deforms. FFD keys do not gain
 the scalar-only `points` or `has_next` fields.
 
+The same outgoing-segment rule applies to `slots[].keys[].curve` for the
+`color` channel and to every `transform[].keys[].curve` (T-840C9-A2). Their
+curve at index `i` comes from author key `i+1`; the final key uses `"linear"`.
+RGBA/mix values, times, names and normalized Bezier handles (including allowed
+Y overshoots) are unchanged. These families do not acquire scalar-only fields.
+Templates that compensated manually for their previous incorrect curve placement
+must remove that compensation. This corrects the existing documented context
+contract; it is not a new runtime timeline or a change to sampling semantics.
+
+Earlier native v2 exports copied SlotColor and TransformConstraintMix arrival
+curves directly as well. Those files remain readable but need a fresh export
+from the author project to recover the intended non-linear segment easing.
+TransformConstraintMix coverage here is schema/API coverage, not a claim that
+Classic currently provides an authoring UI for all mix keys. ReplayV1's existing
+refusals of these channels are unchanged.
+
 Earlier native v2 exports copied the FFD arrival curve directly. They remain
 readable, but non-linear FFD animations exported with that bug must be exported
 again to recover the intended easing. A reader cannot infer the author's
@@ -432,3 +448,32 @@ setting, no naming convention to learn.
   behind, and only you know whether that matters.
 - **Two templates cannot claim one path** — the second would silently overwrite
   the first, so the export stops and names both.
+
+
+## Weighted bind fidelity (T-840C7B-E1)
+
+`weights[].bones[].x/y` and weighted `flat_vertices` coordinates are local to the named influence bone. They are derived JSON numbers computed in f64 from native f32 setup matrices; source vertices, coefficients, UVs and indices retain their author values. No WORLD/identity fallback is emitted. Inversion eligibility follows native `Affine2::invert` (absolute determinant at least 1e-12), with separate finite and WORLD reconstruction checks at 0.01 unit. A determinant is not a condition-number certificate.
+
+The additive context-only `skeleton.precise_bind_numbers` boolean signals meshes/bounding boxes with weights. The current native preset preserves authored bone-number precision in that case, avoiding four-decimal collapse of valid small scales. Region/rigid-only exports keep their previous formatting. This flag is not a runtime JSON field; format_version 2 and context_version 1 remain unchanged.
+
+Invalid contexts expose a deduplicated `binding_errors` string array (omitted when empty), and invalid derived coordinates are null for inspection. `run::plan` refuses such a context before rendering/publication. It also reconstructs the actual serialized native bindings with core setup matrices, so an unchanged old saved preset cannot silently lose fidelity through bone rounding. Saved presets are never rewritten; choose the current native preset when its old numeric rounding is insufficient. Other template bodies retain their own numeric policies. Context::build remains usable for read-only diagnosis of an invalid document; it does not mutate source data.
+
+Checked local coordinates carry f64 JSON precision already permitted by the number contract. Existing JavaScript readers use number values; this does not certify a future consumer that forcibly downcasts derived binds to float32. Truly singular/native-rejected/non-finite or numerically unstable binds produce an explicit export error; no partial plan is published. Weighted ReplayV1 graphical qualification remains separate.
+
+
+### Native duration precision (T-840C9-A2)
+
+The built-in native v2 template writes `{{json duration}}`, preserving the exact
+f32 author duration widened into the context's JSON number. It no longer rounds
+to four decimal places. A JavaScript JSON number can represent that widened f32
+exactly; `Math.fround` recovers the same canonical duration. The format and
+context versions stay unchanged. Bone key times and sampling/Physics clocks
+retain their existing contracts.
+
+Saved presets are user data and are not rewritten. The exact E1 native template
+(and previously recognized pre-bind/pre-dark variants) remains classified as a
+native preset, but a saved `{{round duration 4}}` body still rounds. Select the
+current built-in preset, or deliberately edit your saved template's duration
+expression, then re-export. Recognition does not upgrade numeric fidelity.
+Previously exported rounded durations cannot be recovered automatically by the
+reader. Other presets keep their own duration numeric policies.

@@ -9,6 +9,10 @@ use egui_tiles::{Linear, LinearDir, Tiles, Tree};
 mod lifecycle_tests;
 
 #[cfg(test)]
+#[path = "app_t840b1_tests.rs"]
+mod t840b1_tests;
+
+#[cfg(test)]
 #[path = "app_shortcut_tests.rs"]
 mod shortcut_tests;
 

@@ -228,7 +228,7 @@ dependencies = [
 
 [[package]]
 name = "ankhimate-editor"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "ankhimate-core",
  "ankhimate-document",
@@ -339,9 +339,13 @@ version = "0.1.0"
 dependencies = [
  "ankhimate-core",
  "ankhimate-document",
+ "ankhimate-export",
+ "ankhimate-formats",
  "glam",
  "image",
  "serde",
+ "serde_json",
+ "tempfile",
 ]
 
 [[package]]

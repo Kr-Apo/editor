@@ -12,4 +12,4 @@ For an attack, separate anticipation, fast impact and slower recovery. Coordinat
 parent and child bones without assuming world-space key values. Preserve existing
 clips unless asked to change them. Runtime crossfades are not editable through
 these tools; a transition must be authored with supported keys or explained as a
-manual/runtime step. No event, constraint, physics or FFD authoring tool is exposed.
+manual/runtime step. P01-RC1 adds explicit FFD keys, exact key deletion and named events. Constraints and Physics configuration remain manual. See ARTISTIC.md for native array order, limits and approval.

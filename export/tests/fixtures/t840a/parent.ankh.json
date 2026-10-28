@@ -1,0 +1,139 @@
+{
+  "version": 1,
+  "name": "T839 physics",
+  "fps": 60,
+  "assets": [],
+  "bones": [
+    {
+      "name": "root",
+      "parent": "",
+      "length": 1.0,
+      "tx": 0.0,
+      "ty": 0.0,
+      "rotation": 30.000002,
+      "sx": 1.5,
+      "sy": 0.75,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "tassel",
+      "parent": "root",
+      "length": 10.0,
+      "tx": 10.0,
+      "ty": 0.0,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    },
+    {
+      "name": "tip",
+      "parent": "tassel",
+      "length": 2.0,
+      "tx": 10.0,
+      "ty": 0.0,
+      "rotation": 0.0,
+      "sx": 1.0,
+      "sy": 1.0,
+      "shear_x": 0.0,
+      "shear_y": 0.0,
+      "inherit_rotation": true,
+      "inherit_scale": true,
+      "inherit_reflect": true,
+      "color": [
+        0.0,
+        0.8,
+        0.8,
+        0.85
+      ]
+    }
+  ],
+  "slots": [],
+  "draw_order": [],
+  "skins": [
+    {
+      "name": "default",
+      "entries": []
+    }
+  ],
+  "default_skin": "default",
+  "constraints": [
+    {
+      "name": "sway",
+      "type": "physics",
+      "target": "tassel",
+      "bones": [],
+      "bend_direction": 1.0,
+      "mix": 1.0,
+      "softness": 0.0,
+      "stretch": false,
+      "stretch_limit": 1.1,
+      "stiffness": 0.0,
+      "physics": [
+        0.5,
+        40.0,
+        0.5,
+        1.0
+      ],
+      "forces": [
+        10.0,
+        0.0,
+        0.0,
+        -9.8
+      ],
+      "channels": [
+        true,
+        true
+      ]
+    }
+  ],
+  "constraint_order": [
+    "sway"
+  ],
+  "animations": [
+    {
+      "name": "move",
+      "duration": 2.0,
+      "looping": true,
+      "timelines": [
+        {
+          "kind": "bone_translate",
+          "bone": "root",
+          "axis": "x",
+          "keys": [
+            {
+              "time": 0.0,
+              "value": 0.0,
+              "curve": "linear"
+            },
+            {
+              "time": 2.0,
+              "value": 24.0,
+              "curve": "linear"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

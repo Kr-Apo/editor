@@ -73,14 +73,7 @@ pub fn warm_cache(state: &mut AppState) {
         .filter_map(
             |(slot, name)| match state.doc.skeleton.resolve_many(&skins, slot, &name)? {
                 Attachment::Region(r) => Some(r.texture.clone()),
-                Attachment::Mesh(m) => Some(
-                    state
-                        .doc
-                        .skeleton
-                        .resolve_linked_mesh(&skins, m)
-                        .texture
-                        .clone(),
-                ),
+                Attachment::Mesh(m) => Some(m.texture.clone()),
                 _ => None,
             },
         )
@@ -151,8 +144,27 @@ fn outline_one(
             }
         }
         Attachment::Mesh(mesh) => {
-            let geometry = state.doc.skeleton.resolve_linked_mesh(&skins, mesh).clone();
-            let world = mesh_world_vertices(state, slot_id, &geometry, &bone_world);
+            let (geometry, world) = if mesh.linked.is_some() {
+                let resolved =
+                    match state
+                        .doc
+                        .skeleton
+                        .resolve_mesh_pose(&skins, &state.pose, slot_id, name)
+                    {
+                        Ok(v) => v,
+                        Err(_) => return,
+                    };
+                let world = match resolved.vertices(&state.pose) {
+                    Ok(v) => v,
+                    Err(_) => return,
+                };
+                (resolved.geometry.clone(), world)
+            } else {
+                (
+                    mesh.clone(),
+                    mesh_world_vertices(state, slot_id, mesh, &bone_world),
+                )
+            };
 
             // The mesh outline: every edge belonging to exactly one triangle.
             // Dashed, because it is authoring structure rather than a thing the
@@ -167,10 +179,10 @@ fn outline_one(
 
             // The pixel silhouette, carried through the triangles so it deforms
             // with the mesh.
-            let Some(contours) = silhouette_for(state, &geometry.texture) else {
+            let Some(contours) = silhouette_for(state, &mesh.texture) else {
                 return;
             };
-            let (w, h) = image_size(state, &geometry.texture).unwrap_or((1.0, 1.0));
+            let (w, h) = image_size(state, &mesh.texture).unwrap_or((1.0, 1.0));
             for contour in contours {
                 let mut run: Vec<egui::Pos2> = Vec::new();
                 for p in contour.iter() {

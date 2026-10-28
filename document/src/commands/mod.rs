@@ -111,6 +111,13 @@ pub trait EditCommand: Send {
         None
     }
 
+    /// A whole rig is exchanged on apply/revert, even if its entity IDs match.
+    /// Callers must discard derived simulation only after a successful edit.
+    /// Ordinary bone/key edits and PSD merges retain their existing policy.
+    fn replaces_rig(&self) -> bool {
+        false
+    }
+
     /// Report entity ids this command just re-created under a new key, so the
     /// rest of the history can be rewritten. Only commands that re-insert
     /// entities need to implement this.
@@ -161,6 +168,10 @@ impl Group {
 }
 
 impl EditCommand for Group {
+    fn replaces_rig(&self) -> bool {
+        self.commands.iter().any(|command| command.replaces_rig())
+    }
+
     fn apply(&mut self, doc: &mut Document) {
         for command in &mut self.commands {
             command.apply(doc);

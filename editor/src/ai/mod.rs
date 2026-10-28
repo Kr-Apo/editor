@@ -1,5 +1,6 @@
 //! Native, opt-in conversational assistant. Never serialized into a project.
 mod activity;
+mod artistic;
 mod assembly;
 mod capabilities;
 mod manual;
@@ -483,5 +484,7 @@ impl crate::app_state::AppState {
         self.ai = ai;
     }
 }
+#[cfg(test)]
+mod p01_tests;
 #[cfg(test)]
 mod tests;
